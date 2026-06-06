@@ -56,10 +56,10 @@ html, body {
   position: relative; transition: opacity 0.12s;
 }
 .card:active:not(.editing-mode .card) { opacity: 0.65; }
-.card.wobble { animation: wobble 0.35s ease-in-out infinite alternate; }
+.card.wobble { animation: wobble 0.2s ease-in-out infinite alternate; }
 @keyframes wobble {
-  0%   { transform: rotate(-1.2deg) scale(0.985); }
-  100% { transform: rotate(1.2deg)  scale(0.985); }
+  0%   { transform: rotate(-0.8deg) scale(0.99); }
+  100% { transform: rotate(0.8deg)  scale(0.99); }
 }
 
 .card-delete {
@@ -91,9 +91,14 @@ html, body {
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
   border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: opacity 0.12s, transform 0.1s;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1), filter 0.2s ease;
 }
-.txbtn:active { opacity: 0.65; transform: scale(0.93); }
+.txbtn:active {
+  transform: scale(1.08);
+  filter: brightness(1.4);
+  transition: transform 0.08s ease-out, filter 0.08s ease-out;
+}
 .txbtn-sm { width: 44px; height: 44px; }
 .txbtn-sm svg { width: 19px; height: 19px; }
 .txbtn-md { width: 44px; height: 44px; }
@@ -113,15 +118,15 @@ html, body {
 .settings-backdrop {
   position: absolute; inset: 0;
   background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(1px);
-  -webkit-backdrop-filter: blur(1px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .settings-sheet {
   position: relative; z-index: 1;
   width: 100%;
   /* ~85vh so it peeks ~30% over the "Siri" title */
-  height: 90vh;
+  height: 85vh;
   background: #1a1a1a;
   border-radius: 28px 28px 0 0;
   padding: 0 0 48px;
