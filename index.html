@@ -109,12 +109,12 @@ html, body {
 }
 
 .txbtn.tapped {
-  animation: btnTap 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: btnTap 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 @keyframes btnTap {
   0%   { transform: scale(1);    filter: brightness(1); }
-  22%  { transform: scale(1.20); filter: brightness(1.89); }
+  22%  { transform: scale(1.20); filter: brightness(1.65); }
   55%  { transform: scale(1.06); filter: brightness(1.22); }
   80%  { transform: scale(0.98); filter: brightness(1.05); }
   100% { transform: scale(1);    filter: brightness(1); }
@@ -299,6 +299,37 @@ html, body {
   0%,80%,100% { opacity: 0.3; transform: scale(0.8); }
   40% { opacity: 1; transform: scale(1); }
 }
+
+/* ══ DELETE DIALOG ══ */
+.delete-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+.delete-overlay.open { opacity: 1; pointer-events: all; }
+
+.delete-dialog {
+  width: 100%; max-width: 360px;
+  display: flex; flex-direction: column;
+  position: relative;
+  transform: scale(1.08); opacity: 0;
+  transition: transform 0.28s cubic-bezier(0.34, 1.38, 0.64, 1), opacity 0.22s ease;
+}
+.delete-overlay.open .delete-dialog { transform: scale(1); opacity: 1; }
+
+/* Три картинки без зазоров */
+.delete-dialog img { width: 100%; display: block; line-height: 0; }
+.delete-dialog img:first-child { border-radius: 20px 20px 0 0; }
+.delete-dialog img:last-child  { border-radius: 0 0 20px 20px; }
+
+/* Прозрачные кликабельные зоны поверх картинок */
+.dialog-hit {
+  position: absolute; left: 0; right: 0;
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -421,6 +452,15 @@ html, body {
   </div>
 </div>
 
+<!-- ══ DELETE DIALOG ══ -->
+<div class="delete-overlay" id="deleteOverlay">
+  <div class="delete-dialog" id="deleteDialog">
+    <img src="/src/dialogdelete-question.png" alt="">
+    <img src="/src/dialogdelete-yesdel.png"   alt="" id="dialogConfirmDelete" style="cursor:pointer;">
+    <img src="/src/dialogdelete-nokeep.png"   alt="" id="dialogCancel"        style="cursor:pointer;">
+  </div>
+</div>
+
 <script>
 function loadChats() {
   try { return JSON.parse(localStorage.getItem('siri_chats') || '[]'); } catch { return []; }
@@ -504,13 +544,40 @@ function startLongPress(e) {
 function cancelLongPress() { clearTimeout(longPressTimer); }
 function exitEditing() { editingMode = false; renderCards(); }
 
+let pendingDeleteIndex = null;
+
 function deleteChat(e, i) {
   e.stopPropagation();
-  chats.splice(i, 1);
+  pendingDeleteIndex = i;
+  openDeleteDialog();
+}
+
+function openDeleteDialog() {
+  const overlay = document.getElementById('deleteOverlay');
+  overlay.classList.add('open');
+}
+
+function closeDeleteDialog() {
+  const overlay = document.getElementById('deleteOverlay');
+  overlay.classList.remove('open');
+  pendingDeleteIndex = null;
+}
+
+function confirmDelete() {
+  if (pendingDeleteIndex === null) return;
+  chats.splice(pendingDeleteIndex, 1);
   saveChats(chats);
+  pendingDeleteIndex = null;
+  closeDeleteDialog();
   renderCards();
   if (chats.length === 0) exitEditing();
 }
+
+document.getElementById('dialogConfirmDelete')?.addEventListener('click', confirmDelete);
+document.getElementById('dialogCancel')?.addEventListener('click', closeDeleteDialog);
+document.getElementById('deleteOverlay')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('deleteOverlay')) closeDeleteDialog();
+});
 
 function openNewChat() {
   exitEditing();
