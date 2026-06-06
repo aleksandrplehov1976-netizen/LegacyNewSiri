@@ -10,8 +10,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
-  height: 100%;
-  width: 100%;
+  height: 100%; width: 100%;
   background: #000;
   font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
   color: #fff;
@@ -20,323 +19,220 @@ html, body {
   -webkit-user-select: none;
   touch-action: pan-x pan-y;
 }
-
-/* allow selection only inside bubbles */
-.bubble-user, .bubble-ai {
-  user-select: text;
-  -webkit-user-select: text;
-}
+.bubble-user, .bubble-ai, .input-field { user-select: text; -webkit-user-select: text; }
 
 .screen {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
   background: #000;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.22s ease;
 }
-.screen.active {
-  opacity: 1;
-  pointer-events: all;
-}
+.screen.active { opacity: 1; pointer-events: all; }
 
 /* ══ HOME ══ */
 #home { display: flex; flex-direction: column; }
 
 .home-header {
   flex-shrink: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; justify-content: space-between; align-items: center;
   padding: 14px 18px 12px;
 }
-
-.home-title {
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: -0.6px;
-}
+.home-title { font-size: 32px; font-weight: 700; letter-spacing: -0.6px; }
 
 .home-scroll {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
   padding: 0 12px 130px;
 }
 .home-scroll::-webkit-scrollbar { display: none; }
 
-.cards-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
+.cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-/* card */
 .card {
-  background: #1c1c1e;
-  border-radius: 23px;
-  padding: 14px 13px;
-  cursor: pointer;
-  min-height: 138px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: opacity 0.12s;
+  background: #1c1c1e; border-radius: 23px;
+  padding: 14px 13px; cursor: pointer;
+  min-height: 138px; display: flex; flex-direction: column;
+  position: relative; transition: opacity 0.12s;
 }
 .card:active:not(.editing-mode .card) { opacity: 0.65; }
-
-/* wobble */
-.card.wobble {
-  animation: wobble 0.35s ease-in-out infinite alternate;
-}
+.card.wobble { animation: wobble 0.35s ease-in-out infinite alternate; }
 @keyframes wobble {
   0%   { transform: rotate(-1.2deg) scale(0.985); }
   100% { transform: rotate(1.2deg)  scale(0.985); }
 }
 
-/* delete badge */
 .card-delete {
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  position: absolute; top: -9px; left: -9px;
+  width: 28px; height: 28px; border-radius: 50%;
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
-  border: none;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+  border: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center; z-index: 10;
 }
 .card-delete svg { width: 12px; height: 12px; }
 .editing-mode .card-delete { display: flex; }
 
-.card-date {
-  font-size: 11px;
-  color: #666;
-  margin-bottom: 5px;
-}
-.card-title {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: #fff;
-  margin-bottom: 6px;
-  letter-spacing: -0.15px;
-}
-.card-preview {
-  font-size: 12px;
-  color: #777;
-  line-height: 1.4;
-}
+.card-date { font-size: 11px; color: #666; margin-bottom: 5px; }
+.card-title { font-size: 14px; font-weight: 600; line-height: 1.3; color: #fff; margin-bottom: 6px; letter-spacing: -0.15px; }
+.card-preview { font-size: 12px; color: #777; line-height: 1.4; }
 
-/* bottom floating bar */
 .home-bottom {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  z-index: 100;
-  height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 32px 32px;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  height: 120px; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 32px 32px;
   background: linear-gradient(to top, #000 60%, transparent);
   pointer-events: none;
 }
 .home-bottom button { pointer-events: all; }
 
-/* ══ buttons ══ */
+/* ══ BUTTONS ══ */
 .txbtn {
   border-radius: 50%;
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: opacity 0.12s, transform 0.1s;
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: opacity 0.12s, transform 0.1s;
 }
 .txbtn:active { opacity: 0.65; transform: scale(0.93); }
-
 .txbtn-sm { width: 44px; height: 44px; }
 .txbtn-sm svg { width: 19px; height: 19px; }
-
 .txbtn-md { width: 44px; height: 44px; }
 .txbtn-md svg { width: 19px; height: 19px; }
-
 .txbtn-lg { width: 68px; height: 68px; }
 .txbtn-lg svg { width: 26px; height: 26px; }
 
 /* ══ SETTINGS OVERLAY ══ */
 .settings-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 200;
-  display: flex;
-  align-items: flex-end;
-  opacity: 0;
-  pointer-events: none;
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.25s ease;
 }
-.settings-overlay.open {
-  opacity: 1;
-  pointer-events: all;
+.settings-overlay.open { opacity: 1; pointer-events: all; }
+
+.settings-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
+
 .settings-sheet {
+  position: relative; z-index: 1;
   width: 100%;
-  background: #1c1c1e;
+  /* ~85vh so it peeks ~30% over the "Siri" title */
+  height: 85vh;
+  background: #1a1a1a;
   border-radius: 28px 28px 0 0;
-  padding: 20px 24px 48px;
+  padding: 0 0 48px;
   transform: translateY(100%);
-  transition: transform 0.28s cubic-bezier(0.32,0.72,0,1);
+  transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+  display: flex; flex-direction: column;
+  overflow: hidden;
 }
 .settings-overlay.open .settings-sheet { transform: translateY(0); }
-.settings-handle {
-  width: 36px; height: 4px;
-  background: #444;
-  border-radius: 2px;
-  margin: 0 auto 20px;
+
+/* sheet top bar */
+.settings-topbar {
+  display: flex; align-items: center; justify-content: center;
+  padding: 18px 20px 14px; position: relative; flex-shrink: 0;
 }
-.settings-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 14px;
+.settings-heading {
+  font-size: 17px; font-weight: 600; color: #fff; letter-spacing: -0.2px;
 }
-.settings-row {
-  font-size: 17px;
-  color: #fff;
-  padding: 4px 0 20px;
+.settings-close {
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
 }
-.settings-row span { color: #888; font-size: 15px; }
+
+/* scrollable content */
+.settings-body {
+  flex: 1; overflow-y: auto; padding: 6px 16px 20px;
+  scrollbar-width: none;
+}
+.settings-body::-webkit-scrollbar { display: none; }
+
+.settings-section-label {
+  font-size: 13px; font-weight: 400;
+  color: #888; padding: 16px 4px 8px;
+  letter-spacing: 0.1px;
+}
+
+/* grouped rows block — like iOS Settings */
+.settings-group {
+  background: #2c2c2e;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.settings-item {
+  display: flex; align-items: center;
+  padding: 14px 16px; gap: 12px;
+  text-decoration: none; color: #fff;
+}
+.settings-item + .settings-item {
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.settings-item-icon {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.settings-item-icon svg { width: 18px; height: 18px; }
+.settings-item-label { font-size: 17px; color: #fff; flex: 1; }
+.settings-item-value { font-size: 15px; color: #888; }
+.settings-item-chevron { color: #555; }
+.settings-item-chevron svg { width: 14px; height: 14px; }
 
 /* ══ CHAT ══ */
 #chat { display: flex; flex-direction: column; }
-
-.chat-header {
-  flex-shrink: 0;
-  padding: 14px 16px 10px;
-  display: flex;
-  align-items: center;
-}
-
+.chat-header { flex-shrink: 0; padding: 14px 16px 10px; display: flex; align-items: center; }
 .chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding: 6px 16px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding: 6px 16px 12px;
+  display: flex; flex-direction: column; gap: 12px;
 }
 .chat-messages::-webkit-scrollbar { display: none; }
-
 .chat-input-area {
-  flex-shrink: 0;
-  padding: 10px 14px 36px;
+  flex-shrink: 0; padding: 10px 14px 36px;
   background: linear-gradient(to top, #000 70%, transparent);
 }
-.input-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
+.input-row { display: flex; align-items: center; gap: 10px; }
 .input-bar {
-  flex: 1;
-  height: 44px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  border-radius: 20px;
-  overflow: hidden;
+  flex: 1; height: 44px; position: relative;
+  display: flex; align-items: center;
+  border-radius: 20px; overflow: hidden;
 }
 .input-bar-bg {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: url('/src/texture-enterprompt.png') center/100% 100% no-repeat;
 }
 .input-field {
-  position: relative;
-  z-index: 2;
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #fff;
-  font-size: 16px;
+  position: relative; z-index: 2; flex: 1;
+  background: transparent; border: none; outline: none;
+  color: #fff; font-size: 16px;
   font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
-  padding: 0 14px;
-  caret-color: #fff;
-  user-select: text;
-  -webkit-user-select: text;
+  padding: 0 14px; caret-color: #fff;
 }
 .input-field::placeholder { color: rgba(255,255,255,0.42); }
-
 .btn-send { display: none; }
 
-/* bubbles */
 .bubble-user {
-  align-self: flex-end;
-  background: #2c2c2e;
-  color: #fff;
-  padding: 12px 16px;
-  border-radius: 20px 20px 5px 20px;
-  font-size: 15px;
-  max-width: 78%;
-  line-height: 1.45;
+  align-self: flex-end; background: #2c2c2e; color: #fff;
+  padding: 12px 16px; border-radius: 20px 20px 5px 20px;
+  font-size: 15px; max-width: 78%; line-height: 1.45;
 }
 .bubble-ai {
-  align-self: flex-start;
-  background: #1c1c1e;
-  color: #fff;
-  padding: 14px 16px;
-  border-radius: 5px 20px 20px 20px;
-  font-size: 15px;
-  max-width: 92%;
-  line-height: 1.5;
+  align-self: flex-start; background: #1c1c1e; color: #fff;
+  padding: 14px 16px; border-radius: 5px 20px 20px 20px;
+  font-size: 15px; max-width: 92%; line-height: 1.5;
 }
-.bubble-ai-source {
-  display: inline-flex;
-  align-items: center;
-  background: #2c2c2e;
-  border-radius: 8px;
-  padding: 3px 9px;
-  font-size: 11px;
-  color: #aaa;
-  margin-top: 10px;
-}
-.bubble-ai-img { margin-top: 10px; border-radius: 12px; overflow: hidden; }
-.bubble-ai-img img { width: 100%; display: block; }
-.bubble-ai-img-caption { background: #2c2c2e; padding: 8px 12px; font-size: 12px; color: #999; }
-
-/* typing indicator */
 .bubble-typing {
-  align-self: flex-start;
-  background: #1c1c1e;
-  padding: 14px 18px;
-  border-radius: 5px 20px 20px 20px;
-  display: flex;
-  gap: 5px;
-  align-items: center;
+  align-self: flex-start; background: #1c1c1e;
+  padding: 14px 18px; border-radius: 5px 20px 20px 20px;
+  display: flex; gap: 5px; align-items: center;
 }
 .dot {
-  width: 7px; height: 7px;
-  background: #666;
-  border-radius: 50%;
+  width: 7px; height: 7px; background: #666; border-radius: 50%;
   animation: dotpulse 1.2s ease-in-out infinite;
 }
 .dot:nth-child(2) { animation-delay: 0.2s; }
@@ -351,8 +247,7 @@ html, body {
 
 <!-- ══════════ HOME ══════════ -->
 <div class="screen active" id="home">
-
-  <div class="home-header" id="homeHeader">
+  <div class="home-header">
     <span class="home-title" id="homeTitle">Siri</span>
     <button class="txbtn txbtn-sm" id="btnSettings" onclick="openSettings()">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -360,7 +255,6 @@ html, body {
         <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
       </svg>
     </button>
-    <!-- done btn (editing mode) -->
     <button class="txbtn txbtn-sm" id="btnDone" style="display:none;" onclick="exitEditing()">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="20 6 9 17 4 12"/>
@@ -369,18 +263,16 @@ html, body {
   </div>
 
   <div class="home-scroll" id="homeScroll">
-    <div class="cards-grid" id="cardsGrid">
-      <!-- populated by JS -->
-    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
   </div>
 
   <div class="home-bottom">
-    <button class="txbtn txbtn-lg" onclick="openChat('')">
+    <button class="txbtn txbtn-lg" onclick="openNewChat()">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
       </svg>
     </button>
-    <button class="txbtn txbtn-lg" onclick="openChat('')">
+    <button class="txbtn txbtn-lg" onclick="openNewChat()">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
@@ -389,23 +281,54 @@ html, body {
 </div>
 
 <!-- ══════════ SETTINGS ══════════ -->
-<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOutside(event)">
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-backdrop" onclick="closeSettings()"></div>
   <div class="settings-sheet">
-    <div class="settings-handle"></div>
-    <div class="settings-title">About</div>
-    <div class="settings-row">
-      Siri <span>Version 1.0 RC</span>
+    <div class="settings-topbar">
+      <span class="settings-heading">Settings</span>
+      <button class="txbtn txbtn-sm settings-close" onclick="closeSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
-    <div class="settings-title" style="margin-top:8px;">Build</div>
-    <div class="settings-row">
-      <span>ios27-siri-pwa · 2026</span>
+
+    <div class="settings-body">
+      <div class="settings-section-label">About</div>
+      <div class="settings-group">
+        <div class="settings-item">
+          <div class="settings-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <span class="settings-item-label">Apple Intelligence Core</span>
+          <span class="settings-item-value">2.1.2(3)</span>
+        </div>
+        <a class="settings-item" href="/help.html">
+          <div class="settings-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <span class="settings-item-label">Help &amp; Feedback</span>
+          <div class="settings-item-chevron">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </a>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- ══════════ CHAT ══════════ -->
 <div class="screen" id="chat">
-
   <div class="chat-header">
     <button class="txbtn txbtn-sm" onclick="goHome()">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -444,38 +367,53 @@ html, body {
 </div>
 
 <script>
-// ── state ──
-let chats = [];
+// ── Storage ──
+function loadChats() {
+  try { return JSON.parse(localStorage.getItem('siri_chats') || '[]'); } catch { return []; }
+}
+function saveChats(arr) {
+  try { localStorage.setItem('siri_chats', JSON.stringify(arr)); } catch {}
+}
+
+let chats = loadChats();
 let editingMode = false;
 let longPressTimer = null;
+let currentChatId = null;
 
-const sampleAnswer = `Apple Park, also known as Apple Campus 2, is the corporate headquarters of Apple Inc., located in Cupertino, California, United States. It was opened to employees in April 2017, while construction was still underway.`;
+const SAMPLE_ANSWER = `Apple Park, also known as Apple Campus 2, is the corporate headquarters of Apple Inc., located in Cupertino, California, United States. It was opened to employees in April 2017, while construction was still underway.`;
 
-// ── render cards ──
+function formatDate(ts) {
+  const d = new Date(ts), now = new Date();
+  const diff = now - d;
+  if (diff < 86400000 && d.getDate() === now.getDate()) return 'Today';
+  if (diff < 172800000) return 'Yesterday';
+  return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+}
+
+// ── Render cards ──
 function renderCards() {
   const grid = document.getElementById('cardsGrid');
   grid.innerHTML = '';
+
   chats.forEach((chat, i) => {
     const card = document.createElement('div');
     card.className = 'card' + (editingMode ? ' wobble' : '');
-    card.dataset.index = i;
 
     card.innerHTML = `
       <button class="card-delete" onclick="deleteChat(event,${i})">
-        <svg viewBox="0 0 14 14" fill="none" stroke="#ff3b30" stroke-width="2.2" stroke-linecap="round">
+        <svg viewBox="0 0 14 14" fill="none" stroke="#ff3b30" stroke-width="2.4" stroke-linecap="round">
           <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
         </svg>
       </button>
-      <div class="card-date">${chat.date}</div>
-      <div class="card-title">${chat.title}</div>
-      <div class="card-preview">${chat.preview}</div>
+      <div class="card-date">${formatDate(chat.ts)}</div>
+      <div class="card-title">${escHtml(chat.title)}</div>
+      <div class="card-preview">${escHtml(chat.preview)}</div>
     `;
 
     if (!editingMode) {
-      card.addEventListener('click', () => openChat(chat.title));
+      card.addEventListener('click', () => openChatById(chat.id));
     }
 
-    // long press
     card.addEventListener('pointerdown', startLongPress);
     card.addEventListener('pointerup', cancelLongPress);
     card.addEventListener('pointercancel', cancelLongPress);
@@ -484,80 +422,63 @@ function renderCards() {
     grid.appendChild(card);
   });
 
-  // show/hide editing UI
+  grid.classList.toggle('editing-mode', editingMode);
+  document.getElementById('homeScroll').classList.toggle('editing-mode', editingMode);
   document.getElementById('homeTitle').style.display = editingMode ? 'none' : '';
   document.getElementById('btnSettings').style.display = editingMode ? 'none' : '';
   document.getElementById('btnDone').style.display = editingMode ? '' : 'none';
-  document.getElementById('homeScroll').classList.toggle('editing-mode', editingMode);
-  grid.classList.toggle('editing-mode', editingMode);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function startLongPress(e) {
   cancelLongPress();
   longPressTimer = setTimeout(() => {
-    if (!editingMode) {
-      editingMode = true;
-      renderCards();
-    }
-  }, 500);
+    if (!editingMode) { editingMode = true; renderCards(); }
+  }, 480);
 }
-function cancelLongPress() {
-  clearTimeout(longPressTimer);
-}
-
-function exitEditing() {
-  editingMode = false;
-  renderCards();
-}
+function cancelLongPress() { clearTimeout(longPressTimer); }
+function exitEditing() { editingMode = false; renderCards(); }
 
 function deleteChat(e, i) {
   e.stopPropagation();
   chats.splice(i, 1);
+  saveChats(chats);
   renderCards();
   if (chats.length === 0) exitEditing();
 }
 
-// ── chat ──
-function openChat(question) {
+// ── Open new empty chat ──
+function openNewChat() {
   exitEditing();
+  currentChatId = null;
   document.getElementById('home').classList.remove('active');
   document.getElementById('chat').classList.add('active');
+  document.getElementById('chatMessages').innerHTML = '';
+  document.getElementById('chatInput').value = '';
+  toggleSendMic();
+}
+
+// ── Open existing chat ──
+function openChatById(id) {
+  const chat = chats.find(c => c.id === id);
+  if (!chat) return;
+  exitEditing();
+  currentChatId = id;
+  document.getElementById('home').classList.remove('active');
+  document.getElementById('chat').classList.add('active');
+
   const msgs = document.getElementById('chatMessages');
   msgs.innerHTML = '';
-
-  if (question) {
-    const ub = document.createElement('div');
-    ub.className = 'bubble-user';
-    ub.textContent = question;
-    msgs.appendChild(ub);
-
-    const typing = document.createElement('div');
-    typing.className = 'bubble-typing';
-    typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-    msgs.appendChild(typing);
-    msgs.scrollTop = msgs.scrollHeight;
-
-    setTimeout(() => {
-      typing.remove();
-      const ab = document.createElement('div');
-      ab.className = 'bubble-ai';
-      ab.textContent = sampleAnswer;
-      msgs.appendChild(ab);
-      msgs.scrollTop = msgs.scrollHeight;
-
-      // save to chats if not already there
-      const exists = chats.some(c => c.title === question);
-      if (!exists) {
-        const now = new Date();
-        chats.unshift({
-          title: question,
-          preview: sampleAnswer.slice(0, 60) + '…',
-          date: 'Today'
-        });
-      }
-    }, 900);
-  }
-
+  (chat.messages || []).forEach(m => {
+    const el = document.createElement('div');
+    el.className = m.role === 'user' ? 'bubble-user' : 'bubble-ai';
+    el.textContent = m.text;
+    msgs.appendChild(el);
+  });
+  msgs.scrollTop = msgs.scrollHeight;
   document.getElementById('chatInput').value = '';
   toggleSendMic();
 }
@@ -568,7 +489,7 @@ function goHome() {
   renderCards();
 }
 
-// ── send ──
+// ── Send ──
 const chatInput = document.getElementById('chatInput');
 const btnMic = document.getElementById('btnMic');
 const btnSend = document.getElementById('btnSend');
@@ -579,20 +500,23 @@ function toggleSendMic() {
   btnSend.style.display = has ? 'flex' : 'none';
 }
 chatInput.addEventListener('input', toggleSendMic);
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
 
 function sendMessage() {
   const val = chatInput.value.trim();
   if (!val) return;
+
   const msgs = document.getElementById('chatMessages');
 
+  // user bubble
   const ub = document.createElement('div');
   ub.className = 'bubble-user';
   ub.textContent = val;
   msgs.appendChild(ub);
-
   chatInput.value = '';
   toggleSendMic();
 
+  // typing
   const typing = document.createElement('div');
   typing.className = 'bubble-typing';
   typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
@@ -601,32 +525,54 @@ function sendMessage() {
 
   setTimeout(() => {
     typing.remove();
+
     const ab = document.createElement('div');
     ab.className = 'bubble-ai';
-    ab.textContent = sampleAnswer;
+    ab.textContent = SAMPLE_ANSWER;
     msgs.appendChild(ab);
     msgs.scrollTop = msgs.scrollHeight;
+
+    // save / update chat
+    if (currentChatId) {
+      const chat = chats.find(c => c.id === currentChatId);
+      if (chat) {
+        chat.messages.push({ role: 'user', text: val });
+        chat.messages.push({ role: 'ai', text: SAMPLE_ANSWER });
+        chat.ts = Date.now();
+      }
+    } else {
+      // new chat
+      const id = 'chat_' + Date.now();
+      currentChatId = id;
+      const newChat = {
+        id,
+        title: val.length > 50 ? val.slice(0, 50) + '…' : val,
+        preview: SAMPLE_ANSWER.slice(0, 62) + '…',
+        ts: Date.now(),
+        messages: [
+          { role: 'user', text: val },
+          { role: 'ai', text: SAMPLE_ANSWER }
+        ]
+      };
+      chats.unshift(newChat);
+    }
+    saveChats(chats);
   }, 900);
 }
-chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
 
-// ── settings ──
+// ── Settings ──
 function openSettings() {
   document.getElementById('settingsOverlay').classList.add('open');
 }
-function closeSettingsOutside(e) {
-  if (e.target === document.getElementById('settingsOverlay')) {
-    document.getElementById('settingsOverlay').classList.remove('open');
-  }
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
 }
 
-// ── block pinch zoom ──
+// ── Block pinch zoom & context menu ──
 document.addEventListener('touchstart', e => {
   if (e.touches.length > 1) e.preventDefault();
 }, { passive: false });
 document.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
-
-// ── block context menu ──
 document.addEventListener('contextmenu', e => e.preventDefault());
 
 // init
