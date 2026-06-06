@@ -89,16 +89,42 @@ html, body {
 .txbtn {
   border-radius: 50%;
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
-  border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  transition: transform 0.50s cubic-bezier(0.2, 0.9, 0.4, 1.1), filter 0.50s ease;
+  will-change: transform, filter;
+  transition: transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1), filter 0.25s ease;
 }
+
 .txbtn:active {
-  transform: scale(1.18);
-  filter: brightness(1.9);
-  transition: transform 0.50s ease-out, filter 0.50s ease-out;
+  transform: scale(1.12);
+  filter: brightness(1.5);
+  transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.4, 1.1), filter 0.08s ease;
 }
+
+/* Анимация для быстрого нажатия через JS */
+.txbtn-animate {
+  animation: btnPop 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+}
+
+@keyframes btnPop {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  40% {
+    transform: scale(1.12);
+    filter: brightness(1.5);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
 .txbtn-sm { width: 44px; height: 44px; }
 .txbtn-sm svg { width: 19px; height: 19px; }
 .txbtn-md { width: 44px; height: 44px; }
@@ -254,13 +280,13 @@ html, body {
 <div class="screen active" id="home">
   <div class="home-header">
     <span class="home-title" id="homeTitle">Siri</span>
-    <button class="txbtn txbtn-sm" id="btnSettings" onclick="openSettings()">
+    <button class="txbtn txbtn-sm" id="btnSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
       </svg>
     </button>
-    <button class="txbtn txbtn-sm" id="btnDone" style="display:none;" onclick="exitEditing()">
+    <button class="txbtn txbtn-sm" id="btnDone" style="display:none;">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
@@ -272,12 +298,12 @@ html, body {
   </div>
 
   <div class="home-bottom">
-    <button class="txbtn txbtn-lg" onclick="openNewChat()">
+    <button class="txbtn txbtn-lg" id="newChatBtn1">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
       </svg>
     </button>
-    <button class="txbtn txbtn-lg" onclick="openNewChat()">
+    <button class="txbtn txbtn-lg" id="newChatBtn2">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
@@ -287,11 +313,11 @@ html, body {
 
 <!-- ══════════ SETTINGS ══════════ -->
 <div class="settings-overlay" id="settingsOverlay">
-  <div class="settings-backdrop" onclick="closeSettings()"></div>
+  <div class="settings-backdrop"></div>
   <div class="settings-sheet">
     <div class="settings-topbar">
       <span class="settings-heading">Settings</span>
-      <button class="txbtn txbtn-sm settings-close" onclick="closeSettings()">
+      <button class="txbtn txbtn-sm settings-close" id="settingsCloseBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
@@ -335,7 +361,7 @@ html, body {
 <!-- ══════════ CHAT ══════════ -->
 <div class="screen" id="chat">
   <div class="chat-header">
-    <button class="txbtn txbtn-sm" onclick="goHome()">
+    <button class="txbtn txbtn-sm" id="goHomeBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
@@ -362,7 +388,7 @@ html, body {
           <path d="M5 10a7 7 0 0014 0M12 19v3M8 22h8"/>
         </svg>
       </button>
-      <button class="txbtn txbtn-md btn-send" id="btnSend" onclick="sendMessage()">
+      <button class="txbtn txbtn-md btn-send" id="btnSend">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
         </svg>
@@ -395,6 +421,27 @@ function formatDate(ts) {
   return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 }
 
+// ── Button animation helper ──
+function animateButton(btn) {
+  if (!btn || btn.classList.contains('txbtn-animate')) return;
+  btn.classList.add('txbtn-animate');
+  btn.addEventListener('animationend', () => {
+    btn.classList.remove('txbtn-animate');
+  }, { once: true });
+}
+
+// ── Wrap function with animation ──
+function wrapWithAnimation(fn) {
+  return function(btn) {
+    return function(...args) {
+      if (btn && btn instanceof HTMLElement) {
+        animateButton(btn);
+      }
+      return fn.apply(this, args);
+    };
+  };
+}
+
 // ── Render cards ──
 function renderCards() {
   const grid = document.getElementById('cardsGrid');
@@ -405,7 +452,7 @@ function renderCards() {
     card.className = 'card' + (editingMode ? ' wobble' : '');
 
     card.innerHTML = `
-      <button class="card-delete" onclick="deleteChat(event,${i})">
+      <button class="card-delete" data-delete-index="${i}">
         <svg viewBox="0 0 14 14" fill="none" stroke="#ff3b30" stroke-width="2.4" stroke-linecap="round">
           <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
         </svg>
@@ -423,6 +470,15 @@ function renderCards() {
     card.addEventListener('pointerup', cancelLongPress);
     card.addEventListener('pointercancel', cancelLongPress);
     card.addEventListener('pointermove', cancelLongPress);
+
+    const deleteBtn = card.querySelector('.card-delete');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(deleteBtn.getAttribute('data-delete-index'));
+        deleteChat(e, idx);
+      });
+    }
 
     grid.appendChild(card);
   });
@@ -572,6 +628,65 @@ function openSettings() {
 function closeSettings() {
   document.getElementById('settingsOverlay').classList.remove('open');
 }
+
+// ── Setup all buttons with animation ──
+function setupButtonWithAnimation(selector, handler) {
+  const btn = document.querySelector(selector);
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      animateButton(btn);
+      handler(e);
+    });
+  }
+}
+
+// Setup all textured buttons
+document.querySelectorAll('.txbtn').forEach(btn => {
+  // Skip input area buttons (they should not have animation)
+  if (btn.closest('.input-bar') || btn.id === 'btnAttach' || btn.id === 'btnMic' || btn.id === 'btnSend') {
+    return;
+  }
+  
+  btn.addEventListener('click', (e) => {
+    // Don't animate if already animating
+    if (btn.classList.contains('txbtn-animate')) return;
+    animateButton(btn);
+  });
+});
+
+// Specific button handlers
+document.getElementById('btnSettings')?.addEventListener('click', (e) => {
+  openSettings();
+});
+
+document.getElementById('btnDone')?.addEventListener('click', (e) => {
+  exitEditing();
+});
+
+document.getElementById('newChatBtn1')?.addEventListener('click', (e) => {
+  openNewChat();
+});
+
+document.getElementById('newChatBtn2')?.addEventListener('click', (e) => {
+  openNewChat();
+});
+
+document.getElementById('settingsCloseBtn')?.addEventListener('click', (e) => {
+  closeSettings();
+});
+
+document.querySelector('.settings-backdrop')?.addEventListener('click', (e) => {
+  closeSettings();
+});
+
+document.getElementById('goHomeBtn')?.addEventListener('click', (e) => {
+  goHome();
+});
+
+document.getElementById('btnSend')?.addEventListener('click', (e) => {
+  sendMessage();
+});
 
 // ── Block pinch zoom & context menu ──
 document.addEventListener('touchstart', e => {
