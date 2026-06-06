@@ -63,22 +63,31 @@ html, body {
   100% { transform: rotate(1.5deg)  scale(0.97); }
 }
 
+/* FIX: card-delete не должна перекрывать соседние карточки — overflow:visible на родителе */
 .card-delete {
   position: absolute; top: -9px; left: -9px;
   width: 28px; height: 28px; border-radius: 50%;
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
   border: none; cursor: pointer;
-  display: none; align-items: center; justify-content: center; z-index: 10;
+  display: none; align-items: center; justify-content: center;
+  z-index: 10;
+  /* Убираем любой фон-подложку */
+  box-shadow: none;
 }
 .card-delete svg { width: 12px; height: 12px; }
 .editing-mode .card-delete { display: flex; }
+
+/* cards-grid должна иметь overflow visible чтобы delete-кнопка не обрезалась */
+.cards-grid { overflow: visible; }
+/* Но home-scroll скрывает overflow-x — нужно добавить padding чтобы кнопка не обрезалась */
+.home-scroll { padding-top: 10px; }
 
 .card-date { font-size: 11px; color: #666; margin-bottom: 5px; }
 .card-title { font-size: 14px; font-weight: 600; line-height: 1.3; color: #fff; margin-bottom: 6px; letter-spacing: -0.15px; }
 .card-preview { font-size: 12px; color: #777; line-height: 1.4; }
 
 .home-bottom {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
   height: 120px; display: flex; align-items: center;
   justify-content: space-between; padding: 0 32px 32px;
   background: linear-gradient(to top, #000 60%, transparent);
@@ -86,7 +95,7 @@ html, body {
 }
 .home-bottom button { pointer-events: all; }
 
-/* ══ BUTTONS ══ */
+/* ══ BUTTONS — keyframe tap animation ══ */
 .txbtn {
   border-radius: 50%;
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
@@ -96,12 +105,19 @@ html, body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1), filter 0.2s ease;
+  /* Нет transition — иначе мешает keyframe */
 }
 
-.txbtn:active {
-  transform: scale(1.12);
-  filter: brightness(1.5);
+.txbtn.tapped {
+  animation: btnTap 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes btnTap {
+  0%   { transform: scale(1);    filter: brightness(1); }
+  22%  { transform: scale(1.20); filter: brightness(1.65); }
+  55%  { transform: scale(1.06); filter: brightness(1.22); }
+  80%  { transform: scale(0.98); filter: brightness(1.05); }
+  100% { transform: scale(1);    filter: brightness(1); }
 }
 
 .txbtn-sm { width: 44px; height: 44px; }
@@ -194,8 +210,8 @@ html, body {
 .chat-header { flex-shrink: 0; padding: 14px 16px 10px; display: flex; align-items: center; background: transparent; }
 .chat-messages {
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; padding: 6px 16px 12px;
-  display: flex; flex-direction: column; gap: 12px;
+  scrollbar-width: none; padding: 6px 0 12px;
+  display: flex; flex-direction: column; gap: 16px;
 }
 .chat-messages::-webkit-scrollbar { display: none; }
 .chat-input-area {
@@ -222,19 +238,55 @@ html, body {
 .input-field::placeholder { color: rgba(255,255,255,0.42); }
 .btn-send { display: none; }
 
+/* ══ CHAT BUBBLES ══ */
+
+/* Пузырь пользователя — точно как на скриншоте Siri */
+.bubble-user-wrap {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 16px;
+}
+
 .bubble-user {
-  align-self: flex-end; background: #2c2c2e; color: #fff;
-  padding: 12px 16px; border-radius: 20px 20px 5px 20px;
-  font-size: 15px; max-width: 78%; line-height: 1.45;
+  background: #3a3a3c;
+  color: #fff;
+  padding: 11px 16px;
+  border-radius: 20px;
+  font-size: 17px;
+  max-width: 78%;
+  line-height: 1.4;
+  position: relative;
+  /* Хвостик справа-снизу */
 }
+
+/* Хвостик пузыря юзера (правый нижний угол) */
+.bubble-user::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  background: #3a3a3c;
+  /* clip-path рисует форму хвостика */
+  clip-path: polygon(0 0, 0% 100%, 100% 100%);
+  border-bottom-right-radius: 2px;
+}
+
+/* Ответ ИИ — без пузыря, во всю ширину */
 .bubble-ai {
-  align-self: flex-start; background: #1c1c1e; color: #fff;
-  padding: 14px 16px; border-radius: 5px 20px 20px 20px;
-  font-size: 15px; max-width: 92%; line-height: 1.5;
+  align-self: flex-start;
+  color: #fff;
+  padding: 4px 20px;
+  font-size: 17px;
+  line-height: 1.55;
+  width: 100%;
 }
+
+/* Typing indicator */
 .bubble-typing {
-  align-self: flex-start; background: #1c1c1e;
-  padding: 14px 18px; border-radius: 5px 20px 20px 20px;
+  align-self: flex-start; 
+  padding: 14px 20px;
   display: flex; gap: 5px; align-items: center;
 }
 .dot {
@@ -480,15 +532,28 @@ function openChatById(id) {
 
   const msgs = document.getElementById('chatMessages');
   msgs.innerHTML = '';
-  (chat.messages || []).forEach(m => {
-    const el = document.createElement('div');
-    el.className = m.role === 'user' ? 'bubble-user' : 'bubble-ai';
-    el.textContent = m.text;
-    msgs.appendChild(el);
-  });
+  (chat.messages || []).forEach(m => appendMessage(m.role, m.text));
   msgs.scrollTop = msgs.scrollHeight;
   document.getElementById('chatInput').value = '';
   toggleSendMic();
+}
+
+function appendMessage(role, text) {
+  const msgs = document.getElementById('chatMessages');
+  if (role === 'user') {
+    const wrap = document.createElement('div');
+    wrap.className = 'bubble-user-wrap';
+    const bub = document.createElement('div');
+    bub.className = 'bubble-user';
+    bub.textContent = text;
+    wrap.appendChild(bub);
+    msgs.appendChild(wrap);
+  } else {
+    const el = document.createElement('div');
+    el.className = 'bubble-ai';
+    el.textContent = text;
+    msgs.appendChild(el);
+  }
 }
 
 function goHome() {
@@ -515,10 +580,7 @@ function sendMessage() {
 
   const msgs = document.getElementById('chatMessages');
 
-  const ub = document.createElement('div');
-  ub.className = 'bubble-user';
-  ub.textContent = val;
-  msgs.appendChild(ub);
+  appendMessage('user', val);
   chatInput.value = '';
   toggleSendMic();
 
@@ -530,11 +592,7 @@ function sendMessage() {
 
   setTimeout(() => {
     typing.remove();
-
-    const ab = document.createElement('div');
-    ab.className = 'bubble-ai';
-    ab.textContent = SAMPLE_ANSWER;
-    msgs.appendChild(ab);
+    appendMessage('ai', SAMPLE_ANSWER);
     msgs.scrollTop = msgs.scrollHeight;
 
     if (currentChatId) {
@@ -570,6 +628,21 @@ function closeSettings() {
   document.getElementById('settingsOverlay').classList.remove('open');
 }
 
+/* ══ BUTTON TAP ANIMATION ══ */
+function initTapAnimation() {
+  document.querySelectorAll('.txbtn').forEach(btn => {
+    btn.addEventListener('pointerdown', () => {
+      btn.classList.remove('tapped');
+      /* Форсируем reflow чтобы анимация перезапустилась */
+      void btn.offsetWidth;
+      btn.classList.add('tapped');
+    });
+    btn.addEventListener('animationend', () => {
+      btn.classList.remove('tapped');
+    });
+  });
+}
+
 document.getElementById('btnSettings')?.addEventListener('click', () => openSettings());
 document.getElementById('btnDone')?.addEventListener('click', () => exitEditing());
 document.getElementById('newChatBtn1')?.addEventListener('click', () => openNewChat());
@@ -586,6 +659,7 @@ document.addEventListener('gesturestart', e => e.preventDefault(), { passive: fa
 document.addEventListener('contextmenu', e => e.preventDefault());
 
 renderCards();
+initTapAnimation();
 </script>
 </body>
 </html>
