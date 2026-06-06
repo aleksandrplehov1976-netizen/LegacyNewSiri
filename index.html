@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Siri</title>
@@ -16,9 +16,17 @@ html, body {
   font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
   color: #fff;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-x pan-y;
 }
 
-/* ── SCREENS ── */
+/* allow selection only inside bubbles */
+.bubble-user, .bubble-ai {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
 .screen {
   position: fixed;
   inset: 0;
@@ -34,20 +42,15 @@ html, body {
   pointer-events: all;
 }
 
-/* ══════════════════════════════
-   HOME SCREEN
-══════════════════════════════ */
-#home {
-  display: flex;
-  flex-direction: column;
-}
+/* ══ HOME ══ */
+#home { display: flex; flex-direction: column; }
 
 .home-header {
   flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 56px 20px 14px;
+  padding: 14px 18px 12px;
 }
 
 .home-title {
@@ -56,41 +59,68 @@ html, body {
   letter-spacing: -0.6px;
 }
 
-/* scrollable cards area */
 .home-scroll {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 0 14px 130px;
+  padding: 0 12px 130px;
 }
 .home-scroll::-webkit-scrollbar { display: none; }
 
-/* cards grid */
 .cards-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
+/* card */
 .card {
   background: #1c1c1e;
   border-radius: 23px;
   padding: 14px 13px;
   cursor: pointer;
-  transition: opacity 0.12s;
   min-height: 138px;
   display: flex;
   flex-direction: column;
+  position: relative;
+  transition: opacity 0.12s;
 }
-.card:active { opacity: 0.65; }
+.card:active:not(.editing-mode .card) { opacity: 0.65; }
+
+/* wobble */
+.card.wobble {
+  animation: wobble 0.35s ease-in-out infinite alternate;
+}
+@keyframes wobble {
+  0%   { transform: rotate(-1.2deg) scale(0.985); }
+  100% { transform: rotate(1.2deg)  scale(0.985); }
+}
+
+/* delete badge */
+.card-delete {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
+  border: none;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.card-delete svg { width: 12px; height: 12px; }
+.editing-mode .card-delete { display: flex; }
 
 .card-date {
   font-size: 11px;
   color: #666;
   margin-bottom: 5px;
-  font-weight: 400;
 }
 .card-title {
   font-size: 14px;
@@ -106,45 +136,105 @@ html, body {
   line-height: 1.4;
 }
 
-/* ── floating bottom bar (HOME) ── */
+/* bottom floating bar */
 .home-bottom {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   z-index: 100;
-  height: 110px;
+  height: 120px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding-bottom: 28px;
-  background: linear-gradient(to top, #000 55%, transparent);
+  justify-content: space-between;
+  padding: 0 32px 32px;
+  background: linear-gradient(to top, #000 60%, transparent);
   pointer-events: none;
 }
 .home-bottom button { pointer-events: all; }
 
-/* ══════════════════════════════
-   CHAT SCREEN
-══════════════════════════════ */
-#chat {
+/* ══ buttons ══ */
+.txbtn {
+  border-radius: 50%;
+  background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
+  border: none;
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.12s, transform 0.1s;
 }
+.txbtn:active { opacity: 0.65; transform: scale(0.93); }
 
-/* fixed top header */
+.txbtn-sm { width: 44px; height: 44px; }
+.txbtn-sm svg { width: 19px; height: 19px; }
+
+.txbtn-md { width: 52px; height: 52px; }
+.txbtn-md svg { width: 21px; height: 21px; }
+
+.txbtn-lg { width: 68px; height: 68px; }
+.txbtn-lg svg { width: 26px; height: 26px; }
+
+/* ══ SETTINGS OVERLAY ══ */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.settings-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.settings-sheet {
+  width: 100%;
+  background: #1c1c1e;
+  border-radius: 28px 28px 0 0;
+  padding: 20px 24px 48px;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32,0.72,0,1);
+}
+.settings-overlay.open .settings-sheet { transform: translateY(0); }
+.settings-handle {
+  width: 36px; height: 4px;
+  background: #444;
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+.settings-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+.settings-row {
+  font-size: 17px;
+  color: #fff;
+  padding: 4px 0 20px;
+}
+.settings-row span { color: #888; font-size: 15px; }
+
+/* ══ CHAT ══ */
+#chat { display: flex; flex-direction: column; }
+
 .chat-header {
   flex-shrink: 0;
-  padding: 56px 16px 10px;
+  padding: 14px 16px 10px;
   display: flex;
   align-items: center;
 }
 
-/* scrollable messages */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   padding: 6px 16px 12px;
@@ -154,21 +244,17 @@ html, body {
 }
 .chat-messages::-webkit-scrollbar { display: none; }
 
-/* fixed input at bottom */
 .chat-input-area {
   flex-shrink: 0;
   padding: 10px 14px 36px;
   background: linear-gradient(to top, #000 70%, transparent);
 }
-
-/* ── input row ── */
 .input-row {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* The Ask Siri bar itself */
 .input-bar {
   flex: 1;
   height: 44px;
@@ -178,13 +264,11 @@ html, body {
   border-radius: 20px;
   overflow: hidden;
 }
-
 .input-bar-bg {
   position: absolute;
   inset: 0;
-  background: url('/src/texture-enterprompt.png') center center / 100% 100% no-repeat;
+  background: url('/src/texture-enterprompt.png') center/100% 100% no-repeat;
 }
-
 .input-field {
   position: relative;
   z-index: 2;
@@ -197,41 +281,14 @@ html, body {
   font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
   padding: 0 14px;
   caret-color: #fff;
+  user-select: text;
+  -webkit-user-select: text;
 }
-.input-field::placeholder {
-  color: rgba(255,255,255,0.42);
-}
+.input-field::placeholder { color: rgba(255,255,255,0.42); }
 
-/* ── buttons ── */
-.txbtn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: url('/src/texture-btnssmall.png') center center / 100% 100% no-repeat;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: opacity 0.12s;
-}
-.txbtn:active { opacity: 0.65; }
-.txbtn svg { width: 20px; height: 20px; display: block; }
+.btn-send { display: none; }
 
-/* home-screen buttons slightly bigger */
-.txbtn-lg {
-  width: 58px;
-  height: 58px;
-}
-.txbtn-lg svg { width: 22px; height: 22px; }
-
-/* send button (replaces mic) */
-.btn-send {
-  display: none;
-}
-
-/* ── chat bubbles ── */
+/* bubbles */
 .bubble-user {
   align-self: flex-end;
   background: #2c2c2e;
@@ -242,7 +299,6 @@ html, body {
   max-width: 78%;
   line-height: 1.45;
 }
-
 .bubble-ai {
   align-self: flex-start;
   background: #1c1c1e;
@@ -253,11 +309,9 @@ html, body {
   max-width: 92%;
   line-height: 1.5;
 }
-
 .bubble-ai-source {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
   background: #2c2c2e;
   border-radius: 8px;
   padding: 3px 9px;
@@ -265,19 +319,31 @@ html, body {
   color: #aaa;
   margin-top: 10px;
 }
-
-.bubble-ai-img {
-  margin-top: 10px;
-  border-radius: 12px;
-  overflow: hidden;
-  width: 100%;
-}
+.bubble-ai-img { margin-top: 10px; border-radius: 12px; overflow: hidden; }
 .bubble-ai-img img { width: 100%; display: block; }
-.bubble-ai-img-caption {
-  background: #2c2c2e;
-  padding: 8px 12px;
-  font-size: 12px;
-  color: #999;
+.bubble-ai-img-caption { background: #2c2c2e; padding: 8px 12px; font-size: 12px; color: #999; }
+
+/* typing indicator */
+.bubble-typing {
+  align-self: flex-start;
+  background: #1c1c1e;
+  padding: 14px 18px;
+  border-radius: 5px 20px 20px 20px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.dot {
+  width: 7px; height: 7px;
+  background: #666;
+  border-radius: 50%;
+  animation: dotpulse 1.2s ease-in-out infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotpulse {
+  0%,80%,100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
 }
 </style>
 </head>
@@ -286,57 +352,29 @@ html, body {
 <!-- ══════════ HOME ══════════ -->
 <div class="screen active" id="home">
 
-  <div class="home-header">
-    <span class="home-title">Siri</span>
-    <button class="txbtn" style="width:44px;height:44px;" onclick="">
-      <!-- menu icon baked into texture -->
+  <div class="home-header" id="homeHeader">
+    <span class="home-title" id="homeTitle">Siri</span>
+    <button class="txbtn txbtn-sm" id="btnSettings" onclick="openSettings()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+    </button>
+    <!-- done btn (editing mode) -->
+    <button class="txbtn txbtn-sm" id="btnDone" style="display:none;" onclick="exitEditing()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
     </button>
   </div>
 
-  <div class="home-scroll">
-    <div class="cards-grid">
-
-      <div class="card" onclick="openChat('Top Hotels on the Amalfi Coast')">
-        <div class="card-date">Today</div>
-        <div class="card-title">Top Hotels on the Amalfi Coast</div>
-        <div class="card-preview">Le Sirenuse, Santa Caterina and il San Pietro have dramatic cliffside views.</div>
-      </div>
-
-      <div class="card" onclick="openChat('Where to Eat Near Apple Park in Cupertino')">
-        <div class="card-date">Yesterday</div>
-        <div class="card-title">Where to Eat Near Apple Park in Cupertino</div>
-        <div class="card-preview">Locals love BJ's Restaurant & Brewhouse, Ramen Nagi and Ettan.</div>
-      </div>
-
-      <div class="card" onclick="openChat('Apple\'s Priorities for Upcoming Foldable iPhone')">
-        <div class="card-date">Yesterday</div>
-        <div class="card-title">Apple's Priorities for Upcoming Foldable iPhone</div>
-        <div class="card-preview">Apple is planning industry-leading durability and an iPad-like app experience.</div>
-      </div>
-
-      <div class="card" onclick="openChat('Best Sushi Spots in Tokyo for First-Time Visitors')">
-        <div class="card-date">05/11/2026</div>
-        <div class="card-title">Best Sushi Spots in Tokyo for First-Time Visitors</div>
-        <div class="card-preview">Sukiyabashi Jiro, Sushi Saito and Umi top the list.</div>
-      </div>
-
-      <div class="card" onclick="openChat('Porsche Taycan Features Worth Paying Extra For')">
-        <div class="card-date">05/10/2026</div>
-        <div class="card-title">Porsche Taycan Features Worth Paying Extra For</div>
-        <div class="card-preview">Performance package, rear-axle steering, and matrix LED headlights.</div>
-      </div>
-
-      <div class="card" onclick="openChat('Top 25 NBA Stars Under 25 Ranked in 2026')">
-        <div class="card-date">05/07/2026</div>
-        <div class="card-title">Top 25 NBA Stars Under 25 Ranked in 2026</div>
-        <div class="card-preview">Victor Wembanyama leads the next generation.</div>
-      </div>
-
+  <div class="home-scroll" id="homeScroll">
+    <div class="cards-grid" id="cardsGrid">
+      <!-- populated by JS -->
     </div>
   </div>
 
-  <!-- floating bottom btns -->
-  <div class="home-bottom" id="homeBottom">
+  <div class="home-bottom">
     <button class="txbtn txbtn-lg" onclick="openChat('')">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/>
@@ -348,14 +386,28 @@ html, body {
       </svg>
     </button>
   </div>
+</div>
 
+<!-- ══════════ SETTINGS ══════════ -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOutside(event)">
+  <div class="settings-sheet">
+    <div class="settings-handle"></div>
+    <div class="settings-title">About</div>
+    <div class="settings-row">
+      Siri <span>Version 1.0 RC</span>
+    </div>
+    <div class="settings-title" style="margin-top:8px;">Build</div>
+    <div class="settings-row">
+      <span>ios27-siri-pwa · 2026</span>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════ CHAT ══════════ -->
 <div class="screen" id="chat">
 
   <div class="chat-header">
-    <button class="txbtn" style="width:44px;height:44px;" onclick="goHome()">
+    <button class="txbtn txbtn-sm" onclick="goHome()">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
@@ -364,76 +416,148 @@ html, body {
 
   <div class="chat-messages" id="chatMessages"></div>
 
-  <!-- fixed input -->
   <div class="chat-input-area">
     <div class="input-row">
-
-      <!-- attach left -->
-      <button class="txbtn" id="btnAttach">
+      <button class="txbtn txbtn-md" id="btnAttach">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.42 16.41a2 2 0 01-2.83-2.83l8.49-8.48"/>
         </svg>
       </button>
-
-      <!-- ask siri bar -->
       <div class="input-bar">
         <div class="input-bar-bg"></div>
-        <input
-          class="input-field"
-          id="chatInput"
-          type="text"
-          placeholder="Ask Siri"
-          autocomplete="off"
-          autocorrect="off"
-          spellcheck="false"
-        />
+        <input class="input-field" id="chatInput" type="text" placeholder="Ask Siri"
+          autocomplete="off" autocorrect="off" spellcheck="false"/>
       </div>
-
-      <!-- mic (default) / send (when typing) -->
-      <button class="txbtn" id="btnMic">
+      <button class="txbtn txbtn-md" id="btnMic">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="2" width="6" height="11" rx="3"/>
           <path d="M5 10a7 7 0 0014 0M12 19v3M8 22h8"/>
         </svg>
       </button>
-      <button class="txbtn btn-send" id="btnSend" onclick="sendMessage()">
+      <button class="txbtn txbtn-md btn-send" id="btnSend" onclick="sendMessage()">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
         </svg>
       </button>
-
     </div>
   </div>
-
 </div>
 
 <script>
-const sampleAnswer = `Apple Park, also known as Apple Campus 2, is the corporate headquarters of Apple Inc., located in Cupertino, California, United States. It was opened to employees in April 2017, while construction was still underway. It replaced Apple Campus as the company's corporate headquarters.`;
+// ── state ──
+let chats = [];
+let editingMode = false;
+let longPressTimer = null;
 
+const sampleAnswer = `Apple Park, also known as Apple Campus 2, is the corporate headquarters of Apple Inc., located in Cupertino, California, United States. It was opened to employees in April 2017, while construction was still underway.`;
+
+// ── render cards ──
+function renderCards() {
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+  chats.forEach((chat, i) => {
+    const card = document.createElement('div');
+    card.className = 'card' + (editingMode ? ' wobble' : '');
+    card.dataset.index = i;
+
+    card.innerHTML = `
+      <button class="card-delete" onclick="deleteChat(event,${i})">
+        <svg viewBox="0 0 14 14" fill="none" stroke="#ff3b30" stroke-width="2.2" stroke-linecap="round">
+          <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+        </svg>
+      </button>
+      <div class="card-date">${chat.date}</div>
+      <div class="card-title">${chat.title}</div>
+      <div class="card-preview">${chat.preview}</div>
+    `;
+
+    if (!editingMode) {
+      card.addEventListener('click', () => openChat(chat.title));
+    }
+
+    // long press
+    card.addEventListener('pointerdown', startLongPress);
+    card.addEventListener('pointerup', cancelLongPress);
+    card.addEventListener('pointercancel', cancelLongPress);
+    card.addEventListener('pointermove', cancelLongPress);
+
+    grid.appendChild(card);
+  });
+
+  // show/hide editing UI
+  document.getElementById('homeTitle').style.display = editingMode ? 'none' : '';
+  document.getElementById('btnSettings').style.display = editingMode ? 'none' : '';
+  document.getElementById('btnDone').style.display = editingMode ? '' : 'none';
+  document.getElementById('homeScroll').classList.toggle('editing-mode', editingMode);
+  grid.classList.toggle('editing-mode', editingMode);
+}
+
+function startLongPress(e) {
+  cancelLongPress();
+  longPressTimer = setTimeout(() => {
+    if (!editingMode) {
+      editingMode = true;
+      renderCards();
+    }
+  }, 500);
+}
+function cancelLongPress() {
+  clearTimeout(longPressTimer);
+}
+
+function exitEditing() {
+  editingMode = false;
+  renderCards();
+}
+
+function deleteChat(e, i) {
+  e.stopPropagation();
+  chats.splice(i, 1);
+  renderCards();
+  if (chats.length === 0) exitEditing();
+}
+
+// ── chat ──
 function openChat(question) {
+  exitEditing();
   document.getElementById('home').classList.remove('active');
   document.getElementById('chat').classList.add('active');
-
-  const q = question || '';
   const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML = '';
 
-  if (q) {
-    msgs.innerHTML = `
-      <div class="bubble-user">${q}</div>
-      <div class="bubble-ai">
-        ${sampleAnswer}
-        <div><span class="bubble-ai-source">Wikipedia +2</span></div>
-        <div class="bubble-ai-img">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Apple_Park_site_January_2017.jpg/640px-Apple_Park_site_January_2017.jpg" alt="Apple Park" />
-          <div class="bubble-ai-img-caption">The Apple Park campus</div>
-        </div>
-      </div>
-    `;
-  } else {
-    msgs.innerHTML = '';
+  if (question) {
+    const ub = document.createElement('div');
+    ub.className = 'bubble-user';
+    ub.textContent = question;
+    msgs.appendChild(ub);
+
+    const typing = document.createElement('div');
+    typing.className = 'bubble-typing';
+    typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+    msgs.appendChild(typing);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    setTimeout(() => {
+      typing.remove();
+      const ab = document.createElement('div');
+      ab.className = 'bubble-ai';
+      ab.textContent = sampleAnswer;
+      msgs.appendChild(ab);
+      msgs.scrollTop = msgs.scrollHeight;
+
+      // save to chats if not already there
+      const exists = chats.some(c => c.title === question);
+      if (!exists) {
+        const now = new Date();
+        chats.unshift({
+          title: question,
+          preview: sampleAnswer.slice(0, 60) + '…',
+          date: 'Today'
+        });
+      }
+    }, 900);
   }
 
-  setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
   document.getElementById('chatInput').value = '';
   toggleSendMic();
 }
@@ -441,47 +565,72 @@ function openChat(question) {
 function goHome() {
   document.getElementById('chat').classList.remove('active');
   document.getElementById('home').classList.add('active');
+  renderCards();
 }
 
-// mic ↔ send toggle
+// ── send ──
 const chatInput = document.getElementById('chatInput');
 const btnMic = document.getElementById('btnMic');
 const btnSend = document.getElementById('btnSend');
 
 function toggleSendMic() {
-  const hasText = chatInput.value.trim().length > 0;
-  btnMic.style.display = hasText ? 'none' : 'flex';
-  btnSend.style.display = hasText ? 'flex' : 'none';
+  const has = chatInput.value.trim().length > 0;
+  btnMic.style.display = has ? 'none' : 'flex';
+  btnSend.style.display = has ? 'flex' : 'none';
 }
-
 chatInput.addEventListener('input', toggleSendMic);
 
 function sendMessage() {
   const val = chatInput.value.trim();
   if (!val) return;
   const msgs = document.getElementById('chatMessages');
-  // append user bubble
+
   const ub = document.createElement('div');
   ub.className = 'bubble-user';
   ub.textContent = val;
   msgs.appendChild(ub);
+
   chatInput.value = '';
   toggleSendMic();
-  // append AI bubble after short delay
+
+  const typing = document.createElement('div');
+  typing.className = 'bubble-typing';
+  typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
   setTimeout(() => {
+    typing.remove();
     const ab = document.createElement('div');
     ab.className = 'bubble-ai';
     ab.textContent = sampleAnswer;
     msgs.appendChild(ab);
     msgs.scrollTop = msgs.scrollHeight;
-  }, 600);
-  msgs.scrollTop = msgs.scrollHeight;
+  }, 900);
+}
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+
+// ── settings ──
+function openSettings() {
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+function closeSettingsOutside(e) {
+  if (e.target === document.getElementById('settingsOverlay')) {
+    document.getElementById('settingsOverlay').classList.remove('open');
+  }
 }
 
-chatInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') sendMessage();
-});
-</script>
+// ── block pinch zoom ──
+document.addEventListener('touchstart', e => {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+document.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
 
+// ── block context menu ──
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// init
+renderCards();
+</script>
 </body>
 </html>
