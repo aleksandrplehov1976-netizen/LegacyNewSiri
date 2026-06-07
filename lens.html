@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Photo Search</title>
+<title>Поиск по фото</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -15,74 +15,38 @@
     justify-content: center;
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-    gap: 20px;
+    gap: 18px;
     overflow: hidden;
   }
-
-  /* ── PERMISSION ── */
-  #permission-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 999;
-  }
-  #permission-overlay.hidden { display: none; }
-
-  .perm-card {
-    background: rgba(30,30,32,0.97);
-    border-radius: 14px;
-    width: 270px;
-    overflow: hidden;
-  }
-  .perm-body { padding: 20px 16px 4px; text-align: center; }
-  .perm-icon {
-    width: 56px; height: 56px;
-    background: rgba(255,255,255,0.07);
-    border-radius: 14px;
-    margin: 0 auto 12px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .perm-icon svg { width: 30px; height: 30px; }
-  .perm-card h3 { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 6px; line-height: 1.4; }
-  .perm-card p  { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.4; margin-bottom: 16px; }
-  .perm-divider { height: 0.5px; background: rgba(255,255,255,0.15); }
-  .perm-btns { display: flex; }
-  .perm-btn {
-    flex: 1; padding: 14px 0;
-    background: none; border: none;
-    font-family: inherit; font-size: 17px;
-    cursor: pointer; color: #0a84ff;
-  }
-  .perm-btn.deny { border-right: 0.5px solid rgba(255,255,255,0.15); font-weight: 400; }
-  .perm-btn.allow { font-weight: 600; }
 
   /* ── VIEWFINDER BOX ── */
   .viewfinder-box {
     position: relative;
-    width: 340px;
-    height: 680px;
-    border-radius: 44px;
+    width: 400px;
+    height: 780px;
+    border-radius: 52px;
     overflow: hidden;
-    background: #111;
+    background: #000;
+    /* hidden until camera ready */
     opacity: 0;
-    transform: scale(0.3) translateY(120px);
+    transform: scale(0.28) translateY(160px);
     transition: none;
   }
   .viewfinder-box.animate-in {
-    animation: zoomFadeIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: boxIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
-  @keyframes zoomFadeIn {
-    0%   { opacity: 0; transform: scale(0.3) translateY(120px); }
-    100% { opacity: 1; transform: scale(1) translateY(0px); }
+  @keyframes boxIn {
+    0%   { opacity: 0; transform: scale(0.28) translateY(160px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
   }
 
   video {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
     object-fit: cover;
+    display: block;
   }
+
   canvas#preview {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
@@ -93,20 +57,23 @@
   /* ── BUTTONS ROW ── */
   .buttons-row {
     position: absolute;
-    bottom: 36px; left: 0; right: 0;
+    bottom: 40px; left: 0; right: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 32px;
+    gap: 36px;
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transform: scale(0.8);
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .buttons-row.show { opacity: 1; }
-  @keyframes fadeIn { to { opacity: 1; } }
+  .buttons-row.show {
+    opacity: 1;
+    transform: scale(1);
+  }
 
   .side-btn {
     position: relative;
-    width: 56px; height: 56px;
+    width: 60px; height: 60px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
@@ -120,18 +87,18 @@
     display: flex; align-items: center; justify-content: center;
     pointer-events: none;
   }
-  .side-btn .icon-overlay svg { width: 22px; height: 22px; }
-  .side-btn:active { transform: scale(0.92); transition: transform .1s; }
+  .side-btn .icon-overlay svg { width: 24px; height: 24px; }
+  .side-btn:active { transform: scale(0.9); transition: transform .1s; }
 
   .shutter-btn {
-    width: 80px; height: 80px;
+    width: 88px; height: 88px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     padding: 0; background: none; border: none;
     user-select: none;
   }
   .shutter-btn img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  .shutter-btn:active { transform: scale(0.94); transition: transform .1s; }
+  .shutter-btn:active { transform: scale(0.93); transition: transform .1s; }
 
   /* ── FLASH ── */
   .flash-overlay {
@@ -148,27 +115,29 @@
     border: none; border-radius: 30px;
     color: #fff; font-family: inherit;
     font-size: 17px; font-weight: 400;
-    padding: 12px 56px; cursor: pointer;
+    padding: 13px 60px; cursor: pointer;
+    letter-spacing: -0.1px;
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transform: scale(0.85);
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .close-pill.show { opacity: 1; }
+  .close-pill.show { opacity: 1; transform: scale(1); }
 
   /* ── RESULTS SHEET ── */
   #results-sheet {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    background: rgba(16,16,16,0.97);
+    background: rgba(14,14,14,0.97);
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
-    border-radius: 20px 20px 44px 44px;
-    padding: 14px 18px 36px;
+    border-radius: 24px 24px 52px 52px;
+    padding: 14px 18px 40px;
     display: none;
     flex-direction: column;
     gap: 12px;
     z-index: 20;
     transform: translateY(100%);
-    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
   #results-sheet.visible { display: flex; }
   #results-sheet.up { transform: translateY(0); }
@@ -179,79 +148,55 @@
     border-radius: 2px; margin: 0 auto 4px;
   }
   .sheet-thumb {
-    width: 100%; height: 110px;
-    border-radius: 12px; object-fit: cover;
+    width: 100%; height: 120px;
+    border-radius: 14px; object-fit: cover;
     background: #222;
   }
-  .sheet-title { font-size: 14px; font-weight: 600; color: #fff; }
+  .sheet-title { font-size: 15px; font-weight: 600; color: #fff; }
   .sheet-sub   { font-size: 12px; color: rgba(255,255,255,0.38); margin-top: 2px; }
 
   .engines {
     display: flex; flex-direction: column;
-    border-radius: 12px; overflow: hidden;
+    border-radius: 14px; overflow: hidden;
     background: rgba(255,255,255,0.05);
   }
   .engine-row {
     display: flex; align-items: center;
-    padding: 13px 14px;
-    color: #fff; font-size: 15px; font-weight: 400;
+    padding: 14px 16px;
+    color: #fff; font-size: 16px; font-weight: 400;
     border-bottom: 0.5px solid rgba(255,255,255,0.07);
     cursor: pointer; user-select: none;
     transition: background .1s;
   }
   .engine-row:last-child { border-bottom: none; }
   .engine-row span { flex: 1; }
-  .engine-row .chev { color: rgba(255,255,255,0.22); font-size: 13px; }
+  .engine-row .chev { color: rgba(255,255,255,0.2); font-size: 14px; }
   .engine-row:active { background: rgba(255,255,255,0.07); }
 
   .sheet-cancel {
     background: rgba(255,255,255,0.07);
-    border: none; border-radius: 12px;
+    border: none; border-radius: 14px;
     color: #fff; font-family: inherit;
-    font-size: 15px; padding: 13px;
+    font-size: 16px; padding: 14px;
     cursor: pointer; margin-top: 2px;
   }
 </style>
 </head>
 <body>
 
-<!-- PERMISSION -->
-<div id="permission-overlay">
-  <div class="perm-card">
-    <div class="perm-body">
-      <div class="perm-icon">
-        <svg viewBox="0 0 30 30" fill="none">
-          <rect x="3" y="7" width="24" height="18" rx="3.5" stroke="white" stroke-width="1.6"/>
-          <circle cx="15" cy="16" r="5" stroke="white" stroke-width="1.5"/>
-          <circle cx="15" cy="16" r="2" fill="white"/>
-          <rect x="10.5" y="5" width="9" height="4" rx="2" stroke="white" stroke-width="1.4"/>
-        </svg>
-      </div>
-      <h3>"Photo Search" WouldPORN Like to Access the Camera</h3>
-      <p>Used to capture photos for reverse image search.</p>
-    </div>
-    <div class="perm-divider"></div>
-    <div class="perm-btns">
-      <button class="perm-btn deny" onclick="denyCamera()">Don't Allow</button>
-      <button class="perm-btn allow" onclick="grantCamera()">OK</button>
-    </div>
-  </div>
-</div>
-
-<!-- VIEWFINDER -->
-<div class="viewfinder-box">
+<div class="viewfinder-box" id="vbox">
   <video id="vid" autoplay playsinline muted></video>
   <canvas id="preview"></canvas>
   <div class="flash-overlay" id="flash"></div>
 
-  <div class="buttons-row">
+  <div class="buttons-row" id="btns">
     <div class="side-btn" onclick="openGallery()">
       <img class="btn-texture" src="/src/aicamera-justbutton.png" alt="">
       <div class="icon-overlay">
-        <svg viewBox="0 0 22 22" fill="none">
-          <rect x="1.5" y="1.5" width="19" height="19" rx="4" stroke="white" stroke-width="1.5" stroke-opacity="0.8"/>
-          <path d="M1.5 15 L7 9.5 L11 13.5 L14.5 10 L20.5 16.5" stroke="white" stroke-width="1.4" stroke-opacity="0.8" stroke-linejoin="round" stroke-linecap="round"/>
-          <circle cx="15.5" cy="6.5" r="2" fill="white" fill-opacity="0.8"/>
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="1.5" y="1.5" width="21" height="21" rx="4.5" stroke="white" stroke-width="1.5" stroke-opacity="0.85"/>
+          <path d="M1.5 16.5 L7.5 10.5 L12 15 L16 11 L22.5 18" stroke="white" stroke-width="1.4" stroke-opacity="0.85" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="16.5" cy="7" r="2.2" fill="white" fill-opacity="0.85"/>
         </svg>
       </div>
     </div>
@@ -260,23 +205,22 @@
       <img src="/src/aicamera-tookphoto.png" alt="">
     </button>
 
-    <div class="side-btn" id="torch-btn" onclick="toggleTorch()">
+    <div class="side-btn" onclick="toggleTorch()">
       <img class="btn-texture" src="/src/aicamera-justbutton.png" alt="">
       <div class="icon-overlay">
-        <svg viewBox="0 0 22 22" fill="none">
-          <path d="M13 2 L5.5 12 H10.5 L9 20 L16.5 10 H11.5 L13 2Z" stroke="white" stroke-width="1.5" stroke-opacity="0.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M14 2 L6 13 H12 L10 22 L18 11 H12 L14 2Z" stroke="white" stroke-width="1.5" stroke-opacity="0.85" stroke-linejoin="round" stroke-linecap="round"/>
         </svg>
       </div>
     </div>
   </div>
 
-  <!-- RESULTS SHEET -->
   <div id="results-sheet">
     <div class="sheet-handle"></div>
     <img class="sheet-thumb" id="thumb" src="" alt="">
     <div>
-      <div class="sheet-title">Search this image</div>
-      <div class="sheet-sub">Choose a search engine — file opens automatically</div>
+      <div class="sheet-title">Поиск по изображению</div>
+      <div class="sheet-sub">Выберите поисковик</div>
     </div>
     <div class="engines">
       <div class="engine-row" onclick="searchWith('google')">
@@ -289,20 +233,18 @@
         <span>Bing Visual Search</span><span class="chev">›</span>
       </div>
       <div class="engine-row" onclick="searchWith('yandex')">
-        <span>Yandex Images</span><span class="chev">›</span>
+        <span>Яндекс Картинки</span><span class="chev">›</span>
       </div>
     </div>
-    <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+    <button class="sheet-cancel" onclick="closeSheet()">Отмена</button>
   </div>
 </div>
 
-<!-- CLOSE -->
-<button class="close-pill" onclick="closePage()">Close</button>
+<button class="close-pill" id="pill" onclick="closePage()">Закрыть</button>
 
 <input type="file" id="gallery-input" accept="image/*" style="display:none" onchange="handleFile(event)">
 <canvas id="offscreen" style="display:none"></canvas>
 
-<!-- Hidden forms for direct file POST to search engines -->
 <form id="form-google" method="POST" action="https://lens.google.com/upload" target="_blank" enctype="multipart/form-data" style="display:none">
   <input type="file" name="encoded_image" id="fi-google">
 </form>
@@ -322,32 +264,50 @@
 <script>
 let stream = null, torchOn = false, currentBlob = null;
 
-function grantCamera() {
-  document.getElementById('permission-overlay').classList.add('hidden');
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })
-    .then(s => { stream = s; document.getElementById('vid').srcObject = s; triggerAppearAnimation(); })
-    .catch(() => {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-        .then(s => { stream = s; document.getElementById('vid').srcObject = s; triggerAppearAnimation(); })
-        .catch(() => { triggerAppearAnimation(); });
+// Immediately request camera — no custom dialog
+(async function init() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } },
+      audio: false
     });
-}
+  } catch {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    } catch { return; }
+  }
 
-function triggerAppearAnimation() {
-  const box = document.querySelector('.viewfinder-box');
-  const btns = document.querySelector('.buttons-row');
-  const pill = document.querySelector('.close-pill');
+  const vid = document.getElementById('vid');
+  vid.srcObject = stream;
+
+  // Wait for video to actually be playing before animating in
+  vid.oncanplay = () => {
+    vid.oncanplay = null;
+    startAnimation();
+  };
+  // Fallback if oncanplay already fired or won't fire
+  setTimeout(() => {
+    if (document.querySelector('.viewfinder-box').style.opacity !== '1' &&
+        !document.querySelector('.viewfinder-box').classList.contains('animate-in')) {
+      startAnimation();
+    }
+  }, 800);
+})();
+
+function startAnimation() {
+  const box  = document.getElementById('vbox');
+  const btns = document.getElementById('btns');
+  const pill = document.getElementById('pill');
+
   box.classList.add('animate-in');
-  setTimeout(() => { btns.classList.add('show'); }, 500);
-  setTimeout(() => { pill.classList.add('show'); }, 600);
-}
-function denyCamera() {
-  document.getElementById('permission-overlay').classList.add('hidden');
+
+  setTimeout(() => { btns.classList.add('show'); }, 520);
+  setTimeout(() => { pill.classList.add('show'); }, 620);
 }
 
 function takePhoto() {
-  const vid = document.getElementById('vid');
-  const off = document.getElementById('offscreen');
+  const vid  = document.getElementById('vid');
+  const off  = document.getElementById('offscreen');
   const prev = document.getElementById('preview');
   const flash = document.getElementById('flash');
 
@@ -360,10 +320,7 @@ function takePhoto() {
   prev.getContext('2d').drawImage(off, 0, 0);
   prev.style.display = 'block';
 
-  off.toBlob(blob => {
-    currentBlob = blob;
-    openSheet(blob);
-  }, 'image/jpeg', 0.9);
+  off.toBlob(blob => { currentBlob = blob; openSheet(blob); }, 'image/jpeg', 0.9);
 }
 
 function openGallery() { document.getElementById('gallery-input').click(); }
@@ -384,32 +341,26 @@ function openSheet(blob) {
 function closeSheet() {
   const sheet = document.getElementById('results-sheet');
   sheet.classList.remove('up');
-  setTimeout(() => sheet.classList.remove('visible'), 380);
+  setTimeout(() => sheet.classList.remove('visible'), 400);
   document.getElementById('preview').style.display = 'none';
 }
 
-// Submit the captured blob directly via a hidden form to the chosen engine
 function searchWith(engine) {
   if (!currentBlob) return;
-
-  const fileInputId = { google: 'fi-google', tineye: 'fi-tineye', bing: 'fi-bing', yandex: 'fi-yandex' }[engine];
-  const formId      = { google: 'form-google', tineye: 'form-tineye', bing: 'form-bing', yandex: 'form-yandex' }[engine];
-
-  const fi = document.getElementById(fileInputId);
-  const form = document.getElementById(formId);
-
-  // Inject the blob as a File into the hidden input via DataTransfer
+  const ids   = { google: 'fi-google', tineye: 'fi-tineye', bing: 'fi-bing', yandex: 'fi-yandex' };
+  const forms = { google: 'form-google', tineye: 'form-tineye', bing: 'form-bing', yandex: 'form-yandex' };
+  const fi   = document.getElementById(ids[engine]);
+  const form = document.getElementById(forms[engine]);
   const dt = new DataTransfer();
   dt.items.add(new File([currentBlob], 'photo.jpg', { type: 'image/jpeg' }));
   fi.files = dt.files;
-
   form.submit();
 }
 
 function toggleTorch() {
   if (!stream) return;
   const track = stream.getVideoTracks()[0];
-  const caps = track?.getCapabilities?.();
+  const caps  = track?.getCapabilities?.();
   if (!caps?.torch) return;
   torchOn = !torchOn;
   track.applyConstraints({ advanced: [{ torch: torchOn }] });
