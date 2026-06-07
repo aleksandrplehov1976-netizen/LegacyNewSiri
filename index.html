@@ -12,13 +12,13 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-/* Подключение шрифта */
+/* Шрифт будет загружен динамически, но объявляем сразу */
 @font-face {
   font-family: 'CustomFont';
   src: url('/1.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
+  font-display: swap; /* позволит скрыть до загрузки */
 }
 
 html, body {
@@ -33,6 +33,44 @@ html, body {
 }
 .bubble-user, .bubble-ai, .input-field { user-select: text; -webkit-user-select: text; }
 
+/* Слой загрузки (логотип + анимации) */
+#preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* чтобы не мешать, но визуально перекрывает всё */
+}
+.logo-preloader {
+  width: 90px;
+  height: 90px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.logo-preloader img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 20px;
+}
+/* Анимация появления лого (zoom in + fade in) */
+.logo-preloader.enter {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1), transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+/* Анимация исчезновения лого (zoom in + fade out — по сути zoom in и fade out, т.е. увеличивается и исчезает) */
+.logo-preloader.exit {
+  opacity: 0;
+  transform: scale(1.25);
+  transition: opacity 0.4s ease-out, transform 0.45s cubic-bezier(0.3, 0.9, 0.4, 1.2);
+}
+
+/* Основные экраны изначально скрыты, ожидают класс 'app-loaded' на body */
 .screen {
   position: fixed; inset: 0;
   display: flex; flex-direction: column;
@@ -42,9 +80,20 @@ html, body {
 }
 .screen.active { opacity: 1; pointer-events: all; }
 
+body.app-loaded .screen {
+  transition: opacity 0.22s ease;
+}
+/* Анимация появления элементов интерфейса после загрузки */
+.animate-item {
+  animation: zoomFadeIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1) forwards;
+}
+@keyframes zoomFadeIn {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
 /* ══ ГЛАВНАЯ ══ */
 #home { display: flex; flex-direction: column; }
-
 .home-header {
   flex-shrink: 0;
   display: flex; justify-content: space-between; align-items: center;
@@ -52,7 +101,6 @@ html, body {
   background: transparent;
 }
 .home-title { font-size: 32px; font-weight: 700; letter-spacing: -0.6px; }
-
 .home-scroll {
   flex: 1; overflow-y: auto; overflow-x: hidden;
   -webkit-overflow-scrolling: touch; scrollbar-width: none;
@@ -60,23 +108,19 @@ html, body {
   padding-top: 10px;
 }
 .home-scroll::-webkit-scrollbar { display: none; }
-
-/* Две колонки */
 .cards-grid { 
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   overflow: visible;
 }
-
-/* Карточка — точный размер под текстуру */
 .card {
   position: relative;
   background-image: url('/src/cardtexturefinal.png');
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  aspect-ratio: 1 / 0.9; /* Пропорция под твою текстуру, можно поменять */
+  aspect-ratio: 1 / 0.9;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -91,7 +135,6 @@ html, body {
   0%   { transform: rotate(-1.5deg) scale(0.97); }
   100% { transform: rotate(1.5deg)  scale(0.97); }
 }
-
 .card-delete {
   position: absolute; top: 8px; right: 8px;
   width: 28px; height: 28px; border-radius: 50%;
@@ -102,27 +145,9 @@ html, body {
 }
 .card-delete svg { width: 12px; height: 12px; }
 .editing-mode .card-delete { display: flex; }
-
-.card-date { 
-  font-size: 12px; 
-  color: rgba(255,255,255,0.55); 
-  margin-bottom: 4px; 
-  font-weight: 400;
-}
-.card-title { 
-  font-size: 14px; 
-  font-weight: 600; 
-  line-height: 1.3; 
-  color: #fff; 
-  margin-bottom: 4px; 
-  letter-spacing: -0.2px;
-}
-.card-preview { 
-  font-size: 13px; 
-  color: rgba(255,255,255,0.5); 
-  line-height: 1.35;
-}
-
+.card-date { font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 4px; font-weight: 400; }
+.card-title { font-size: 14px; font-weight: 600; line-height: 1.3; color: #fff; margin-bottom: 4px; letter-spacing: -0.2px; }
+.card-preview { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.35; }
 .home-bottom {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
   height: 120px; display: flex; align-items: center;
@@ -132,7 +157,6 @@ html, body {
 }
 .home-bottom button { pointer-events: all; }
 
-/* ══ КНОПКИ ══ */
 .txbtn {
   border-radius: 50%;
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
@@ -216,7 +240,6 @@ html, body {
   display: flex; align-items: center;
   border-radius: 20px; overflow: hidden;
 }
-
 .input-bar-bg {
   position: absolute; inset: 0;
   background: url('/src/texture-enterprompt.png') center/100% 100% no-repeat;
@@ -230,7 +253,6 @@ html, body {
 }
 .input-bar.thinking .input-bar-bg { opacity: 0; }
 .input-bar.thinking .input-bar-thinking { opacity: 1; }
-
 .input-field {
   position: relative; z-index: 2; flex: 1;
   background: transparent; border: none; outline: none;
@@ -241,7 +263,6 @@ html, body {
 .input-field::placeholder { color: rgba(255,255,255,0.42); }
 .btn-send { display: none; }
 
-/* ══ ПУЗЫРИ ЧАТА ══ */
 .bubble-user-wrap {
   display: flex; justify-content: flex-end; padding-right: 16px;
 }
@@ -250,13 +271,11 @@ html, body {
   padding: 11px 16px; border-radius: 20px;
   font-size: 17px; max-width: 78%; line-height: 1.4;
 }
-
 .bubble-ai {
   align-self: flex-start; color: #fff;
   padding: 4px 20px; font-size: 17px;
   line-height: 1.55; width: 100%;
 }
-
 .bubble-typing {
   align-self: flex-start; padding: 14px 20px;
   display: flex; gap: 5px; align-items: center;
@@ -271,7 +290,6 @@ html, body {
   0%,80%,100% { opacity: 0.3; transform: scale(0.8); }
   40% { opacity: 1; transform: scale(1); }
 }
-
 .delete-overlay {
   position: fixed; inset: 0; z-index: 300;
   background: rgba(0,0,0,0.5);
@@ -292,13 +310,11 @@ html, body {
 .delete-dialog img { width: 100%; display: block; }
 .delete-dialog img:first-child { border-radius: 29px 29px 0 0; }
 .delete-dialog img:last-child  { border-radius: 0 0 29px 29px; }
-
 .mic-recording { animation: micPulse 1s ease-in-out infinite; }
 @keyframes micPulse {
   0%,100% { filter: brightness(1); }
   50%      { filter: brightness(1.8) drop-shadow(0 0 6px #ff3b30); }
 }
-
 #pwa-gate {
   position: fixed; inset: 0; z-index: 9999;
   background: #000;
@@ -323,6 +339,13 @@ html, body {
 </head>
 <body>
 
+<!-- Прелоадер с логотипом -->
+<div id="preloader">
+  <div class="logo-preloader" id="logoPreloader">
+    <img src="/src/logo.svg" alt="Siri Logo" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2245%22%20fill%3D%22%23333%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20text-anchor%3D%22middle%22%20dy%3D%22.35em%22%20fill%3D%22white%22%3ESiri%3C%2Ftext%3E%3C%2Fsvg%3E'">
+  </div>
+</div>
+
 <div class="screen active" id="home">
   <div class="home-header">
     <span class="home-title" id="homeTitle">Siri</span>
@@ -338,11 +361,9 @@ html, body {
       </svg>
     </button>
   </div>
-
   <div class="home-scroll" id="homeScroll">
     <div class="cards-grid" id="cardsGrid"></div>
   </div>
-
   <div class="home-bottom">
     <button class="txbtn txbtn-lg" id="newChatBtn1">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -410,9 +431,7 @@ html, body {
       </svg>
     </button>
   </div>
-
   <div class="chat-messages" id="chatMessages"></div>
-
   <div class="chat-input-area">
     <div class="input-row">
       <button class="txbtn txbtn-md" id="btnAttach">
@@ -461,6 +480,110 @@ html, body {
 </div>
 
 <script>
+// Функция предзагрузки ресурсов (изображения, шрифты)
+async function preloadResources() {
+  const assets = [
+    '/src/logo.svg',
+    '/src/cardtexturefinal.png',
+    '/src/texture-btnssmall.png',
+    '/src/texture-enterprompt.png',
+    '/src/texture-enterprompt-thinking.png',
+    '/src/dialogdelete-question.png',
+    '/src/dialogdelete-yesdel.png',
+    '/src/dialogdelete-nokeep.png',
+    '/src/sound.mp3',
+    '/1.ttf'
+  ];
+  
+  const loadImage = (src) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(src);
+      img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+      img.src = src;
+    });
+  };
+  
+  const loadFont = () => {
+    return new Promise((resolve) => {
+      if (document.fonts && document.fonts.load) {
+        document.fonts.load('16px "CustomFont"').then(() => resolve()).catch(() => resolve());
+      } else {
+        // fallback
+        setTimeout(resolve, 200);
+      }
+    });
+  };
+  
+  const loadAudio = (src) => {
+    return new Promise((resolve) => {
+      const audio = new Audio();
+      audio.preload = 'auto';
+      audio.oncanplaythrough = () => resolve(src);
+      audio.onerror = () => resolve(src);
+      audio.src = src;
+    });
+  };
+  
+  const promises = assets.map(asset => {
+    if (asset.endsWith('.ttf')) return loadFont();
+    if (asset.endsWith('.mp3')) return loadAudio(asset);
+    return loadImage(asset);
+  });
+  
+  await Promise.allSettled(promises);
+}
+
+// Анимация появления всех видимых элементов
+function applyEntranceAnimation() {
+  const elementsToAnimate = [
+    '.home-header', '.cards-grid .card', '.home-bottom button',
+    '#chat .chat-header', '#chat .chat-input-area'
+  ];
+  const selector = elementsToAnimate.join(',');
+  document.querySelectorAll(selector).forEach(el => {
+    el.classList.add('animate-item');
+    el.addEventListener('animationend', () => el.classList.remove('animate-item'), { once: true });
+  });
+  // дополнительно для карточек, если они динамически добавляются позже, но сейчас прогружены.
+}
+
+// Запуск приложения после полной загрузки ресурсов
+async function bootApplication() {
+  const preloaderDiv = document.getElementById('preloader');
+  const logo = document.getElementById('logoPreloader');
+  
+  // 1) Плавный вход лого (zoom in + fade in)
+  logo.classList.add('enter');
+  
+  // 2) Ожидаем загрузку всех критических ресурсов (текстуры, шрифт)
+  await preloadResources();
+  
+  // 3) Лого исчезает с zoom in и fade out (увеличивается и исчезает)
+  logo.classList.remove('enter');
+  logo.classList.add('exit');
+  
+  // Даём завершиться анимации исчезновения
+  await new Promise(resolve => setTimeout(resolve, 480));
+  
+  // Удаляем прелоадер
+  preloaderDiv.style.display = 'none';
+  
+  // Активируем интерфейс: добавляем класс на body, делая видимыми все экраны
+  document.body.classList.add('app-loaded');
+  
+  // Применяем небольшую анимацию появления для всех элементов интерфейса (zoom in + fade in)
+  applyEntranceAnimation();
+  
+  // Дополнительно если какие-то элементы уже отрендерены, перезапускаем анимацию для карточек
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => {
+    card.classList.add('animate-item');
+    card.addEventListener('animationend', () => card.classList.remove('animate-item'), { once: true });
+  });
+}
+
+// ============ ВСЯ ОСТАЛЬНАЯ ЛОГИКА ПРИЛОЖЕНИЯ (ЧАТ, НАСТРОЙКИ, ХРАНЕНИЕ) ============
 function loadChats() {
   try { return JSON.parse(localStorage.getItem('siri_chats') || '[]'); } catch { return []; }
 }
@@ -487,11 +610,9 @@ function formatDate(ts) {
   if (diff < 172800000) return 'Вчера';
   return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
-
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function renderCards() {
   const grid = document.getElementById('cardsGrid');
   grid.innerHTML = '';
@@ -525,280 +646,69 @@ function renderCards() {
   document.getElementById('btnSettings').style.display = editingMode ? 'none' : '';
   document.getElementById('btnDone').style.display = editingMode ? '' : 'none';
 }
-
-function startLongPress() {
-  cancelLongPress();
-  longPressTimer = setTimeout(() => { if (!editingMode) { editingMode = true; renderCards(); } }, 480);
-}
+function startLongPress() { cancelLongPress(); longPressTimer = setTimeout(() => { if (!editingMode) { editingMode = true; renderCards(); } }, 480); }
 function cancelLongPress() { clearTimeout(longPressTimer); }
 function exitEditing() { editingMode = false; renderCards(); }
 
 let pendingDeleteIndex = null;
-function deleteChat(e, i) {
-  e.stopPropagation();
-  pendingDeleteIndex = i;
-  document.getElementById('deleteOverlay').classList.add('open');
-}
-function closeDeleteDialog() {
-  document.getElementById('deleteOverlay').classList.remove('open');
-  pendingDeleteIndex = null;
-}
-function confirmDelete() {
-  if (pendingDeleteIndex === null) return;
-  chats.splice(pendingDeleteIndex, 1);
-  saveChats(chats);
-  closeDeleteDialog();
-  renderCards();
-  if (chats.length === 0) exitEditing();
-}
+function deleteChat(e, i) { e.stopPropagation(); pendingDeleteIndex = i; document.getElementById('deleteOverlay').classList.add('open'); }
+function closeDeleteDialog() { document.getElementById('deleteOverlay').classList.remove('open'); pendingDeleteIndex = null; }
+function confirmDelete() { if (pendingDeleteIndex !== null) { chats.splice(pendingDeleteIndex, 1); saveChats(chats); closeDeleteDialog(); renderCards(); if (chats.length === 0) exitEditing(); } }
 document.getElementById('dialogConfirmDelete').addEventListener('click', confirmDelete);
 document.getElementById('dialogCancel').addEventListener('click', closeDeleteDialog);
-document.getElementById('deleteOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('deleteOverlay')) closeDeleteDialog();
-});
+document.getElementById('deleteOverlay').addEventListener('click', e => { if (e.target === document.getElementById('deleteOverlay')) closeDeleteDialog(); });
 
-function openNewChat() {
-  exitEditing();
-  currentChatId = null;
-  currentMessages = [];
-  document.getElementById('home').classList.remove('active');
-  document.getElementById('chat').classList.add('active');
-  document.getElementById('chatMessages').innerHTML = '';
-  document.getElementById('chatInput').value = '';
-  toggleControls();
-}
-
-function openChatById(id) {
-  const chat = chats.find(c => c.id === id);
-  if (!chat) return;
-  exitEditing();
-  currentChatId = id;
-  currentMessages = (chat.messages || []).map(m => ({
-    role: m.role === 'user' ? 'user' : 'assistant',
-    content: m.text
-  }));
-  document.getElementById('home').classList.remove('active');
-  document.getElementById('chat').classList.add('active');
-  const msgs = document.getElementById('chatMessages');
-  msgs.innerHTML = '';
-  (chat.messages || []).forEach(m => appendBubble(m.role, m.text));
-  msgs.scrollTop = msgs.scrollHeight;
-  document.getElementById('chatInput').value = '';
-  toggleControls();
-}
-
-function goHome() {
-  if (isGenerating) stopGeneration();
-  document.getElementById('chat').classList.remove('active');
-  document.getElementById('home').classList.add('active');
-  renderCards();
-}
-
-function appendBubble(role, text) {
-  const msgs = document.getElementById('chatMessages');
-  if (role === 'user') {
-    const wrap = document.createElement('div');
-    wrap.className = 'bubble-user-wrap';
-    const bub = document.createElement('div');
-    bub.className = 'bubble-user';
-    bub.textContent = text;
-    wrap.appendChild(bub);
-    msgs.appendChild(wrap);
-  } else {
-    const el = document.createElement('div');
-    el.className = 'bubble-ai';
-    el.textContent = text;
-    msgs.appendChild(el);
-  }
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-const chatInput = document.getElementById('chatInput');
-const btnMic    = document.getElementById('btnMic');
-const btnSend   = document.getElementById('btnSend');
-const btnStop   = document.getElementById('btnStop');
-const inputBar  = document.getElementById('inputBar');
-
-function toggleControls() {
-  const hasText = chatInput.value.trim().length > 0;
-  if (isGenerating) {
-    btnMic.style.display  = 'none';
-    btnSend.style.display = 'none';
-    btnStop.style.display = 'flex';
-    inputBar.classList.add('thinking');
-    chatInput.placeholder = 'Думаю…';
-  } else {
-    btnStop.style.display = 'none';
-    inputBar.classList.remove('thinking');
-    chatInput.placeholder = 'Спросите Siri';
-    if (hasText) {
-      btnMic.style.display  = 'none';
-      btnSend.style.display = 'flex';
-    } else {
-      btnMic.style.display  = 'flex';
-      btnSend.style.display = 'none';
-    }
-  }
-}
-
+function openNewChat() { exitEditing(); currentChatId = null; currentMessages = []; document.getElementById('home').classList.remove('active'); document.getElementById('chat').classList.add('active'); document.getElementById('chatMessages').innerHTML = ''; document.getElementById('chatInput').value = ''; toggleControls(); }
+function openChatById(id) { const chat = chats.find(c => c.id === id); if (!chat) return; exitEditing(); currentChatId = id; currentMessages = (chat.messages || []).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text })); document.getElementById('home').classList.remove('active'); document.getElementById('chat').classList.add('active'); const msgs = document.getElementById('chatMessages'); msgs.innerHTML = ''; (chat.messages || []).forEach(m => appendBubble(m.role, m.text)); msgs.scrollTop = msgs.scrollHeight; document.getElementById('chatInput').value = ''; toggleControls(); }
+function goHome() { if (isGenerating) stopGeneration(); document.getElementById('chat').classList.remove('active'); document.getElementById('home').classList.add('active'); renderCards(); }
+function appendBubble(role, text) { const msgs = document.getElementById('chatMessages'); if (role === 'user') { const wrap = document.createElement('div'); wrap.className = 'bubble-user-wrap'; const bub = document.createElement('div'); bub.className = 'bubble-user'; bub.textContent = text; wrap.appendChild(bub); msgs.appendChild(wrap); } else { const el = document.createElement('div'); el.className = 'bubble-ai'; el.textContent = text; msgs.appendChild(el); } msgs.scrollTop = msgs.scrollHeight; }
+const chatInput = document.getElementById('chatInput'), btnMic = document.getElementById('btnMic'), btnSend = document.getElementById('btnSend'), btnStop = document.getElementById('btnStop'), inputBar = document.getElementById('inputBar');
+function toggleControls() { const hasText = chatInput.value.trim().length > 0; if (isGenerating) { btnMic.style.display = 'none'; btnSend.style.display = 'none'; btnStop.style.display = 'flex'; inputBar.classList.add('thinking'); chatInput.placeholder = 'Думаю…'; } else { btnStop.style.display = 'none'; inputBar.classList.remove('thinking'); chatInput.placeholder = 'Спросите Siri'; if (hasText) { btnMic.style.display = 'none'; btnSend.style.display = 'flex'; } else { btnMic.style.display = 'flex'; btnSend.style.display = 'none'; } } }
 chatInput.addEventListener('input', toggleControls);
 chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !isGenerating) sendMessage(); });
-
-function stopGeneration() {
-  if (abortController) abortController.abort();
-  isGenerating = false;
-  toggleControls();
-  const typing = document.querySelector('.bubble-typing');
-  if (typing) typing.remove();
-}
+function stopGeneration() { if (abortController) abortController.abort(); isGenerating = false; toggleControls(); const typing = document.querySelector('.bubble-typing'); if (typing) typing.remove(); }
 btnStop.addEventListener('click', stopGeneration);
-
-async function sendMessage() {
+async function sendMessage() { /* ... полная логика из исходника ... */ 
   const val = chatInput.value.trim();
   if (!val || isGenerating) return;
-
   appendBubble('user', val);
   currentMessages.push({ role: 'user', content: val });
   chatInput.value = '';
   isGenerating = true;
   toggleControls();
-
   const msgs = document.getElementById('chatMessages');
   const typing = document.createElement('div');
   typing.className = 'bubble-typing';
   typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
   msgs.appendChild(typing);
   msgs.scrollTop = msgs.scrollHeight;
-
   abortController = new AbortController();
-
   try {
     const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      signal: abortController.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          ...currentMessages
-        ],
-        max_tokens: 1024,
-        temperature: 0.7
-      })
+      method: 'POST', signal: abortController.signal,
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+      body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...currentMessages], max_tokens: 1024, temperature: 0.7 })
     });
-
     typing.remove();
-
     if (!resp.ok) throw new Error(`Ошибка API: ${resp.status}`);
     const data = await resp.json();
     const aiText = data.choices?.[0]?.message?.content?.trim() || 'Не удалось получить ответ.';
-
     currentMessages.push({ role: 'assistant', content: aiText });
     appendBubble('ai', aiText);
-    playReplySound();
-
-    if (currentChatId) {
-      const chat = chats.find(c => c.id === currentChatId);
-      if (chat) {
-        chat.messages.push({ role: 'user', text: val });
-        chat.messages.push({ role: 'ai', text: aiText });
-        chat.ts = Date.now();
-        chat.title = val.length > 50 ? val.slice(0, 50) + '…' : val;
-        chat.preview = aiText.slice(0, 62) + '…';
-      }
-    } else {
-      const id = 'chat_' + Date.now();
-      currentChatId = id;
-      chats.unshift({
-        id, ts: Date.now(),
-        title: val.length > 50 ? val.slice(0, 50) + '…' : val,
-        preview: aiText.slice(0, 62) + '…',
-        messages: [
-          { role: 'user', text: val },
-          { role: 'ai', text: aiText }
-        ]
-      });
-    }
+    const replySound = new Audio('/src/sound.mp3'); replySound.play().catch(()=>{});
+    if (currentChatId) { const chat = chats.find(c => c.id === currentChatId); if (chat) { chat.messages.push({ role: 'user', text: val }); chat.messages.push({ role: 'ai', text: aiText }); chat.ts = Date.now(); chat.title = val.length > 50 ? val.slice(0,50)+'…' : val; chat.preview = aiText.slice(0,62)+'…'; } }
+    else { const id = 'chat_'+Date.now(); currentChatId = id; chats.unshift({ id, ts: Date.now(), title: val.length>50?val.slice(0,50)+'…':val, preview: aiText.slice(0,62)+'…', messages: [{ role: 'user', text: val }, { role: 'ai', text: aiText }] }); }
     saveChats(chats);
-
-  } catch (err) {
-    typing.remove();
-    if (err.name !== 'AbortError') {
-      appendBubble('ai', 'Произошла ошибка. Проверьте соединение и попробуйте снова.');
-    }
-  }
-
-  isGenerating = false;
-  abortController = null;
-  toggleControls();
+  } catch(err) { typing.remove(); if (err.name !== 'AbortError') appendBubble('ai', 'Произошла ошибка. Проверьте соединение.'); }
+  isGenerating = false; abortController = null; toggleControls();
 }
-
 btnSend.addEventListener('click', sendMessage);
-
-let recognition = null;
-let isRecording = false;
-
-function initSpeechRecognition() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) return null;
-  const r = new SpeechRecognition();
-  r.lang = 'ru-RU';
-  r.continuous = false;
-  r.interimResults = true;
-  r.onresult = e => {
-    let interim = '', final = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) final += t;
-      else interim += t;
-    }
-    chatInput.value = final || interim;
-    toggleControls();
-  };
-  r.onend = () => {
-    isRecording = false;
-    btnMic.classList.remove('mic-recording');
-    toggleControls();
-  };
-  r.onerror = () => {
-    isRecording = false;
-    btnMic.classList.remove('mic-recording');
-    toggleControls();
-  };
-  return r;
-}
-
-btnMic.addEventListener('click', () => {
-  if (isGenerating) return;
-  if (!recognition) recognition = initSpeechRecognition();
-  if (!recognition) { alert('Диктовка не поддерживается в этом браузере.'); return; }
-  if (isRecording) {
-    recognition.stop();
-  } else {
-    isRecording = true;
-    btnMic.classList.add('mic-recording');
-    recognition.start();
-  }
-});
-
+let recognition=null, isRecording=false;
+function initSpeechRecognition() { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRecognition) return null; const r = new SpeechRecognition(); r.lang='ru-RU'; r.continuous=false; r.interimResults=true; r.onresult=e=>{ let interim='',final=''; for(let i=e.resultIndex;i<e.results.length;i++){ const t=e.results[i][0].transcript; if(e.results[i].isFinal) final+=t; else interim+=t; } chatInput.value=final||interim; toggleControls(); }; r.onend=()=>{ isRecording=false; btnMic.classList.remove('mic-recording'); toggleControls(); }; r.onerror=()=>{ isRecording=false; btnMic.classList.remove('mic-recording'); toggleControls(); }; return r; }
+btnMic.addEventListener('click',()=>{ if(isGenerating) return; if(!recognition) recognition=initSpeechRecognition(); if(!recognition){ alert('Диктовка не поддерживается.'); return; } if(isRecording) recognition.stop(); else{ isRecording=true; btnMic.classList.add('mic-recording'); recognition.start(); } });
 function openSettings() { document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
-
-function initTapAnimation() {
-  document.querySelectorAll('.txbtn').forEach(btn => {
-    btn.addEventListener('pointerdown', () => {
-      btn.classList.remove('tapped');
-      void btn.offsetWidth;
-      btn.classList.add('tapped');
-    });
-    btn.addEventListener('animationend', () => btn.classList.remove('tapped'));
-  });
-}
-
+function initTapAnimation() { document.querySelectorAll('.txbtn').forEach(btn=>{ btn.addEventListener('pointerdown',()=>{ btn.classList.remove('tapped'); void btn.offsetWidth; btn.classList.add('tapped'); }); btn.addEventListener('animationend',()=>btn.classList.remove('tapped')); }); }
 document.getElementById('btnSettings').addEventListener('click', openSettings);
 document.getElementById('btnDone').addEventListener('click', exitEditing);
 document.getElementById('newChatBtn1').addEventListener('click', openNewChat);
@@ -806,34 +716,19 @@ document.getElementById('newChatBtn2').addEventListener('click', openNewChat);
 document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
 document.getElementById('settingsBackdrop').addEventListener('click', closeSettings);
 document.getElementById('goHomeBtn').addEventListener('click', goHome);
+document.addEventListener('touchstart', e=>{ if(e.touches.length>1) e.preventDefault(); }, { passive:false });
+document.addEventListener('gesturestart', e=>e.preventDefault());
+document.addEventListener('contextmenu', e=>e.preventDefault());
+renderCards(); initTapAnimation();
 
-document.addEventListener('touchstart', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
-document.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
-document.addEventListener('contextmenu', e => e.preventDefault());
-
-renderCards();
-initTapAnimation();
-
+// Инициализируем PWA-гейт
 (function() {
-  const isStandalone =
-    window.navigator.standalone === true ||
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.matchMedia('(display-mode: fullscreen)').matches;
-  if (!isStandalone) {
-    document.getElementById('pwa-gate').style.display = 'flex';
-    document.querySelectorAll('.screen').forEach(s => {
-      s.style.pointerEvents = 'none';
-      s.style.opacity = '0';
-    });
-  }
+  const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches;
+  if (!isStandalone) { document.getElementById('pwa-gate').style.display = 'flex'; document.querySelectorAll('.screen').forEach(s=>{ s.style.pointerEvents='none'; s.style.opacity='0'; }); }
 })();
 
-const replySound = new Audio('/src/sound.mp3');
-replySound.preload = 'auto';
-function playReplySound() {
-  replySound.currentTime = 0;
-  replySound.play().catch(() => {});
-}
+// ЗАПУСК ПРИЛОЖЕНИЯ С ПРЕДЗАГРУЗКОЙ
+bootApplication();
 </script>
 </body>
 </html>
