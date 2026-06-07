@@ -1,0 +1,15 @@
+{
+  "name": "Siri",
+  "short_name": "Siri",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/yri.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
