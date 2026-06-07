@@ -54,11 +54,11 @@ html, body {
 
 .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow: visible; }
 
-/* Текстурная карточка — без закруглений, фон из текстуры */
+/* Текстурная карточка — растягивание без сохранения пропорций */
 .card {
   position: relative;
   background-image: url('/src/cardtexturefinal.png');
-  background-size: cover;
+  background-size: 100% 100%;  /* Растягивает по ширине и высоте */
   background-position: center;
   background-repeat: no-repeat;
   min-height: 138px;
@@ -67,7 +67,6 @@ html, body {
   display: flex;
   flex-direction: column;
   transition: opacity 0.12s;
-  /* Убираем border-radius, так как текстура уже закруглена */
   border-radius: 0;
 }
 .card:active:not(.editing-mode .card) { opacity: 0.65; }
