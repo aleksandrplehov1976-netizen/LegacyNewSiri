@@ -226,9 +226,8 @@ html, body {
   position: relative; z-index: 31;
 }
 .chat-messages {
-  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; padding: 8px 0 110px;
-  display: flex; flex-direction: column; gap: 16px;
+  touch-action: pan-y; /* Разрешить вертикальную прокрутку */
+  -webkit-overflow-scrolling: touch;
 }
 .chat-messages::-webkit-scrollbar { display: none; }
 .chat-input-area {
