@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Siri">
+<link rel="apple-touch-icon" href="/yri.png">
+<link rel="manifest" href="/manifest.json">
 <title>Siri</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -258,6 +261,28 @@ html, body {
   0%,100% { filter: brightness(1); }
   50%      { filter: brightness(1.8) drop-shadow(0 0 6px #ff3b30); }
 }
+
+/* ══ ЗАГЛУШКА — не PWA ══ */
+#pwa-gate {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #000;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 32px; text-align: center;
+  gap: 20px;
+}
+#pwa-gate img {
+  width: 96px; height: 96px; border-radius: 22px;
+  margin-bottom: 4px;
+}
+#pwa-gate-title {
+  font-size: 18px; font-weight: 600;
+  color: #fff; line-height: 1.4; letter-spacing: -0.3px;
+}
+#pwa-gate-sub {
+  font-size: 13px; color: rgba(255,255,255,0.4);
+  line-height: 1.5;
+}
 </style>
 </head>
 <body>
@@ -386,6 +411,13 @@ html, body {
       </button>
     </div>
   </div>
+</div>
+
+<!-- ══ ЗАГЛУШКА PWA ══ -->
+<div id="pwa-gate">
+  <img src="/yri.png" alt="Siri">
+  <div id="pwa-gate-title">Невозможно воспользоваться интеграцией Apple Intelligence, пока Вы не добавите её на экран «Домой»</div>
+  <div id="pwa-gate-sub">(-1004)</div>
 </div>
 
 <!-- ══ ДИАЛОГ УДАЛЕНИЯ ══ -->
@@ -648,6 +680,7 @@ async function sendMessage() {
 
     currentMessages.push({ role: 'assistant', content: aiText });
     appendBubble('ai', aiText);
+    playReplySound();
 
     // Сохраняем в историю
     if (currentChatId) {
@@ -764,6 +797,30 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
 renderCards();
 initTapAnimation();
+
+/* ══ ПРОВЕРКА PWA ══ */
+(function() {
+  const isStandalone =
+    window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches;
+  if (!isStandalone) {
+    document.getElementById('pwa-gate').style.display = 'flex';
+    // Блокируем всё остальное
+    document.querySelectorAll('.screen').forEach(s => {
+      s.style.pointerEvents = 'none';
+      s.style.opacity = '0';
+    });
+  }
+})();
+
+/* ══ ЗВУК ПРИ ОТВЕТЕ ══ */
+const replySound = new Audio('/src/sound.mp3');
+replySound.preload = 'auto';
+function playReplySound() {
+  replySound.currentTime = 0;
+  replySound.play().catch(() => {});
+}
 </script>
 </body>
 </html>
