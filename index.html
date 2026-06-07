@@ -989,7 +989,13 @@ document.getElementById('newChatBtn2').addEventListener('click',openNewChat);
 document.getElementById('settingsCloseBtn').addEventListener('click',closeSettings);
 document.getElementById('settingsBackdrop').addEventListener('click',closeSettings);
 document.getElementById('goHomeBtn').addEventListener('click',goHome);
-document.addEventListener('touchstart',e=>{if(e.touches.length>1)e.preventDefault();},{passive:false});
+document.addEventListener('touchstart', e => {
+  // Не блокируем, если цель находится в прокручиваемой области
+  const isScrollable = e.target.closest('.chat-messages, .home-scroll, .settings-body');
+  if(!isScrollable && e.touches.length > 1) {
+    e.preventDefault();
+  }
+}, {passive: false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('contextmenu',e=>e.preventDefault());
 
