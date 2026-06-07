@@ -18,7 +18,7 @@
   src: url('/1.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
-  font-display: swap; /* позволит скрыть до загрузки */
+  font-display: swap;
 }
 
 html, body {
@@ -45,8 +45,9 @@ html, body {
   pointer-events: none; /* чтобы не мешать, но визуально перекрывает всё */
 }
 .logo-preloader {
-  width: 90px;
-  height: 90px;
+  width: 70px;  /* чуть поменьше */
+  height: 70px;
+  margin-top: -15vh; /* выше середины — поднимаем на 15% высоты экрана вверх */
   opacity: 0;
   transform: scale(0.8);
   transition: opacity 0.2s, transform 0.2s;
@@ -56,6 +57,7 @@ html, body {
   height: 100%;
   display: block;
   border-radius: 20px;
+  object-fit: contain;
 }
 /* Анимация появления лого (zoom in + fade in) */
 .logo-preloader.enter {
@@ -63,7 +65,7 @@ html, body {
   transform: scale(1);
   transition: opacity 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1), transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
-/* Анимация исчезновения лого (zoom in + fade out — по сути zoom in и fade out, т.е. увеличивается и исчезает) */
+/* Анимация исчезновения лого (zoom in + fade out — увеличивается и исчезает) */
 .logo-preloader.exit {
   opacity: 0;
   transform: scale(1.25);
@@ -480,7 +482,7 @@ body.app-loaded .screen {
 </div>
 
 <script>
-// Функция предзагрузки ресурсов (изображения, шрифты)
+// Функция предзагрузки ресурсов (изображения, шрифты) с таймаутом для защиты от вечного stuck
 async function preloadResources() {
   const assets = [
     '/src/logo.svg',
@@ -496,11 +498,13 @@ async function preloadResources() {
   ];
   
   const loadImage = (src) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const img = new Image();
-      img.onload = () => resolve(src);
-      img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false); // не блокируем, просто игнорируем ошибку
       img.src = src;
+      // таймаут на всякий случай, чтобы не ждать вечно
+      setTimeout(() => resolve(false), 3000);
     });
   };
   
@@ -508,8 +512,8 @@ async function preloadResources() {
     return new Promise((resolve) => {
       if (document.fonts && document.fonts.load) {
         document.fonts.load('16px "CustomFont"').then(() => resolve()).catch(() => resolve());
+        setTimeout(() => resolve(), 2000);
       } else {
-        // fallback
         setTimeout(resolve, 200);
       }
     });
@@ -519,9 +523,10 @@ async function preloadResources() {
     return new Promise((resolve) => {
       const audio = new Audio();
       audio.preload = 'auto';
-      audio.oncanplaythrough = () => resolve(src);
-      audio.onerror = () => resolve(src);
+      audio.oncanplaythrough = () => resolve(true);
+      audio.onerror = () => resolve(false);
       audio.src = src;
+      setTimeout(() => resolve(false), 2000);
     });
   };
   
@@ -531,6 +536,7 @@ async function preloadResources() {
     return loadImage(asset);
   });
   
+  // Ждём все загрузки, но даже если что-то не загрузилось — продолжаем
   await Promise.allSettled(promises);
 }
 
@@ -545,10 +551,10 @@ function applyEntranceAnimation() {
     el.classList.add('animate-item');
     el.addEventListener('animationend', () => el.classList.remove('animate-item'), { once: true });
   });
-  // дополнительно для карточек, если они динамически добавляются позже, но сейчас прогружены.
+  // дополнительно для карточек, если они динамически добавляются позже
 }
 
-// Запуск приложения после полной загрузки ресурсов
+// Запуск приложения после полной загрузки ресурсов (с принудительным таймаутом)
 async function bootApplication() {
   const preloaderDiv = document.getElementById('preloader');
   const logo = document.getElementById('logoPreloader');
@@ -556,10 +562,12 @@ async function bootApplication() {
   // 1) Плавный вход лого (zoom in + fade in)
   logo.classList.add('enter');
   
-  // 2) Ожидаем загрузку всех критических ресурсов (текстуры, шрифт)
-  await preloadResources();
+  // 2) Ожидаем загрузку всех критических ресурсов, но не более 5 секунд, чтобы избежать залипания
+  const loadPromise = preloadResources();
+  const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
+  await Promise.race([loadPromise, timeoutPromise]);
   
-  // 3) Лого исчезает с zoom in и fade out (увеличивается и исчезает)
+  // 3) Лого исчезает с zoom in и fade out
   logo.classList.remove('enter');
   logo.classList.add('exit');
   
@@ -572,10 +580,10 @@ async function bootApplication() {
   // Активируем интерфейс: добавляем класс на body, делая видимыми все экраны
   document.body.classList.add('app-loaded');
   
-  // Применяем небольшую анимацию появления для всех элементов интерфейса (zoom in + fade in)
+  // Применяем анимацию появления для элементов интерфейса
   applyEntranceAnimation();
   
-  // Дополнительно если какие-то элементы уже отрендерены, перезапускаем анимацию для карточек
+  // Дополнительно для уже отрендеренных карточек
   const cards = document.querySelectorAll('.card');
   cards.forEach(card => {
     card.classList.add('animate-item');
@@ -668,7 +676,7 @@ chatInput.addEventListener('input', toggleControls);
 chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !isGenerating) sendMessage(); });
 function stopGeneration() { if (abortController) abortController.abort(); isGenerating = false; toggleControls(); const typing = document.querySelector('.bubble-typing'); if (typing) typing.remove(); }
 btnStop.addEventListener('click', stopGeneration);
-async function sendMessage() { /* ... полная логика из исходника ... */ 
+async function sendMessage() { 
   const val = chatInput.value.trim();
   if (!val || isGenerating) return;
   appendBubble('user', val);
@@ -727,7 +735,7 @@ renderCards(); initTapAnimation();
   if (!isStandalone) { document.getElementById('pwa-gate').style.display = 'flex'; document.querySelectorAll('.screen').forEach(s=>{ s.style.pointerEvents='none'; s.style.opacity='0'; }); }
 })();
 
-// ЗАПУСК ПРИЛОЖЕНИЯ С ПРЕДЗАГРУЗКОЙ
+// ЗАПУСК ПРИЛОЖЕНИЯ С ПРЕДЗАГРУЗКОЙ (с защитой от залипания)
 bootApplication();
 </script>
 </body>
