@@ -54,11 +54,21 @@ html, body {
 
 .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow: visible; }
 
+/* Текстурная карточка — без закруглений, фон из текстуры */
 .card {
-  background: #1c1c1e; border-radius: 23px;
-  padding: 14px 13px; cursor: pointer;
-  min-height: 138px; display: flex; flex-direction: column;
-  position: relative; transition: opacity 0.12s;
+  position: relative;
+  background-image: url('/src/cardtexturefinal.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 138px;
+  padding: 14px 13px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.12s;
+  /* Убираем border-radius, так как текстура уже закруглена */
+  border-radius: 0;
 }
 .card:active:not(.editing-mode .card) { opacity: 0.65; }
 .card.wobble { animation: wobble 0.10s ease-in-out infinite alternate; }
@@ -78,9 +88,9 @@ html, body {
 .card-delete svg { width: 12px; height: 12px; }
 .editing-mode .card-delete { display: flex; }
 
-.card-date { font-size: 11px; color: #666; margin-bottom: 5px; }
+.card-date { font-size: 11px; color: rgba(255,255,255,0.55); margin-bottom: 5px; }
 .card-title { font-size: 14px; font-weight: 600; line-height: 1.3; color: #fff; margin-bottom: 6px; letter-spacing: -0.15px; }
-.card-preview { font-size: 12px; color: #777; line-height: 1.4; }
+.card-preview { font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.4; }
 
 .home-bottom {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
@@ -390,20 +400,17 @@ html, body {
         <input class="input-field" id="chatInput" type="text" placeholder="Спросите Siri"
           autocomplete="off" autocorrect="off" spellcheck="false"/>
       </div>
-      <!-- Микрофон -->
       <button class="txbtn txbtn-md" id="btnMic">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="2" width="6" height="11" rx="3"/>
           <path d="M5 10a7 7 0 0014 0M12 19v3M8 22h8"/>
         </svg>
       </button>
-      <!-- Отправить -->
       <button class="txbtn txbtn-md btn-send" id="btnSend">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
         </svg>
       </button>
-      <!-- Стоп (скрыт по умолчанию) -->
       <button class="txbtn txbtn-md" id="btnStop" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="5" y="5" width="14" height="14" rx="2"/>
@@ -413,14 +420,12 @@ html, body {
   </div>
 </div>
 
-<!-- ══ ЗАГЛУШКА PWA ══ -->
 <div id="pwa-gate">
   <img src="/yri.png" alt="Siri">
   <div id="pwa-gate-title">Невозможно воспользоваться интеграцией Apple Intelligence, пока Вы не добавите её на экран «Домой»</div>
   <div id="pwa-gate-sub">(-1004)</div>
 </div>
 
-<!-- ══ ДИАЛОГ УДАЛЕНИЯ ══ -->
 <div class="delete-overlay" id="deleteOverlay">
   <div class="delete-dialog" id="deleteDialog">
     <img src="/src/dialogdelete-question.png" alt="">
@@ -442,15 +447,14 @@ let chats = loadChats();
 let editingMode = false;
 let longPressTimer = null;
 let currentChatId = null;
-let currentMessages = []; // история для API
-let abortController = null; // для остановки генерации
+let currentMessages = [];
+let abortController = null;
 let isGenerating = false;
 
 const GROQ_API_KEY = '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';
 const GROQ_MODEL = 'openai/gpt-oss-120b';
 const SYSTEM_PROMPT = 'Ты — Siri, умный, эмпатичный AI-помощник для ежедневного общения и бизнес-задач. Ответы формируй самостоятельно, без вызова внешних функций и инструментов. На простые приветствия, реплики и светскую беседу отвечай коротко, тепло и по-человечески, как живой собеседник, не перегружая текст оформлением. Переходи к строгой структуре (заголовкам, спискам, разделителям) только при решении комплексных вопросов. Если пользователь просит сделать расчеты или аналитику, в обязательном порядке используй LaTeX-разметку ($inline$ или$$display$$) для формул. Тексты для постов пиши в сдержанном, но дружелюбном и вовлекающем стиле.';
 
-/* ══ ДАТА ══ */
 function formatDate(ts) {
   const d = new Date(ts), now = new Date();
   const diff = now - d;
@@ -459,7 +463,10 @@ function formatDate(ts) {
   return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-/* ══ КАРТОЧКИ ══ */
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function renderCards() {
   const grid = document.getElementById('cardsGrid');
   grid.innerHTML = '';
@@ -494,10 +501,6 @@ function renderCards() {
   document.getElementById('btnDone').style.display = editingMode ? '' : 'none';
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 function startLongPress() {
   cancelLongPress();
   longPressTimer = setTimeout(() => { if (!editingMode) { editingMode = true; renderCards(); } }, 480);
@@ -505,7 +508,6 @@ function startLongPress() {
 function cancelLongPress() { clearTimeout(longPressTimer); }
 function exitEditing() { editingMode = false; renderCards(); }
 
-/* ══ УДАЛЕНИЕ ══ */
 let pendingDeleteIndex = null;
 function deleteChat(e, i) {
   e.stopPropagation();
@@ -530,7 +532,6 @@ document.getElementById('deleteOverlay').addEventListener('click', e => {
   if (e.target === document.getElementById('deleteOverlay')) closeDeleteDialog();
 });
 
-/* ══ НАВИГАЦИЯ ══ */
 function openNewChat() {
   exitEditing();
   currentChatId = null;
@@ -547,7 +548,6 @@ function openChatById(id) {
   if (!chat) return;
   exitEditing();
   currentChatId = id;
-  // Восстанавливаем историю для API
   currentMessages = (chat.messages || []).map(m => ({
     role: m.role === 'user' ? 'user' : 'assistant',
     content: m.text
@@ -569,7 +569,6 @@ function goHome() {
   renderCards();
 }
 
-/* ══ ПУЗЫРИ ══ */
 function appendBubble(role, text) {
   const msgs = document.getElementById('chatMessages');
   if (role === 'user') {
@@ -589,7 +588,6 @@ function appendBubble(role, text) {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-/* ══ УПРАВЛЕНИЕ КНОПКАМИ ══ */
 const chatInput = document.getElementById('chatInput');
 const btnMic    = document.getElementById('btnMic');
 const btnSend   = document.getElementById('btnSend');
@@ -621,18 +619,15 @@ function toggleControls() {
 chatInput.addEventListener('input', toggleControls);
 chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !isGenerating) sendMessage(); });
 
-/* ══ ОСТАНОВКА ГЕНЕРАЦИИ ══ */
 function stopGeneration() {
   if (abortController) abortController.abort();
   isGenerating = false;
   toggleControls();
-  // Убираем typing-индикатор если есть
   const typing = document.querySelector('.bubble-typing');
   if (typing) typing.remove();
 }
 btnStop.addEventListener('click', stopGeneration);
 
-/* ══ ОТПРАВКА И GROQ API ══ */
 async function sendMessage() {
   const val = chatInput.value.trim();
   if (!val || isGenerating) return;
@@ -643,7 +638,6 @@ async function sendMessage() {
   isGenerating = true;
   toggleControls();
 
-  // Typing indicator
   const msgs = document.getElementById('chatMessages');
   const typing = document.createElement('div');
   typing.className = 'bubble-typing';
@@ -682,7 +676,6 @@ async function sendMessage() {
     appendBubble('ai', aiText);
     playReplySound();
 
-    // Сохраняем в историю
     if (currentChatId) {
       const chat = chats.find(c => c.id === currentChatId);
       if (chat) {
@@ -719,7 +712,6 @@ async function sendMessage() {
 
 btnSend.addEventListener('click', sendMessage);
 
-/* ══ ДИКТОВКА (Speech-to-Text) ══ */
 let recognition = null;
 let isRecording = false;
 
@@ -766,11 +758,9 @@ btnMic.addEventListener('click', () => {
   }
 });
 
-/* ══ НАСТРОЙКИ ══ */
 function openSettings() { document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 
-/* ══ АНИМАЦИЯ КНОПОК ══ */
 function initTapAnimation() {
   document.querySelectorAll('.txbtn').forEach(btn => {
     btn.addEventListener('pointerdown', () => {
@@ -782,7 +772,6 @@ function initTapAnimation() {
   });
 }
 
-/* ══ СОБЫТИЯ ══ */
 document.getElementById('btnSettings').addEventListener('click', openSettings);
 document.getElementById('btnDone').addEventListener('click', exitEditing);
 document.getElementById('newChatBtn1').addEventListener('click', openNewChat);
@@ -798,7 +787,6 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 renderCards();
 initTapAnimation();
 
-/* ══ ПРОВЕРКА PWA ══ */
 (function() {
   const isStandalone =
     window.navigator.standalone === true ||
@@ -806,7 +794,6 @@ initTapAnimation();
     window.matchMedia('(display-mode: fullscreen)').matches;
   if (!isStandalone) {
     document.getElementById('pwa-gate').style.display = 'flex';
-    // Блокируем всё остальное
     document.querySelectorAll('.screen').forEach(s => {
       s.style.pointerEvents = 'none';
       s.style.opacity = '0';
@@ -814,7 +801,6 @@ initTapAnimation();
   }
 })();
 
-/* ══ ЗВУК ПРИ ОТВЕТЕ ══ */
 const replySound = new Audio('/src/sound.mp3');
 replySound.preload = 'auto';
 function playReplySound() {
