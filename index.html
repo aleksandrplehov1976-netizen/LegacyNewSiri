@@ -9,11 +9,9 @@
 <link rel="apple-touch-icon" href="/yri.png">
 <link rel="manifest" href="/manifest.json">
 <title>Siri</title>
-<!-- KaTeX -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
-<!-- marked -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -51,7 +49,6 @@ html, body {
   color: #fff;
   overflow: hidden;
   user-select: none; -webkit-user-select: none;
-  touch-action: pan-x pan-y;
 }
 .bubble-user, .bubble-ai-content, .input-field { user-select: text; -webkit-user-select: text; }
 
@@ -62,13 +59,30 @@ html, body {
   align-items: center; justify-content: center; pointer-events: none;
 }
 .logo-preloader {
-  width: 70px; height: 70px; margin-top: -15vh;
-  opacity: 0; transform: scale(0.8);
-  transition: opacity 0.2s, transform 0.2s;
+  width: 80px; height: 80px; margin-top: -12vh;
+  opacity: 0; transform: scale(0.72);
+  will-change: opacity, transform;
 }
 .logo-preloader img { width: 100%; height: 100%; border-radius: 20px; object-fit: contain; }
-.logo-preloader.enter { opacity: 1; transform: scale(1); transition: opacity 0.35s cubic-bezier(0.2,0.9,0.4,1.1), transform 0.4s cubic-bezier(0.2,0.9,0.4,1.1); }
-.logo-preloader.exit  { opacity: 0; transform: scale(1.25); transition: opacity 0.4s ease-out, transform 0.45s cubic-bezier(0.3,0.9,0.4,1.2); }
+
+/* Apple HIG spring enter */
+.logo-preloader.enter {
+  animation: logoSpringIn 0.52s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes logoSpringIn {
+  0%   { opacity: 0; transform: scale(0.72); }
+  60%  { opacity: 1; transform: scale(1.06); }
+  80%  { transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
+}
+/* Apple HIG exit: fade + gentle zoom out */
+.logo-preloader.exit {
+  animation: logoFadeOut 0.38s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+@keyframes logoFadeOut {
+  0%   { opacity: 1; transform: scale(1); filter: blur(0px); }
+  100% { opacity: 0; transform: scale(1.18); filter: blur(4px); }
+}
 
 /* ── screens ── */
 .screen {
@@ -76,14 +90,19 @@ html, body {
   display: flex; flex-direction: column;
   background: #000;
   opacity: 0; pointer-events: none;
-  transition: opacity 0.22s ease;
+  transition: opacity 0.26s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .screen.active { opacity: 1; pointer-events: all; }
 
-.animate-item { animation: zoomFadeIn 0.35s cubic-bezier(0.2,0.9,0.3,1.1) forwards; }
-@keyframes zoomFadeIn {
-  0%   { opacity: 0; transform: scale(0.92); }
-  100% { opacity: 1; transform: scale(1); }
+/* Staggered entrance for home items */
+.home-header { animation: none; }
+.app-loaded .home-header  { animation: slideUp 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; animation-delay: 0.05s; }
+.app-loaded .cards-grid   { animation: slideUp 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; animation-delay: 0.12s; }
+.app-loaded .home-bottom  { animation: slideUp 0.44s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; animation-delay: 0.18s; }
+
+@keyframes slideUp {
+  0%   { opacity: 0; transform: translateY(18px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* ══ HOME ══ */
@@ -99,7 +118,7 @@ html, body {
   padding: 10px 12px 130px;
 }
 .home-scroll::-webkit-scrollbar { display: none; }
-.cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow: visible; }
+.cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .card {
   position: relative;
@@ -107,9 +126,10 @@ html, body {
   background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
   aspect-ratio: 1 / 0.9; cursor: pointer;
   display: flex; flex-direction: column; justify-content: flex-end;
-  transition: opacity 0.12s; padding: 14px 12px;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
+  padding: 14px 12px;
 }
-.card:active:not(.editing-mode .card) { opacity: 0.65; }
+.card:active:not(.editing-mode .card) { transform: scale(0.96); opacity: 0.75; }
 .card.wobble { animation: wobble 0.10s ease-in-out infinite alternate; }
 @keyframes wobble {
   0%   { transform: rotate(-1.5deg) scale(0.97); }
@@ -132,26 +152,50 @@ html, body {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
   height: 120px; display: flex; align-items: center;
   justify-content: space-between; padding: 0 32px 32px;
-  background: linear-gradient(to top, #000 70%, transparent);
+  background: linear-gradient(to top, #000 60%, transparent);
   pointer-events: none;
 }
 .home-bottom button { pointer-events: all; }
 
-/* ══ BUTTONS ══ */
+/* ══ BUTTONS — Liquid Glass style ══ */
 .txbtn {
-  border-radius: 50%;
+  border-radius: 1000px;
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
   border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  /* Beautiful shadow under every button texture */
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.55),
+    0 6px 24px rgba(0,0,0,0.38),
+    0 1px 2px rgba(0,0,0,0.7);
+  transition: transform 0.08s ease, filter 0.08s ease;
+  will-change: transform, filter;
 }
-.txbtn.tapped { animation: btnTap 0.45s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
-@keyframes btnTap {
-  0%   { transform: scale(1);    filter: brightness(1); }
-  22%  { transform: scale(1.20); filter: brightness(1.65); }
-  55%  { transform: scale(1.06); filter: brightness(1.22); }
-  80%  { transform: scale(0.98); filter: brightness(1.05); }
+
+/* Liquid Glass press — feels physical and responsive */
+.txbtn:active {
+  transform: scale(1.14);
+  filter: brightness(1.55) saturate(1.1);
+  box-shadow:
+    0 4px 18px rgba(0,0,0,0.5),
+    0 10px 36px rgba(0,0,0,0.3),
+    0 2px 4px rgba(0,0,0,0.65);
+  transition: transform 0.06s cubic-bezier(0.2, 0, 0.4, 1), filter 0.06s ease;
+}
+
+/* Release spring-back — the key to feeling "alive" */
+.txbtn.releasing {
+  animation: liquidRelease 0.46s cubic-bezier(0.175, 0.885, 0.32, 1.3) forwards;
+}
+@keyframes liquidRelease {
+  0%   { transform: scale(1.14); filter: brightness(1.55); }
+  40%  { transform: scale(0.96); filter: brightness(1.08); }
+  70%  { transform: scale(1.03); filter: brightness(1.02); }
   100% { transform: scale(1);    filter: brightness(1); }
 }
+
+/* Old tapped animation removed — replaced by :active + .releasing */
+
 .txbtn-sm { width: 44px; height: 44px; }
 .txbtn-sm svg { width: 19px; height: 19px; }
 .txbtn-md { width: 44px; height: 44px; }
@@ -163,18 +207,19 @@ html, body {
 .settings-overlay {
   position: fixed; inset: 0; z-index: 200;
   display: flex; align-items: flex-end;
-  opacity: 0; pointer-events: none; transition: opacity 0.45s ease;
+  opacity: 0; pointer-events: none; transition: opacity 0.38s cubic-bezier(0.4,0,0.2,1);
 }
 .settings-overlay.open { opacity: 1; pointer-events: all; }
 .settings-backdrop {
   position: absolute; inset: 0;
   background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
 .settings-sheet {
   position: relative; z-index: 1; width: 100%; height: 85vh;
   background: #1a1a1a; border-radius: 28px 28px 0 0; padding: 0 0 48px;
-  transform: translateY(100%); transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex; flex-direction: column; overflow: hidden;
 }
 .settings-overlay.open .settings-sheet { transform: translateY(0); }
@@ -200,16 +245,18 @@ html, body {
 .settings-item-chevron svg { width: 14px; height: 14px; }
 
 /* ══ CHAT ══ */
-#chat { display: flex; flex-direction: column; }
+#chat { display: flex; flex-direction: column; overflow: hidden; }
 
 .chat-top-texture {
-  position: fixed;
+  position: absolute;
   top: 0; left: 0; right: 0;
   height: 56px;
   background: url('/src/texture-always-on-top_onlyonchats_.png') top center / 100% 100% no-repeat;
   z-index: 30;
   pointer-events: none;
+  flex-shrink: 0;
 }
+
 .tts-bar {
   position: absolute;
   top: 56px; left: 0; right: 0;
@@ -220,20 +267,44 @@ html, body {
   padding: 6px 16px;
 }
 .tts-bar.active { display: flex; }
+
+/* Floating back button — no black backing, just shadow */
 .chat-header {
-  flex-shrink: 0; padding: 14px 16px 0;
-  display: flex; align-items: center;
-  position: relative; z-index: 31;
+  position: absolute;
+  top: 8px; left: 12px;
+  z-index: 32;
+  pointer-events: none;
 }
+.chat-header button {
+  pointer-events: all;
+  border-radius: 1000px !important;
+  /* Override bg so it's truly floating — uses texture but with strong shadow */
+  box-shadow:
+    0 3px 12px rgba(0,0,0,0.65),
+    0 8px 28px rgba(0,0,0,0.45),
+    0 1px 3px rgba(0,0,0,0.8) !important;
+}
+
+/* Messages scroll area — the key fix */
 .chat-messages {
-  touch-action: pan-y; /* Разрешить вертикальную прокрутку */
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* padding: top accounts for floating header + texture, bottom for input bar */
+  padding: 64px 0 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .chat-messages::-webkit-scrollbar { display: none; }
+
 .chat-input-area {
-  position: fixed; bottom: 0; left: 0; right: 0;
+  position: absolute; bottom: 0; left: 0; right: 0;
   padding: 10px 14px 36px;
   z-index: 20; pointer-events: none;
+  background: linear-gradient(to top, #000 55%, transparent);
 }
 .chat-input-area .input-row { pointer-events: all; }
 .input-row { display: flex; align-items: center; gap: 10px; position: relative; }
@@ -244,12 +315,12 @@ html, body {
 .input-bar-bg {
   position: absolute; inset: 0;
   background: url('/src/texture-enterprompt.png') center/100% 100% no-repeat;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.32s ease;
 }
 .input-bar-thinking {
   position: absolute; inset: 0;
   background: url('/src/texture-enterprompt-thinking.png') center/100% 100% no-repeat;
-  opacity: 0; transition: opacity 0.35s ease;
+  opacity: 0; transition: opacity 0.32s ease;
 }
 .input-bar.thinking .input-bar-bg { opacity: 0; }
 .input-bar.thinking .input-bar-thinking { opacity: 1; }
@@ -264,13 +335,39 @@ html, body {
 .btn-send { display: none; }
 
 /* ── Bubbles ── */
-.bubble-user-wrap { display: flex; justify-content: flex-end; padding-right: 16px; }
+/* Gap between message groups */
+.bubble-user-wrap {
+  display: flex; justify-content: flex-end;
+  padding: 2px 16px 2px;
+  animation: bubbleIn 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+}
 .bubble-user-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; max-width: 78%; }
 .bubble-user {
   background: #3a3a3c; color: #fff;
   padding: 11px 16px; border-radius: 20px;
   font-size: 17px; line-height: 1.4;
 }
+
+/* Larger gap before AI reply */
+.bubble-ai-wrap {
+  display: flex; flex-direction: column;
+  align-self: flex-start; width: 100%;
+  padding: 8px 16px 2px;
+  animation: bubbleIn 0.34s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+}
+
+/* Consecutive same-sender: tighter */
+.bubble-user-wrap + .bubble-user-wrap { padding-top: 1px; }
+.bubble-ai-wrap + .bubble-ai-wrap { padding-top: 1px; }
+/* Cross-sender: visible breathing room */
+.bubble-ai-wrap + .bubble-user-wrap,
+.bubble-user-wrap + .bubble-ai-wrap { padding-top: 10px; }
+
+@keyframes bubbleIn {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .bubble-file {
   background: #2c2c2e; color: #ccc;
   padding: 8px 13px; border-radius: 14px;
@@ -283,103 +380,51 @@ html, body {
   font-family: 'AppMono', monospace; font-size: 12px; color: #aaa;
 }
 
-/* AI bubble wrapper */
-.bubble-ai-wrap {
-  display: flex; flex-direction: column;
-  align-self: flex-start; width: 100%;
-  padding: 0 16px;
-}
 /* rendered markdown content */
 .bubble-ai-content {
   font-size: 17px; line-height: 1.55; color: #fff;
 }
-/* Markdown styles inside AI bubble */
-.bubble-ai-content h1 {
-  font-size: 22px; font-weight: 100; margin: 14px 0 8px;
-  font-family: 'AppThin', 'CustomFont', sans-serif;
-}
-.bubble-ai-content h2 {
-  font-size: 19px; font-weight: 100; margin: 12px 0 6px;
-  font-family: 'AppThin', 'CustomFont', sans-serif;
-}
-.bubble-ai-content h3 {
-  font-size: 17px; font-weight: 100; margin: 10px 0 5px;
-  font-family: 'AppThin', 'CustomFont', sans-serif;
-}
+.bubble-ai-content h1 { font-size: 22px; font-weight: 100; margin: 14px 0 8px; font-family: 'AppThin', 'CustomFont', sans-serif; }
+.bubble-ai-content h2 { font-size: 19px; font-weight: 100; margin: 12px 0 6px; font-family: 'AppThin', 'CustomFont', sans-serif; }
+.bubble-ai-content h3 { font-size: 17px; font-weight: 100; margin: 10px 0 5px; font-family: 'AppThin', 'CustomFont', sans-serif; }
 .bubble-ai-content p  { margin: 0 0 8px; }
 .bubble-ai-content p:last-child { margin-bottom: 0; }
 .bubble-ai-content ul, .bubble-ai-content ol { padding-left: 20px; margin-bottom: 8px; }
 .bubble-ai-content li { margin-bottom: 3px; }
-.bubble-ai-content strong {
-  font-weight: 700;
-  font-family: 'AppBold', 'CustomFont', sans-serif;
-}
-.bubble-ai-content em {
-  font-style: italic;
-  font-family: 'AppBookworm', 'CustomFont', sans-serif;
-}
-.bubble-ai-content code {
-  background: #1a1a1a; border-radius: 6px;
-  padding: 2px 6px; font-size: 14px;
-  font-family: 'AppMono', 'SF Mono', monospace;
-}
-.bubble-ai-content pre {
-  background: #0d0d0d; border-radius: 12px;
-  padding: 12px 14px; margin: 8px 0;
-  overflow-x: auto;
-}
-.bubble-ai-content pre code {
-  background: transparent; padding: 0; font-size: 13px;
-  font-family: 'AppMono', 'SF Mono', monospace;
-}
-.bubble-ai-content blockquote {
-  border-left: 3px solid #333;
-  padding-left: 12px; color: #888; margin: 6px 0;
-  font-family: 'AppBookworm', 'CustomFont', sans-serif;
-}
-/* Tables */
-.bubble-ai-content table {
-  border-collapse: separate; border-spacing: 0;
-  width: 100%; margin: 10px 0;
-  background: #0a0a0a; border-radius: 14px;
-  overflow: hidden; font-size: 14px;
-}
-.bubble-ai-content th {
-  background: #111; color: #fff;
-  padding: 10px 13px; text-align: left; font-weight: 600;
-  font-family: 'AppBold', 'CustomFont', sans-serif;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
+.bubble-ai-content strong { font-weight: 700; font-family: 'AppBold', 'CustomFont', sans-serif; }
+.bubble-ai-content em { font-style: italic; font-family: 'AppBookworm', 'CustomFont', sans-serif; }
+.bubble-ai-content code { background: #1a1a1a; border-radius: 6px; padding: 2px 6px; font-size: 14px; font-family: 'AppMono', 'SF Mono', monospace; }
+.bubble-ai-content pre { background: #0d0d0d; border-radius: 12px; padding: 12px 14px; margin: 8px 0; overflow-x: auto; }
+.bubble-ai-content pre code { background: transparent; padding: 0; font-size: 13px; font-family: 'AppMono', 'SF Mono', monospace; }
+.bubble-ai-content blockquote { border-left: 3px solid #333; padding-left: 12px; color: #888; margin: 6px 0; font-family: 'AppBookworm', 'CustomFont', sans-serif; }
+.bubble-ai-content table { border-collapse: separate; border-spacing: 0; width: 100%; margin: 10px 0; background: #0a0a0a; border-radius: 14px; overflow: hidden; font-size: 14px; }
+.bubble-ai-content th { background: #111; color: #fff; padding: 10px 13px; text-align: left; font-weight: 600; font-family: 'AppBold', 'CustomFont', sans-serif; border-bottom: 1px solid rgba(255,255,255,0.06); }
 .bubble-ai-content th:first-child { border-radius: 14px 0 0 0; }
 .bubble-ai-content th:last-child  { border-radius: 0 14px 0 0; }
-.bubble-ai-content td {
-  padding: 9px 13px; color: #bbb;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
+.bubble-ai-content td { padding: 9px 13px; color: #bbb; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .bubble-ai-content tr:last-child td { border-bottom: none; }
 .bubble-ai-content tr:last-child td:first-child { border-radius: 0 0 0 14px; }
 .bubble-ai-content tr:last-child td:last-child  { border-radius: 0 0 14px 0; }
 .bubble-ai-content tr:hover td { background: rgba(255,255,255,0.02); }
-
-/* KaTeX overrides for dark */
 .bubble-ai-content .katex { color: #fff; }
 .bubble-ai-content .katex-display { overflow-x: auto; padding: 6px 0; }
 
-/* action buttons under AI message */
 .bubble-ai-actions {
   display: flex; gap: 14px; margin-top: 8px; align-items: center;
 }
 .action-btn {
   background: none; border: none; cursor: pointer;
   display: flex; align-items: center; gap: 5px;
-  color: #555; padding: 0; transition: color 0.15s;
+  color: #555; padding: 0;
+  transition: color 0.18s, transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
 }
-.action-btn:active { color: #fff; }
+.action-btn:active { color: #fff; transform: scale(1.2); }
 .action-btn svg { width: 16px; height: 16px; }
 
 .bubble-typing {
   align-self: flex-start; padding: 14px 20px;
   display: flex; gap: 5px; align-items: center;
+  animation: bubbleIn 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
 }
 .dot {
   width: 7px; height: 7px; background: #666; border-radius: 50%;
@@ -398,15 +443,16 @@ html, body {
   background: rgba(0,0,0,0.5);
   display: flex; align-items: center; justify-content: center; padding: 0 20px;
   opacity: 0; pointer-events: none; transition: opacity 0.22s ease;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
 }
 .delete-overlay.open { opacity: 1; pointer-events: all; }
 .delete-dialog {
   width: 100%; max-width: 310px;
   display: flex; flex-direction: column; position: relative;
-  transform: scale(1.08); opacity: 0;
-  transition: transform 0.28s cubic-bezier(0.34,1.38,0.64,1), opacity 0.22s ease;
+  transform: scale(0.88) translateY(12px); opacity: 0;
+  transition: transform 0.32s cubic-bezier(0.34, 1.38, 0.64, 1), opacity 0.22s ease;
 }
-.delete-overlay.open .delete-dialog { transform: scale(1); opacity: 1; }
+.delete-overlay.open .delete-dialog { transform: scale(1) translateY(0); opacity: 1; }
 .delete-dialog img { width: 100%; display: block; }
 .delete-dialog img:first-child { border-radius: 29px 29px 0 0; }
 .delete-dialog img:last-child  { border-radius: 0 0 29px 29px; }
@@ -428,16 +474,9 @@ html, body {
 #pwa-gate img { width: 96px; height: 96px; border-radius: 22px; margin-bottom: 4px; }
 #pwa-gate-title { font-size: 18px; font-weight: 600; color: #fff; line-height: 1.4; letter-spacing: -0.3px; }
 #pwa-gate-sub { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.5; }
-  /* Увеличенная кнопка настроек */
-#btnSettings {
-  width: 52px;
-  height: 52px;
-}
 
-#btnSettings svg {
-  width: 24px;
-  height: 24px;
-}
+#btnSettings { width: 52px; height: 52px; }
+#btnSettings svg { width: 24px; height: 24px; }
 </style>
 </head>
 <body>
@@ -524,10 +563,9 @@ html, body {
 </div>
 
 <!-- CHAT -->
-<div class="screen" id="chat" style="position:relative;">
-  <!-- top texture -->
+<div class="screen" id="chat">
   <div class="chat-top-texture"></div>
-  <!-- TTS controls bar -->
+
   <div class="tts-bar" id="ttsBar">
     <button class="txbtn txbtn-sm" id="ttsPlayPauseBtn">
       <svg id="ttsPlayIcon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -544,6 +582,7 @@ html, body {
     </button>
   </div>
 
+  <!-- Floating back button -->
   <div class="chat-header">
     <button class="txbtn txbtn-sm" id="goHomeBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -551,7 +590,9 @@ html, body {
       </svg>
     </button>
   </div>
+
   <div class="chat-messages" id="chatMessages"></div>
+
   <div class="chat-input-area">
     <div class="input-row">
       <label class="txbtn txbtn-md" id="btnAttachLabel" style="cursor:pointer;">
@@ -615,13 +656,26 @@ async function preloadResources() {
   const loadAudio = s => new Promise(r=>{ const a=new Audio(); a.preload='auto'; a.oncanplaythrough=()=>r(true); a.onerror=()=>r(false); a.src=s; setTimeout(()=>r(false),2000); });
   await Promise.allSettled(assets.map(a=>a.endsWith('.ttf')||a.endsWith('.otf')?loadFont():a.endsWith('.mp3')?loadAudio(a):loadImg(a)));
 }
+
 async function bootApplication() {
   const logo = document.getElementById('logoPreloader');
+
+  // Apple HIG: brief pause before entering, feels intentional
+  await new Promise(r => setTimeout(r, 60));
   logo.classList.add('enter');
-  await Promise.race([preloadResources(), new Promise(r=>setTimeout(r,5000))]);
-  logo.classList.remove('enter'); logo.classList.add('exit');
-  await new Promise(r=>setTimeout(r,480));
-  document.getElementById('preloader').style.display='none';
+
+  // Load while logo is showing
+  await Promise.race([preloadResources(), new Promise(r => setTimeout(r, 4000))]);
+
+  // Minimum display time so it doesn't feel like a flash
+  await new Promise(r => setTimeout(r, 320));
+
+  logo.classList.remove('enter');
+  logo.classList.add('exit');
+  await new Promise(r => setTimeout(r, 400));
+
+  document.getElementById('preloader').style.display = 'none';
+  // Trigger staggered entrance animations
   document.body.classList.add('app-loaded');
 }
 
@@ -715,7 +769,14 @@ document.getElementById('dialogCancel').addEventListener('click',closeDeleteDial
 document.getElementById('deleteOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('deleteOverlay'))closeDeleteDialog();});
 
 // ══════════════════════ CHAT NAVIGATION ══════════════════════
-function openNewChat(){exitEditing();currentChatId=null;currentMessages=[];document.getElementById('home').classList.remove('active');document.getElementById('chat').classList.add('active');document.getElementById('chatMessages').innerHTML='';document.getElementById('chatInput').value='';stopTTS();toggleControls();}
+function openNewChat(){
+  exitEditing();currentChatId=null;currentMessages=[];
+  document.getElementById('home').classList.remove('active');
+  document.getElementById('chat').classList.add('active');
+  document.getElementById('chatMessages').innerHTML='';
+  document.getElementById('chatInput').value='';
+  stopTTS();toggleControls();
+}
 function openChatById(id){
   const chat=chats.find(c=>c.id===id);if(!chat)return;
   exitEditing();currentChatId=id;
@@ -724,10 +785,16 @@ function openChatById(id){
   document.getElementById('chat').classList.add('active');
   const msgs=document.getElementById('chatMessages');msgs.innerHTML='';
   (chat.messages||[]).forEach(m=>appendBubble(m.role,m.text));
-  msgs.scrollTop=msgs.scrollHeight;
+  // Scroll after paint
+  requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
   document.getElementById('chatInput').value='';stopTTS();toggleControls();
 }
-function goHome(){if(isGenerating)stopGeneration();stopTTS();document.getElementById('chat').classList.remove('active');document.getElementById('home').classList.add('active');renderCards();}
+function goHome(){
+  if(isGenerating)stopGeneration();stopTTS();
+  document.getElementById('chat').classList.remove('active');
+  document.getElementById('home').classList.add('active');
+  renderCards();
+}
 
 // ══════════════════════ BUBBLES ══════════════════════
 function appendBubble(role, text, isNew, fileInfo) {
@@ -762,7 +829,9 @@ function appendBubble(role, text, isNew, fileInfo) {
     wrap.appendChild(actions);
     msgs.appendChild(wrap);
   }
-  msgs.scrollTop=msgs.scrollHeight;
+  if(isNew) {
+    requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
+  }
 }
 
 // ══════════════════════ TTS ══════════════════════
@@ -810,8 +879,15 @@ const chatInput=document.getElementById('chatInput'),btnMic=document.getElementB
 
 function toggleControls(){
   const has=chatInput.value.trim().length>0;
-  if(isGenerating){btnMic.style.display='none';btnSend.style.display='none';btnStop.style.display='flex';inputBar.classList.add('thinking');chatInput.placeholder='Думаю…';}
-  else{btnStop.style.display='none';inputBar.classList.remove('thinking');chatInput.placeholder='Спросите Siri';btnMic.style.display=has?'none':'flex';btnSend.style.display=has?'flex':'none';}
+  if(isGenerating){
+    btnMic.style.display='none';btnSend.style.display='none';btnStop.style.display='flex';
+    inputBar.classList.add('thinking');chatInput.placeholder='Думаю…';
+  } else {
+    btnStop.style.display='none';inputBar.classList.remove('thinking');
+    chatInput.placeholder='Спросите Siri';
+    btnMic.style.display=has?'none':'flex';
+    btnSend.style.display=has?'flex':'none';
+  }
 }
 chatInput.addEventListener('input',toggleControls);
 
@@ -833,7 +909,8 @@ async function callAPI(val) {
   const msgs=document.getElementById('chatMessages');
   const typing=document.createElement('div');typing.className='bubble-typing';
   typing.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-  msgs.appendChild(typing);msgs.scrollTop=msgs.scrollHeight;
+  msgs.appendChild(typing);
+  requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
   abortController=new AbortController();
   try {
     const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
@@ -851,7 +928,7 @@ async function callAPI(val) {
     if(currentChatId){const chat=chats.find(c=>c.id===currentChatId);if(chat){chat.messages.push({role:'user',text:val});chat.messages.push({role:'ai',text:aiText});chat.ts=Date.now();chat.title=val.length>50?val.slice(0,50)+'…':val;chat.preview=aiText.slice(0,62)+'…';}}
     else{const id='chat_'+Date.now();currentChatId=id;chats.unshift({id,ts:Date.now(),title:val.length>50?val.slice(0,50)+'…':val,preview:aiText.slice(0,62)+'…',messages:[{role:'user',text:val},{role:'ai',text:aiText}]});}
     saveChats(chats);
-  } catch(err){typing.remove();if(err.name!=='AbortError')appendBubble('ai','Произошла ошибка. Проверьте соединение.');}
+  } catch(err){typing.remove();if(err.name!=='AbortError')appendBubble('ai','Произошла ошибка. Проверьте соединение.',true);}
   isGenerating=false;abortController=null;toggleControls();
 }
 
@@ -929,7 +1006,8 @@ async function sendMessageWithFile() {
     const bub = document.createElement('div'); bub.className = 'bubble-user'; bub.textContent = val;
     stack.appendChild(bub);
   }
-  wrap.appendChild(stack); msgs.appendChild(wrap); msgs.scrollTop = msgs.scrollHeight;
+  wrap.appendChild(stack); msgs.appendChild(wrap);
+  requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
 
   const userDisplayText = val || ('📎 ' + attachedFileName);
   const apiContent = attachedFileText
@@ -946,7 +1024,8 @@ async function sendMessageWithFile() {
   isGenerating = true; toggleControls();
   const typing = document.createElement('div'); typing.className = 'bubble-typing';
   typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-  msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight;
+  msgs.appendChild(typing);
+  requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
   abortController = new AbortController();
   try {
     const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -971,7 +1050,7 @@ async function sendMessageWithFile() {
     saveChats(chats);
   } catch(err) {
     typing.remove();
-    if (err.name!=='AbortError') appendBubble('ai','Произошла ошибка. Проверьте соединение.');
+    if (err.name!=='AbortError') appendBubble('ai','Произошла ошибка. Проверьте соединение.',true);
   }
   isGenerating=false; abortController=null; toggleControls();
 }
@@ -979,19 +1058,50 @@ async function sendMessageWithFile() {
 document.getElementById('btnSend').addEventListener('click', sendMessageWithFile);
 chatInput.addEventListener('keydown', e => { if (e.key==='Enter' && !isGenerating) sendMessageWithFile(); });
 
-// mic
+// ══════════════════════ MIC ══════════════════════
 let recognition=null,isRecording=false;
-function initSpeech(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return null;const r=new SR();r.lang='ru-RU';r.continuous=false;r.interimResults=true;r.onresult=e=>{let f='',t='';for(let i=e.resultIndex;i<e.results.length;i++){const s=e.results[i][0].transcript;if(e.results[i].isFinal)f+=s;else t+=s;}chatInput.value=f||t;toggleControls();};r.onend=()=>{isRecording=false;btnMic.classList.remove('mic-recording');toggleControls();};r.onerror=()=>{isRecording=false;btnMic.classList.remove('mic-recording');toggleControls();};return r;}
-btnMic.addEventListener('click',()=>{if(isGenerating)return;if(!recognition)recognition=initSpeech();if(!recognition){alert('Диктовка не поддерживается.');return;}if(isRecording)recognition.stop();else{isRecording=true;btnMic.classList.add('mic-recording');recognition.start();}});
+function initSpeech(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return null;
+  const r=new SR();r.lang='ru-RU';r.continuous=false;r.interimResults=true;
+  r.onresult=e=>{let f='',t='';for(let i=e.resultIndex;i<e.results.length;i++){const s=e.results[i][0].transcript;if(e.results[i].isFinal)f+=s;else t+=s;}chatInput.value=f||t;toggleControls();};
+  r.onend=()=>{isRecording=false;btnMic.classList.remove('mic-recording');toggleControls();};
+  r.onerror=()=>{isRecording=false;btnMic.classList.remove('mic-recording');toggleControls();};
+  return r;
+}
+btnMic.addEventListener('click',()=>{
+  if(isGenerating)return;
+  if(!recognition)recognition=initSpeech();
+  if(!recognition){alert('Диктовка не поддерживается.');return;}
+  if(isRecording)recognition.stop();
+  else{isRecording=true;btnMic.classList.add('mic-recording');recognition.start();}
+});
 
-// settings
+// ══════════════════════ SETTINGS ══════════════════════
 function openSettings(){document.getElementById('settingsOverlay').classList.add('open');}
 function closeSettings(){document.getElementById('settingsOverlay').classList.remove('open');}
 
-// tap animation
-function initTapAnimation(){document.querySelectorAll('.txbtn').forEach(btn=>{btn.addEventListener('pointerdown',()=>{btn.classList.remove('tapped');void btn.offsetWidth;btn.classList.add('tapped');});btn.addEventListener('animationend',()=>btn.classList.remove('tapped'));});}
+// ══════════════════════ LIQUID GLASS BUTTON INTERACTION ══════════════════════
+// Replace old tapped animation with spring-release feel
+function initButtonInteractions() {
+  document.querySelectorAll('.txbtn').forEach(btn => {
+    btn.addEventListener('pointerup', () => {
+      btn.classList.remove('releasing');
+      void btn.offsetWidth; // force reflow
+      btn.classList.add('releasing');
+    });
+    btn.addEventListener('pointercancel', () => {
+      btn.classList.remove('releasing');
+    });
+    btn.addEventListener('animationend', (e) => {
+      if (e.animationName === 'liquidRelease') {
+        btn.classList.remove('releasing');
+      }
+    });
+  });
+}
 
-// events
+// ══════════════════════ EVENTS ══════════════════════
 document.getElementById('btnSettings').addEventListener('click',openSettings);
 document.getElementById('btnDone').addEventListener('click',exitEditing);
 document.getElementById('newChatBtn1').addEventListener('click',openNewChat);
@@ -999,24 +1109,24 @@ document.getElementById('newChatBtn2').addEventListener('click',openNewChat);
 document.getElementById('settingsCloseBtn').addEventListener('click',closeSettings);
 document.getElementById('settingsBackdrop').addEventListener('click',closeSettings);
 document.getElementById('goHomeBtn').addEventListener('click',goHome);
-document.addEventListener('touchstart', e => {
-  // Не блокируем, если цель находится в прокручиваемой области
-  const isScrollable = e.target.closest('.chat-messages, .home-scroll, .settings-body');
-  if(!isScrollable && e.touches.length > 1) {
-    e.preventDefault();
-  }
-}, {passive: false});
-document.addEventListener('gesturestart',e=>e.preventDefault());
-document.addEventListener('contextmenu',e=>e.preventDefault());
+
+// Prevent pinch zoom / context menu but allow normal scroll
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
 
 // PWA gate
 (function(){
-  const standalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches;
-  if(!standalone){document.getElementById('pwa-gate').style.display='flex';document.querySelectorAll('.screen').forEach(s=>{s.style.pointerEvents='none';s.style.opacity='0';});}
+  const standalone = window.navigator.standalone===true
+    || window.matchMedia('(display-mode: standalone)').matches
+    || window.matchMedia('(display-mode: fullscreen)').matches;
+  if(!standalone){
+    document.getElementById('pwa-gate').style.display='flex';
+    document.querySelectorAll('.screen').forEach(s=>{s.style.pointerEvents='none';s.style.opacity='0';});
+  }
 })();
 
 renderCards();
-initTapAnimation();
+initButtonInteractions();
 bootApplication();
 </script>
 </body>
