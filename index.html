@@ -163,29 +163,51 @@ html, body {
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
   border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  /* Beautiful shadow under every button texture */
   box-shadow:
     0 2px 8px rgba(0,0,0,0.55),
     0 6px 24px rgba(0,0,0,0.38),
     0 1px 2px rgba(0,0,0,0.7);
-  transition: transform 0.08s ease, filter 0.08s ease;
-  will-change: transform, filter;
+  /* Button frame: only subtle scale, no brightness */
+  transition: transform 0.055s cubic-bezier(0.2, 0, 0.3, 1);
+  will-change: transform;
 }
 
-/* Liquid Glass press — instant scale+brightness on touch */
+/* SVG icon inside: dim at rest, brightens on press */
+.txbtn svg {
+  filter: brightness(0.72);
+  transition: filter 0.055s ease, drop-shadow 0.055s ease;
+  will-change: filter;
+}
+
+/* Press: frame scales up, icon goes full bright + glow */
 .txbtn:active {
-  transform: scale(1.15);
-  filter: brightness(1.6) saturate(1.1);
-  transition: transform 0.055s cubic-bezier(0.2, 0, 0.3, 1), filter 0.055s ease;
+  transform: scale(1.13);
+  transition: transform 0.055s cubic-bezier(0.2, 0, 0.3, 1);
+}
+.txbtn:active svg {
+  filter:
+    brightness(1.0)
+    drop-shadow(0 0 4px rgba(255,255,255,0.9))
+    drop-shadow(0 0 8px rgba(255,255,255,0.5));
+  transition: filter 0.04s ease;
 }
 
-/* Release — smooth linear return to normal, no bounce */
+/* Release — frame returns, icon brightness decays */
 .txbtn.releasing {
-  animation: liquidReturn 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: btnFrameReturn 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-@keyframes liquidReturn {
-  0%   { transform: scale(1.15); filter: brightness(1.6); }
-  100% { transform: scale(1);    filter: brightness(1); }
+.txbtn.releasing svg {
+  animation: iconGlowDecay 0.52s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes btnFrameReturn {
+  0%   { transform: scale(1.13); }
+  100% { transform: scale(1); }
+}
+@keyframes iconGlowDecay {
+  0%   { filter: brightness(1.0) drop-shadow(0 0 4px rgba(255,255,255,0.9)) drop-shadow(0 0 8px rgba(255,255,255,0.5)); }
+  35%  { filter: brightness(0.95) drop-shadow(0 0 2px rgba(255,255,255,0.3)); }
+  100% { filter: brightness(0.72) drop-shadow(0 0 0px rgba(255,255,255,0)); }
 }
 
 .txbtn-sm { width: 44px; height: 44px; }
@@ -428,11 +450,40 @@ html, body {
 .bubble-ai-content ul, .bubble-ai-content ol { padding-left: 20px; margin-bottom: 8px; }
 .bubble-ai-content li { margin-bottom: 3px; }
 .bubble-ai-content strong { font-weight: 700; font-family: 'AppBold', 'CustomFont', sans-serif; }
-.bubble-ai-content em { font-style: italic; font-family: 'AppBookworm', 'CustomFont', sans-serif; }
-.bubble-ai-content code { background: #1a1a1a; border-radius: 6px; padding: 2px 6px; font-size: 14px; font-family: 'AppMono', 'SF Mono', monospace; }
-.bubble-ai-content pre { background: #0d0d0d; border-radius: 12px; padding: 12px 14px; margin: 8px 0; overflow-x: auto; }
-.bubble-ai-content pre code { background: transparent; padding: 0; font-size: 13px; font-family: 'AppMono', 'SF Mono', monospace; }
-.bubble-ai-content blockquote { border-left: 3px solid #333; padding-left: 12px; color: #888; margin: 6px 0; font-family: 'AppBookworm', 'CustomFont', sans-serif; }
+.bubble-ai-content em {
+  font-style: italic;
+  font-family: 'AppBookworm', 'CustomFont', serif;
+}
+/* Blockquote — bookworm, softer color, creative/poetic feel */
+.bubble-ai-content blockquote {
+  border-left: 2px solid rgba(255,255,255,0.2);
+  padding-left: 14px; color: rgba(255,255,255,0.65);
+  margin: 10px 0;
+  font-family: 'AppBookworm', 'CustomFont', serif;
+  font-size: 16px; line-height: 1.65;
+}
+/* Creative class — added by JS when AI writes posts/stories */
+.bubble-ai-content.creative-text p,
+.bubble-ai-content.creative-text li {
+  font-family: 'AppBookworm', 'CustomFont', serif;
+  line-height: 1.7;
+}
+/* Code: mono always */
+.bubble-ai-content code {
+  background: #1a1a1a; border-radius: 6px;
+  padding: 2px 6px; font-size: 14px;
+  font-family: 'AppMono', 'SF Mono', 'Menlo', monospace;
+  color: #e2e8f0;
+}
+.bubble-ai-content pre {
+  background: #0d0d0d; border-radius: 12px;
+  padding: 12px 14px; margin: 8px 0; overflow-x: auto;
+}
+.bubble-ai-content pre code {
+  background: transparent; padding: 0; font-size: 13px;
+  font-family: 'AppMono', 'SF Mono', 'Menlo', monospace;
+  color: #cdd6f4; line-height: 1.5;
+}
 .bubble-ai-content .table-wrap {
   width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
   margin: 10px 0; border-radius: 14px;
@@ -742,43 +793,94 @@ function renderMarkdown(text) {
   const div = document.createElement('div');
   div.className = 'bubble-ai-content';
 
-  if (typeof marked !== 'undefined') {
-    marked.setOptions({ breaks: true, gfm: true });
-    div.innerHTML = marked.parse(text);
-  } else {
+  if (typeof marked === 'undefined') {
     div.textContent = text;
     return div;
   }
 
-  // Wrap all tables in a scrollable container to prevent horizontal page overflow
+  // ── Step 1: protect math blocks BEFORE marked touches them ──
+  // marked destroys \[...\] and $$...$$ by escaping backslashes & wrapping in <p>
+  // We replace them with unique placeholders, then restore after parsing.
+  const mathBlocks = [];
+  let protected_text = text;
+
+  // Display math: $$...$$ and \[...\]
+  protected_text = protected_text.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
+    const idx = mathBlocks.length;
+    mathBlocks.push({ type: 'display', math });
+    return `MATHBLOCK_${idx}_END`;
+  });
+  protected_text = protected_text.replace(/\\\[([\s\S]+?)\\\]/g, (_, math) => {
+    const idx = mathBlocks.length;
+    mathBlocks.push({ type: 'display', math });
+    return `MATHBLOCK_${idx}_END`;
+  });
+  // Inline math: $...$ (not $$)
+  protected_text = protected_text.replace(/\$([^\n$]+?)\$/g, (_, math) => {
+    const idx = mathBlocks.length;
+    mathBlocks.push({ type: 'inline', math });
+    return `MATHBLOCK_${idx}_END`;
+  });
+  // Inline math: \(...\)
+  protected_text = protected_text.replace(/\\\((.+?)\\\)/g, (_, math) => {
+    const idx = mathBlocks.length;
+    mathBlocks.push({ type: 'inline', math });
+    return `MATHBLOCK_${idx}_END`;
+  });
+
+  // ── Step 2: parse markdown ──
+  marked.setOptions({ breaks: true, gfm: true });
+  div.innerHTML = marked.parse(protected_text);
+
+  // ── Step 3: restore math placeholders with rendered KaTeX ──
+  if (mathBlocks.length > 0 && typeof katex !== 'undefined') {
+    div.querySelectorAll('*').forEach(node => {
+      // Walk text nodes
+    });
+    // Easier: replace in innerHTML
+    let html = div.innerHTML;
+    mathBlocks.forEach(({ type, math }, idx) => {
+      const placeholder = `MATHBLOCK_${idx}_END`;
+      let rendered = '';
+      try {
+        rendered = katex.renderToString(math.trim(), {
+          displayMode: type === 'display',
+          throwOnError: false,
+          strict: false
+        });
+      } catch(e) {
+        rendered = `<span style="color:#ff6b6b;font-size:13px">[math error]</span>`;
+      }
+      html = html.replace(placeholder, rendered);
+    });
+    div.innerHTML = html;
+  } else if (mathBlocks.length > 0) {
+    // KaTeX not yet loaded — retry after DOM insertion
+    setTimeout(() => {
+      let html = div.innerHTML;
+      mathBlocks.forEach(({ type, math }, idx) => {
+        const placeholder = `MATHBLOCK_${idx}_END`;
+        if (typeof katex !== 'undefined') {
+          try {
+            const rendered = katex.renderToString(math.trim(), {
+              displayMode: type === 'display',
+              throwOnError: false
+            });
+            html = html.replace(placeholder, rendered);
+          } catch(e) {}
+        }
+      });
+      div.innerHTML = html;
+    }, 400);
+  }
+
+  // ── Step 4: wrap tables to prevent horizontal overflow ──
   div.querySelectorAll('table').forEach(tbl => {
     const wrap = document.createElement('div');
     wrap.className = 'table-wrap';
     tbl.parentNode.insertBefore(wrap, tbl);
     wrap.appendChild(tbl);
   });
-
-  // Render KaTeX — try multiple times as library may still be loading
-  function tryKatex() {
-    if (typeof renderMathInElement !== 'undefined') {
-      try {
-        renderMathInElement(div, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$',  right: '$',  display: false },
-            { left: '\\(', right: '\\)', display: false },
-            { left: '\\[', right: '\\]', display: true }
-          ],
-          throwOnError: false,
-          strict: false
-        });
-      } catch(e) { console.warn('KaTeX render error:', e); }
-    } else {
-      // Library not loaded yet — retry after a tick
-      setTimeout(tryKatex, 200);
-    }
-  }
-  tryKatex();
 
   return div;
 }
@@ -1158,7 +1260,7 @@ function initButtonInteractions() {
       btn.classList.remove('releasing');
     });
     btn.addEventListener('animationend', (e) => {
-      if (e.animationName === 'liquidReturn') {
+      if (e.animationName === 'btnFrameReturn') {
         btn.classList.remove('releasing');
       }
     });
