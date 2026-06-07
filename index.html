@@ -23,6 +23,26 @@
   src: url('/1.ttf') format('truetype');
   font-weight: normal; font-style: normal; font-display: swap;
 }
+@font-face {
+  font-family: 'AppBold';
+  src: url('/bold.otf') format('opentype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'AppMono';
+  src: url('/mono.ttf') format('opentype');
+  font-weight: normal; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'AppBookworm';
+  src: url('/bookworm.ttf') format('truetype');
+  font-weight: normal; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'AppThin';
+  src: url('/thin.otf') format('opentype');
+  font-weight: 100; font-style: normal; font-display: swap;
+}
 
 html, body {
   height: 100%; width: 100%;
@@ -183,11 +203,11 @@ html, body {
 #chat { display: flex; flex-direction: column; }
 
 .chat-top-texture {
-  position: absolute;
+  position: fixed;
   top: 0; left: 0; right: 0;
   height: 56px;
   background: url('/src/texture-always-on-top_onlyonchats_.png') top center / 100% 100% no-repeat;
-  z-index: 10;
+  z-index: 30;
   pointer-events: none;
 }
 .tts-bar {
@@ -200,7 +220,11 @@ html, body {
   padding: 6px 16px;
 }
 .tts-bar.active { display: flex; }
-.chat-header { flex-shrink: 0; padding: 64px 16px 0; display: flex; align-items: center; }
+.chat-header {
+  flex-shrink: 0; padding: 14px 16px 0;
+  display: flex; align-items: center;
+  position: relative; z-index: 31;
+}
 .chat-messages {
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
   scrollbar-width: none; padding: 8px 0 110px;
@@ -242,10 +266,22 @@ html, body {
 
 /* ── Bubbles ── */
 .bubble-user-wrap { display: flex; justify-content: flex-end; padding-right: 16px; }
+.bubble-user-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; max-width: 78%; }
 .bubble-user {
   background: #3a3a3c; color: #fff;
   padding: 11px 16px; border-radius: 20px;
-  font-size: 17px; max-width: 78%; line-height: 1.4;
+  font-size: 17px; line-height: 1.4;
+}
+.bubble-file {
+  background: #2c2c2e; color: #ccc;
+  padding: 8px 13px; border-radius: 14px;
+  font-size: 13px; display: flex; align-items: center; gap: 7px;
+  max-width: 220px; overflow: hidden;
+}
+.bubble-file svg { flex-shrink: 0; }
+.bubble-file-name {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: 'AppMono', monospace; font-size: 12px; color: #aaa;
 }
 
 /* AI bubble wrapper */
@@ -259,54 +295,72 @@ html, body {
   font-size: 17px; line-height: 1.55; color: #fff;
 }
 /* Markdown styles inside AI bubble */
-.bubble-ai-content h1 { font-size: 22px; font-weight: 700; margin: 14px 0 8px; }
-.bubble-ai-content h2 { font-size: 19px; font-weight: 600; margin: 12px 0 6px; }
-.bubble-ai-content h3 { font-size: 17px; font-weight: 600; margin: 10px 0 5px; }
+.bubble-ai-content h1 {
+  font-size: 22px; font-weight: 100; margin: 14px 0 8px;
+  font-family: 'AppThin', 'CustomFont', sans-serif;
+}
+.bubble-ai-content h2 {
+  font-size: 19px; font-weight: 100; margin: 12px 0 6px;
+  font-family: 'AppThin', 'CustomFont', sans-serif;
+}
+.bubble-ai-content h3 {
+  font-size: 17px; font-weight: 100; margin: 10px 0 5px;
+  font-family: 'AppThin', 'CustomFont', sans-serif;
+}
 .bubble-ai-content p  { margin: 0 0 8px; }
 .bubble-ai-content p:last-child { margin-bottom: 0; }
 .bubble-ai-content ul, .bubble-ai-content ol { padding-left: 20px; margin-bottom: 8px; }
 .bubble-ai-content li { margin-bottom: 3px; }
-.bubble-ai-content strong { font-weight: 700; }
-.bubble-ai-content em { font-style: italic; }
+.bubble-ai-content strong {
+  font-weight: 700;
+  font-family: 'AppBold', 'CustomFont', sans-serif;
+}
+.bubble-ai-content em {
+  font-style: italic;
+  font-family: 'AppBookworm', 'CustomFont', sans-serif;
+}
 .bubble-ai-content code {
-  background: #2c2c2e; border-radius: 6px;
+  background: #1a1a1a; border-radius: 6px;
   padding: 2px 6px; font-size: 14px;
-  font-family: 'SF Mono', monospace;
+  font-family: 'AppMono', 'SF Mono', monospace;
 }
 .bubble-ai-content pre {
-  background: #1c1c1e; border-radius: 12px;
+  background: #0d0d0d; border-radius: 12px;
   padding: 12px 14px; margin: 8px 0;
   overflow-x: auto;
 }
 .bubble-ai-content pre code {
   background: transparent; padding: 0; font-size: 13px;
+  font-family: 'AppMono', 'SF Mono', monospace;
 }
 .bubble-ai-content blockquote {
-  border-left: 3px solid #444;
-  padding-left: 12px; color: #aaa; margin: 6px 0;
+  border-left: 3px solid #333;
+  padding-left: 12px; color: #888; margin: 6px 0;
+  font-family: 'AppBookworm', 'CustomFont', sans-serif;
 }
 /* Tables */
 .bubble-ai-content table {
   border-collapse: separate; border-spacing: 0;
   width: 100%; margin: 10px 0;
-  background: #1c1c1e; border-radius: 14px;
+  background: #0a0a0a; border-radius: 14px;
   overflow: hidden; font-size: 14px;
 }
 .bubble-ai-content th {
-  background: #2c2c2e; color: #fff;
+  background: #111; color: #fff;
   padding: 10px 13px; text-align: left; font-weight: 600;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-family: 'AppBold', 'CustomFont', sans-serif;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .bubble-ai-content th:first-child { border-radius: 14px 0 0 0; }
 .bubble-ai-content th:last-child  { border-radius: 0 14px 0 0; }
 .bubble-ai-content td {
-  padding: 9px 13px; color: #ddd;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 9px 13px; color: #bbb;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .bubble-ai-content tr:last-child td { border-bottom: none; }
 .bubble-ai-content tr:last-child td:first-child { border-radius: 0 0 0 14px; }
 .bubble-ai-content tr:last-child td:last-child  { border-radius: 0 0 14px 0; }
-.bubble-ai-content tr:hover td { background: rgba(255,255,255,0.03); }
+.bubble-ai-content tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* KaTeX overrides for dark */
 .bubble-ai-content .katex { color: #fff; }
@@ -467,7 +521,6 @@ html, body {
   <!-- TTS controls bar -->
   <div class="tts-bar" id="ttsBar">
     <button class="txbtn txbtn-sm" id="ttsPlayPauseBtn">
-      <!-- icon set by JS -->
       <svg id="ttsPlayIcon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <polygon points="5 3 19 12 5 21 5 3"/>
       </svg>
@@ -498,11 +551,10 @@ html, body {
           <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.42 16.41a2 2 0 01-2.83-2.83l8.49-8.48"/>
         </svg>
       </label>
-      <!-- attached file pill -->
-      <div id="attachedFilePill" style="display:none;position:absolute;bottom:100%;left:14px;background:#2c2c2e;border-radius:12px;padding:5px 10px 5px 8px;font-size:13px;color:#fff;display:none;align-items:center;gap:6px;max-width:70%;overflow:hidden;">
+      <div id="attachedFilePill" style="display:none;position:absolute;bottom:100%;left:14px;background:#2c2c2e;border-radius:12px;padding:5px 10px 5px 8px;font-size:13px;color:#fff;align-items:center;gap:6px;max-width:70%;overflow:hidden;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <span id="attachedFileName" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;"></span>
-        <button onclick="clearAttachment()" style="background:none;border:none;color:#888;cursor:pointer;padding:0;line-height:1;font-size:16px;">×</button>
+        <button onclick="window.clearAttachment()" style="background:none;border:none;color:#888;cursor:pointer;padding:0;line-height:1;font-size:16px;">×</button>
       </div>
       <div class="input-bar" id="inputBar">
         <div class="input-bar-bg"></div>
@@ -548,11 +600,11 @@ html, body {
 <script>
 // ══════════════════════ PRELOAD + BOOT ══════════════════════
 async function preloadResources() {
-  const assets = ['/src/logo.svg','/src/cardtexturefinal.png','/src/texture-btnssmall.png','/src/texture-enterprompt.png','/src/texture-enterprompt-thinking.png','/src/dialogdelete-question.png','/src/dialogdelete-yesdel.png','/src/dialogdelete-nokeep.png','/src/sound.mp3','/1.ttf'];
+  const assets = ['/src/logo.svg','/src/cardtexturefinal.png','/src/texture-btnssmall.png','/src/texture-enterprompt.png','/src/texture-enterprompt-thinking.png','/src/dialogdelete-question.png','/src/dialogdelete-yesdel.png','/src/dialogdelete-nokeep.png','/src/sound.mp3','/1.ttf','/bold.otf','/mono.ttf','/bookworm.otf','/thin.otf'];
   const loadImg = s => new Promise(r=>{ const i=new Image(); i.onload=()=>r(true); i.onerror=()=>r(false); i.src=s; setTimeout(()=>r(false),3000); });
-  const loadFont = () => new Promise(r=>{ if(document.fonts&&document.fonts.load) { document.fonts.load('16px "CustomFont"').then(()=>r()).catch(()=>r()); setTimeout(()=>r(),2000); } else setTimeout(r,200); });
+  const loadFont = () => new Promise(r=>{ if(document.fonts&&document.fonts.load) { document.fonts.load('16px "CustomFont"').then(()=>r()).catch(()=>r()); document.fonts.load('16px "AppBold"').catch(()=>{}); document.fonts.load('16px "AppMono"').catch(()=>{}); document.fonts.load('16px "AppBookworm"').catch(()=>{}); document.fonts.load('16px "AppThin"').catch(()=>{}); setTimeout(()=>r(),2000); } else setTimeout(r,200); });
   const loadAudio = s => new Promise(r=>{ const a=new Audio(); a.preload='auto'; a.oncanplaythrough=()=>r(true); a.onerror=()=>r(false); a.src=s; setTimeout(()=>r(false),2000); });
-  await Promise.allSettled(assets.map(a=>a.endsWith('.ttf')?loadFont():a.endsWith('.mp3')?loadAudio(a):loadImg(a)));
+  await Promise.allSettled(assets.map(a=>a.endsWith('.ttf')||a.endsWith('.otf')?loadFont():a.endsWith('.mp3')?loadAudio(a):loadImg(a)));
 }
 async function bootApplication() {
   const logo = document.getElementById('logoPreloader');
@@ -579,9 +631,7 @@ const SYSTEM_PROMPT='Ты — Siri, умный, эмпатичный AI-помо
 
 // ══════════════════════ MARKDOWN + LaTeX RENDER ══════════════════════
 function renderMarkdown(text) {
-  // Wait for libraries
   if (typeof marked === 'undefined' || typeof renderMathInElement === 'undefined') {
-    // fallback plain text
     const d = document.createElement('div');
     d.className = 'bubble-ai-content';
     d.textContent = text;
@@ -589,10 +639,8 @@ function renderMarkdown(text) {
   }
   const div = document.createElement('div');
   div.className = 'bubble-ai-content';
-  // marked render
   marked.setOptions({ breaks: true, gfm: true });
   div.innerHTML = marked.parse(text);
-  // KaTeX render
   try {
     renderMathInElement(div, {
       delimiters: [
@@ -673,24 +721,30 @@ function openChatById(id){
 function goHome(){if(isGenerating)stopGeneration();stopTTS();document.getElementById('chat').classList.remove('active');document.getElementById('home').classList.add('active');renderCards();}
 
 // ══════════════════════ BUBBLES ══════════════════════
-function appendBubble(role, text, isNew) {
+function appendBubble(role, text, isNew, fileInfo) {
   const msgs=document.getElementById('chatMessages');
   if(role==='user'){
     const wrap=document.createElement('div');wrap.className='bubble-user-wrap';
-    const bub=document.createElement('div');bub.className='bubble-user';bub.textContent=text;
-    wrap.appendChild(bub);msgs.appendChild(wrap);
+    const stack=document.createElement('div');stack.className='bubble-user-stack';
+    if(fileInfo){
+      const fb=document.createElement('div');fb.className='bubble-file';
+      fb.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="bubble-file-name">${escHtml(fileInfo.name)}</span>`;
+      stack.appendChild(fb);
+    }
+    if(text){
+      const bub=document.createElement('div');bub.className='bubble-user';bub.textContent=text;
+      stack.appendChild(bub);
+    }
+    wrap.appendChild(stack);msgs.appendChild(wrap);
   } else {
     const wrap=document.createElement('div');wrap.className='bubble-ai-wrap';
     const content=renderMarkdown(text);
     wrap.appendChild(content);
-    // action buttons
     const actions=document.createElement('div');actions.className='bubble-ai-actions';
-    // retry
     const retryBtn=document.createElement('button');retryBtn.className='action-btn';
     retryBtn.title='Повторить';
     retryBtn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>`;
     retryBtn.addEventListener('click',()=>retryLastMessage());
-    // speak
     const speakBtn=document.createElement('button');speakBtn.className='action-btn';
     speakBtn.title='Озвучить';
     speakBtn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
@@ -713,7 +767,6 @@ function startTTS(text) {
   stopTTS();
   ttsText=text;
   if(!('speechSynthesis' in window)) return;
-  // strip markdown/LaTeX for TTS
   const plain=text.replace(/\$\$[\s\S]*?\$\$/g,'формула').replace(/\$[^$]+\$/g,'формула').replace(/[#*`_~>]/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');
   ttsUtterance=new SpeechSynthesisUtterance(plain);
   ttsUtterance.lang='ru-RU';
@@ -752,7 +805,6 @@ function toggleControls(){
   else{btnStop.style.display='none';inputBar.classList.remove('thinking');chatInput.placeholder='Спросите Siri';btnMic.style.display=has?'none':'flex';btnSend.style.display=has?'flex':'none';}
 }
 chatInput.addEventListener('input',toggleControls);
-chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!isGenerating)sendMessage();});
 
 function stopGeneration(){if(abortController)abortController.abort();isGenerating=false;toggleControls();const t=document.querySelector('.bubble-typing');if(t)t.remove();}
 document.getElementById('btnStop').addEventListener('click',stopGeneration);
@@ -760,11 +812,9 @@ document.getElementById('btnStop').addEventListener('click',stopGeneration);
 let lastUserMessage='';
 function retryLastMessage(){
   if(!lastUserMessage||isGenerating) return;
-  // remove last AI bubble-ai-wrap
   const msgs=document.getElementById('chatMessages');
   const wraps=msgs.querySelectorAll('.bubble-ai-wrap');
   if(wraps.length>0) wraps[wraps.length-1].remove();
-  // remove last message from history
   if(currentMessages.length&&currentMessages[currentMessages.length-1].role==='assistant') currentMessages.pop();
   callAPI(lastUserMessage);
 }
@@ -796,15 +846,129 @@ async function callAPI(val) {
   isGenerating=false;abortController=null;toggleControls();
 }
 
-async function sendMessage(){
-  const val=chatInput.value.trim();if(!val||isGenerating)return;
-  lastUserMessage=val;
-  appendBubble('user',val);
-  currentMessages.push({role:'user',content:val});
-  chatInput.value='';
-  await callAPI(val);
+// ══════════════════════ FILE ATTACHMENT ══════════════════════
+let attachedFileText = '';
+let attachedFileName = '';
+
+const fileInput = document.getElementById('fileInput');
+const attachedFilePill = document.getElementById('attachedFilePill');
+const attachedFileNameEl = document.getElementById('attachedFileName');
+
+async function extractFileText(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const textExts = ['txt','md','csv','json','xml','html','htm','yaml','yml','log','ini','toml','rtf','js','ts','py','css','sh'];
+  if (textExts.includes(ext)) return await file.text();
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let raw = '';
+  for (let i = 0; i < bytes.length; i++) {
+    const b = bytes[i];
+    if (b >= 32 && b < 127) raw += String.fromCharCode(b);
+    else if (b === 10 || b === 13) raw += ' ';
+  }
+  if (ext === 'pdf') {
+    const btMatches = raw.match(/BT[\s\S]{0,500}?ET/g) || [];
+    let ex = btMatches.map(m => (m.match(/\(([^)]{1,200})\)/g)||[]).map(s=>s.slice(1,-1)).join(' ')).join(' ').replace(/\s+/g,' ').trim();
+    if (!ex) ex = (raw.match(/[\x20-\x7E]{5,}/g)||[]).join(' ').replace(/\s+/g,' ').trim();
+    return ex.slice(0,14000) || '[PDF: текст не извлечён]';
+  }
+  if (['docx','xlsx','pptx'].includes(ext)) {
+    const tags = raw.match(/<(?:w:t|t|si)[^>]*>([^<]{1,500})<\/(?:w:t|t|si)>/g) || [];
+    let ex = tags.map(m=>m.replace(/<[^>]+>/g,'')).join(' ');
+    if (!ex) ex = (raw.match(/[\x20-\x7E]{6,}/g)||[]).filter(s=>s.length>5).join(' ');
+    return ex.replace(/\s+/g,' ').trim().slice(0,14000) || '['+ext+': текст не извлечён]';
+  }
+  return (raw.match(/[\x20-\x7E]{6,}/g)||[]).join(' ').replace(/\s+/g,' ').trim().slice(0,14000) || '['+ext+': текст не извлечён]';
 }
-document.getElementById('btnSend').addEventListener('click',sendMessage);
+
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  attachedFileName = file.name;
+  try {
+    attachedFileText = await extractFileText(file);
+    if (attachedFileText.length > 14000)
+      attachedFileText = attachedFileText.slice(0,14000) + '\n\n[...обрезано до 14000 символов]';
+  } catch(err) {
+    attachedFileText = '[Ошибка чтения: ' + err.message + ']';
+  }
+  attachedFileNameEl.textContent = file.name;
+  attachedFilePill.style.display = 'flex';
+  fileInput.value = '';
+});
+
+window.clearAttachment = function() {
+  attachedFileText = '';
+  attachedFileName = '';
+  attachedFilePill.style.display = 'none';
+};
+
+async function sendMessageWithFile() {
+  const val = chatInput.value.trim();
+  if (!val && !attachedFileText) return;
+  if (isGenerating) return;
+  const msgs = document.getElementById('chatMessages');
+
+  const wrap = document.createElement('div'); wrap.className = 'bubble-user-wrap';
+  const stack = document.createElement('div'); stack.className = 'bubble-user-stack';
+  if (attachedFileText) {
+    const fb = document.createElement('div'); fb.className = 'bubble-file';
+    fb.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="bubble-file-name">'+escHtml(attachedFileName)+'</span>';
+    stack.appendChild(fb);
+  }
+  if (val) {
+    const bub = document.createElement('div'); bub.className = 'bubble-user'; bub.textContent = val;
+    stack.appendChild(bub);
+  }
+  wrap.appendChild(stack); msgs.appendChild(wrap); msgs.scrollTop = msgs.scrollHeight;
+
+  const userDisplayText = val || ('📎 ' + attachedFileName);
+  const apiContent = attachedFileText
+    ? '[Файл: ' + attachedFileName + ']\n```\n' + attachedFileText + '\n```\n\n' + (val || 'Прочитай и проанализируй этот файл.')
+    : val;
+
+  lastUserMessage = val || attachedFileName;
+  currentMessages.push({ role: 'user', content: apiContent });
+  chatInput.value = '';
+  const savedFileName = attachedFileName;
+  window.clearAttachment();
+  toggleControls();
+
+  isGenerating = true; toggleControls();
+  const typing = document.createElement('div'); typing.className = 'bubble-typing';
+  typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight;
+  abortController = new AbortController();
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST', signal: abortController.signal,
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
+      body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...currentMessages], max_tokens: 1024, temperature: 0.7 })
+    });
+    typing.remove();
+    if (!resp.ok) throw new Error('API ' + resp.status);
+    const data = await resp.json();
+    const aiText = ((data.choices||[])[0]||{}).message.content.trim() || 'Нет ответа.';
+    currentMessages.push({ role: 'assistant', content: aiText });
+    appendBubble('ai', aiText, true);
+    new Audio('/src/sound.mp3').play().catch(()=>{});
+    if (currentChatId) {
+      const chat = chats.find(c=>c.id===currentChatId);
+      if (chat) { chat.messages.push({role:'user',text:userDisplayText}); chat.messages.push({role:'ai',text:aiText}); chat.ts=Date.now(); chat.preview=aiText.slice(0,62)+'…'; }
+    } else {
+      const id='chat_'+Date.now(); currentChatId=id;
+      chats.unshift({id,ts:Date.now(),title:userDisplayText.length>50?userDisplayText.slice(0,50)+'…':userDisplayText,preview:aiText.slice(0,62)+'…',messages:[{role:'user',text:userDisplayText},{role:'ai',text:aiText}]});
+    }
+    saveChats(chats);
+  } catch(err) {
+    typing.remove();
+    if (err.name!=='AbortError') appendBubble('ai','Произошла ошибка. Проверьте соединение.');
+  }
+  isGenerating=false; abortController=null; toggleControls();
+}
+
+document.getElementById('btnSend').addEventListener('click', sendMessageWithFile);
+chatInput.addEventListener('keydown', e => { if (e.key==='Enter' && !isGenerating) sendMessageWithFile(); });
 
 // mic
 let recognition=null,isRecording=false;
@@ -839,100 +1003,6 @@ document.addEventListener('contextmenu',e=>e.preventDefault());
 renderCards();
 initTapAnimation();
 bootApplication();
-
-// ══════════════════════ FILE ATTACHMENT ══════════════════════
-let attachedFileText = '';
-let attachedFileName = '';
-
-const fileInput = document.getElementById('fileInput');
-const attachedFilePill = document.getElementById('attachedFilePill');
-const attachedFileNameEl = document.getElementById('attachedFileName');
-
-fileInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  attachedFileName = file.name;
-  const ext = file.name.split('.').pop().toLowerCase();
-  
-  try {
-    if (['txt','md','csv','json','xml','html','htm','yaml','yml','log','ini','toml','rtf'].includes(ext)) {
-      attachedFileText = await file.text();
-    } else if (ext === 'pdf') {
-      // PDF: read as binary and extract text via basic heuristic
-      const buf = await file.arrayBuffer();
-      const bytes = new Uint8Array(buf);
-      let raw = '';
-      for (let i = 0; i < bytes.length; i++) {
-        const c = bytes[i];
-        if (c >= 32 && c < 127) raw += String.fromCharCode(c);
-        else if (c === 10 || c === 13) raw += ' ';
-      }
-      // extract readable strings (runs of printable chars)
-      const strings = raw.match(/[ -~]{4,}/g) || [];
-      attachedFileText = strings.join(' ').replace(/\s+/g,' ').trim().slice(0, 12000);
-      if (!attachedFileText) attachedFileText = '[PDF: не удалось извлечь текст]';
-    } else if (['doc','docx','xls','xlsx','ppt','pptx'].includes(ext)) {
-      // Office formats: extract XML-based text
-      const buf = await file.arrayBuffer();
-      // OOXML (docx/xlsx/pptx) are ZIP files containing XML
-      // Use basic text extraction from ZIP bytes
-      const bytes = new Uint8Array(buf);
-      let raw = '';
-      for (let i = 0; i < bytes.length; i++) {
-        const c = bytes[i];
-        if (c >= 32 && c < 127) raw += String.fromCharCode(c);
-        else raw += ' ';
-      }
-      // Pull readable XML text content, strip tags
-      const xmlMatches = raw.match(/<[wpa]:t[^>]*>([^<]{1,500})<\/[wpa]:t>/g) || [];
-      let extracted = xmlMatches.map(m => m.replace(/<[^>]+>/g,'')).join(' ');
-      if (!extracted) {
-        // fallback: just long readable strings
-        const strings = raw.match(/[ -~]{6,}/g) || [];
-        extracted = strings.filter(s => !/^[\s!@#$%^&*(){}\[\]<>\/\|`~]+$/.test(s)).join(' ').slice(0, 12000);
-      }
-      attachedFileText = extracted.replace(/\s+/g,' ').trim().slice(0, 12000) || `[${ext.toUpperCase()}: текст извлечь не удалось]`;
-    } else {
-      attachedFileText = await file.text();
-    }
-  } catch(err) {
-    attachedFileText = `[Ошибка чтения файла: ${err.message}]`;
-  }
-  
-  // Trim to avoid token overflow
-  if (attachedFileText.length > 12000) {
-    attachedFileText = attachedFileText.slice(0, 12000) + '\n\n[...текст обрезан до 12000 символов]';
-  }
-
-  attachedFileNameEl.textContent = file.name;
-  attachedFilePill.style.display = 'flex';
-  fileInput.value = '';
-});
-
-function clearAttachment() {
-  attachedFileText = '';
-  attachedFileName = '';
-  attachedFilePill.style.display = 'none';
-}
-
-// Patch sendMessage to inject file content
-const _origSendMessage = sendMessage;
-window.sendMessage = async function() {
-  if (attachedFileText) {
-    const originalVal = chatInput.value.trim();
-    const injection = `[Прикреплённый файл: ${attachedFileName}]\n\`\`\`\n${attachedFileText}\n\`\`\`\n\n${originalVal || 'Прочитай и проанализируй этот файл.'}`;
-    chatInput.value = injection;
-    clearAttachment();
-  }
-  await _origSendMessage();
-};
-
-// Re-bind send button and enter to patched version
-document.getElementById('btnSend').removeEventListener('click', sendMessage);
-document.getElementById('btnSend').addEventListener('click', window.sendMessage);
-chatInput.removeEventListener('keydown', null);
-chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !isGenerating) window.sendMessage(); });
-
 </script>
 </body>
 </html>
