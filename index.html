@@ -11,10 +11,10 @@
 <title>Siri</title>
 <!-- KaTeX -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <!-- marked -->
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -182,31 +182,41 @@ html, body {
 /* ══ CHAT ══ */
 #chat { display: flex; flex-direction: column; }
 
-/* TTS bar — above chat-header, hidden by default */
+.chat-top-texture {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: url('/src/texture-always-on-top_onlyonchats_.png') top center / 100% 100% no-repeat;
+  z-index: 10;
+  pointer-events: none;
+}
 .tts-bar {
-  flex-shrink: 0;
+  position: absolute;
+  top: 56px; left: 0; right: 0;
+  z-index: 9;
   display: none;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px 0;
+  padding: 6px 16px;
 }
 .tts-bar.active { display: flex; }
-
-.chat-header { flex-shrink: 0; padding: 10px 16px 10px; display: flex; align-items: center; }
+.chat-header { flex-shrink: 0; padding: 64px 16px 0; display: flex; align-items: center; }
 .chat-messages {
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; padding: 6px 0 12px;
+  scrollbar-width: none; padding: 8px 0 110px;
   display: flex; flex-direction: column; gap: 16px;
 }
 .chat-messages::-webkit-scrollbar { display: none; }
 .chat-input-area {
-  flex-shrink: 0; padding: 10px 14px 36px;
-  background: linear-gradient(to top, #000 70%, transparent);
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 10px 14px 36px;
+  z-index: 20; pointer-events: none;
 }
-.input-row { display: flex; align-items: center; gap: 10px; }
+.chat-input-area .input-row { pointer-events: all; }
+.input-row { display: flex; align-items: center; gap: 10px; position: relative; }
 .input-bar {
   flex: 1; height: 44px; position: relative;
-  display: flex; align-items: center; border-radius: 20px; overflow: hidden;
+  display: flex; align-items: center; border-radius: 22px; overflow: hidden;
 }
 .input-bar-bg {
   position: absolute; inset: 0;
@@ -378,7 +388,7 @@ html, body {
 <!-- HOME -->
 <div class="screen active" id="home">
   <div class="home-header">
-    <span class="home-title" id="homeTitle">!Siri</span>
+    <span class="home-title" id="homeTitle">Siri</span>
     <button class="txbtn txbtn-sm" id="btnSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -451,7 +461,9 @@ html, body {
 </div>
 
 <!-- CHAT -->
-<div class="screen" id="chat">
+<div class="screen" id="chat" style="position:relative;">
+  <!-- top texture -->
+  <div class="chat-top-texture"></div>
   <!-- TTS controls bar -->
   <div class="tts-bar" id="ttsBar">
     <button class="txbtn txbtn-sm" id="ttsPlayPauseBtn">
@@ -480,11 +492,18 @@ html, body {
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-input-area">
     <div class="input-row">
-      <button class="txbtn txbtn-md" id="btnAttach">
+      <label class="txbtn txbtn-md" id="btnAttachLabel" style="cursor:pointer;">
+        <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.xml,.html,.htm,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.rtf,.yaml,.yml,.log,.ini,.toml" style="display:none;"/>
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.42 16.41a2 2 0 01-2.83-2.83l8.49-8.48"/>
         </svg>
-      </button>
+      </label>
+      <!-- attached file pill -->
+      <div id="attachedFilePill" style="display:none;position:absolute;bottom:100%;left:14px;background:#2c2c2e;border-radius:12px;padding:5px 10px 5px 8px;font-size:13px;color:#fff;display:none;align-items:center;gap:6px;max-width:70%;overflow:hidden;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span id="attachedFileName" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;"></span>
+        <button onclick="clearAttachment()" style="background:none;border:none;color:#888;cursor:pointer;padding:0;line-height:1;font-size:16px;">×</button>
+      </div>
       <div class="input-bar" id="inputBar">
         <div class="input-bar-bg"></div>
         <div class="input-bar-thinking"></div>
@@ -820,6 +839,100 @@ document.addEventListener('contextmenu',e=>e.preventDefault());
 renderCards();
 initTapAnimation();
 bootApplication();
+
+// ══════════════════════ FILE ATTACHMENT ══════════════════════
+let attachedFileText = '';
+let attachedFileName = '';
+
+const fileInput = document.getElementById('fileInput');
+const attachedFilePill = document.getElementById('attachedFilePill');
+const attachedFileNameEl = document.getElementById('attachedFileName');
+
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  attachedFileName = file.name;
+  const ext = file.name.split('.').pop().toLowerCase();
+  
+  try {
+    if (['txt','md','csv','json','xml','html','htm','yaml','yml','log','ini','toml','rtf'].includes(ext)) {
+      attachedFileText = await file.text();
+    } else if (ext === 'pdf') {
+      // PDF: read as binary and extract text via basic heuristic
+      const buf = await file.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let raw = '';
+      for (let i = 0; i < bytes.length; i++) {
+        const c = bytes[i];
+        if (c >= 32 && c < 127) raw += String.fromCharCode(c);
+        else if (c === 10 || c === 13) raw += ' ';
+      }
+      // extract readable strings (runs of printable chars)
+      const strings = raw.match(/[ -~]{4,}/g) || [];
+      attachedFileText = strings.join(' ').replace(/\s+/g,' ').trim().slice(0, 12000);
+      if (!attachedFileText) attachedFileText = '[PDF: не удалось извлечь текст]';
+    } else if (['doc','docx','xls','xlsx','ppt','pptx'].includes(ext)) {
+      // Office formats: extract XML-based text
+      const buf = await file.arrayBuffer();
+      // OOXML (docx/xlsx/pptx) are ZIP files containing XML
+      // Use basic text extraction from ZIP bytes
+      const bytes = new Uint8Array(buf);
+      let raw = '';
+      for (let i = 0; i < bytes.length; i++) {
+        const c = bytes[i];
+        if (c >= 32 && c < 127) raw += String.fromCharCode(c);
+        else raw += ' ';
+      }
+      // Pull readable XML text content, strip tags
+      const xmlMatches = raw.match(/<[wpa]:t[^>]*>([^<]{1,500})<\/[wpa]:t>/g) || [];
+      let extracted = xmlMatches.map(m => m.replace(/<[^>]+>/g,'')).join(' ');
+      if (!extracted) {
+        // fallback: just long readable strings
+        const strings = raw.match(/[ -~]{6,}/g) || [];
+        extracted = strings.filter(s => !/^[\s!@#$%^&*(){}\[\]<>\/\|`~]+$/.test(s)).join(' ').slice(0, 12000);
+      }
+      attachedFileText = extracted.replace(/\s+/g,' ').trim().slice(0, 12000) || `[${ext.toUpperCase()}: текст извлечь не удалось]`;
+    } else {
+      attachedFileText = await file.text();
+    }
+  } catch(err) {
+    attachedFileText = `[Ошибка чтения файла: ${err.message}]`;
+  }
+  
+  // Trim to avoid token overflow
+  if (attachedFileText.length > 12000) {
+    attachedFileText = attachedFileText.slice(0, 12000) + '\n\n[...текст обрезан до 12000 символов]';
+  }
+
+  attachedFileNameEl.textContent = file.name;
+  attachedFilePill.style.display = 'flex';
+  fileInput.value = '';
+});
+
+function clearAttachment() {
+  attachedFileText = '';
+  attachedFileName = '';
+  attachedFilePill.style.display = 'none';
+}
+
+// Patch sendMessage to inject file content
+const _origSendMessage = sendMessage;
+window.sendMessage = async function() {
+  if (attachedFileText) {
+    const originalVal = chatInput.value.trim();
+    const injection = `[Прикреплённый файл: ${attachedFileName}]\n\`\`\`\n${attachedFileText}\n\`\`\`\n\n${originalVal || 'Прочитай и проанализируй этот файл.'}`;
+    chatInput.value = injection;
+    clearAttachment();
+  }
+  await _origSendMessage();
+};
+
+// Re-bind send button and enter to patched version
+document.getElementById('btnSend').removeEventListener('click', sendMessage);
+document.getElementById('btnSend').addEventListener('click', window.sendMessage);
+chatInput.removeEventListener('keydown', null);
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !isGenerating) window.sendMessage(); });
+
 </script>
 </body>
 </html>
