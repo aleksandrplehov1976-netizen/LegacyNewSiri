@@ -27,17 +27,23 @@
     border-radius: 52px;
     overflow: hidden;
     background: #000;
-    /* hidden until camera ready */
     opacity: 0;
     transform: scale(0.28) translateY(160px);
-    transition: none;
+    will-change: transform, opacity;
   }
   .viewfinder-box.animate-in {
     animation: boxIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
+  .viewfinder-box.animate-out {
+    animation: boxOut 0.55s cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
   @keyframes boxIn {
     0%   { opacity: 0; transform: scale(0.28) translateY(160px); }
     100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes boxOut {
+    0%   { opacity: 1; transform: scale(1) translateY(0); }
+    100% { opacity: 0; transform: scale(0.28) translateY(160px); }
   }
 
   video {
@@ -45,7 +51,13 @@
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
+    /* kill any browser default controls overlay */
+    pointer-events: none;
   }
+  video::-webkit-media-controls { display: none !important; }
+  video::-webkit-media-controls-enclosure { display: none !important; }
+  video::-webkit-media-controls-panel { display: none !important; }
+  video::--webkit-media-controls-play-button { display: none !important; }
 
   canvas#preview {
     position: absolute; inset: 0;
@@ -69,6 +81,11 @@
   .buttons-row.show {
     opacity: 1;
     transform: scale(1);
+  }
+  .buttons-row.hide {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 1, 1);
   }
 
   .side-btn {
@@ -122,6 +139,11 @@
     transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .close-pill.show { opacity: 1; transform: scale(1); }
+  .close-pill.hide {
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
 
   /* ── RESULTS SHEET ── */
   #results-sheet {
@@ -185,7 +207,7 @@
 <body>
 
 <div class="viewfinder-box" id="vbox">
-  <video id="vid" autoplay playsinline muted></video>
+  <video id="vid" autoplay playsinline muted disablepictureinpicture></video>
   <canvas id="preview"></canvas>
   <div class="flash-overlay" id="flash"></div>
 
@@ -223,18 +245,10 @@
       <div class="sheet-sub">Выберите поисковик</div>
     </div>
     <div class="engines">
-      <div class="engine-row" onclick="searchWith('google')">
-        <span>Google Lens</span><span class="chev">›</span>
-      </div>
-      <div class="engine-row" onclick="searchWith('tineye')">
-        <span>TinEye</span><span class="chev">›</span>
-      </div>
-      <div class="engine-row" onclick="searchWith('bing')">
-        <span>Bing Visual Search</span><span class="chev">›</span>
-      </div>
-      <div class="engine-row" onclick="searchWith('yandex')">
-        <span>Яндекс Картинки</span><span class="chev">›</span>
-      </div>
+      <div class="engine-row" onclick="searchWith('google')"><span>Google Lens</span><span class="chev">›</span></div>
+      <div class="engine-row" onclick="searchWith('tineye')"><span>TinEye</span><span class="chev">›</span></div>
+      <div class="engine-row" onclick="searchWith('bing')"><span>Bing Visual Search</span><span class="chev">›</span></div>
+      <div class="engine-row" onclick="searchWith('yandex')"><span>Яндекс Картинки</span><span class="chev">›</span></div>
     </div>
     <button class="sheet-cancel" onclick="closeSheet()">Отмена</button>
   </div>
@@ -264,7 +278,6 @@
 <script>
 let stream = null, torchOn = false, currentBlob = null;
 
-// Immediately request camera — no custom dialog
 (async function init() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({
@@ -280,35 +293,61 @@ let stream = null, torchOn = false, currentBlob = null;
   const vid = document.getElementById('vid');
   vid.srcObject = stream;
 
-  // Wait for video to actually be playing before animating in
+  // Force-remove any controls the browser might inject
+  vid.controls = false;
+  vid.removeAttribute('controls');
+
   vid.oncanplay = () => {
     vid.oncanplay = null;
+    // ensure playing
+    vid.play().catch(() => {});
     startAnimation();
   };
-  // Fallback if oncanplay already fired or won't fire
   setTimeout(() => {
-    if (document.querySelector('.viewfinder-box').style.opacity !== '1' &&
-        !document.querySelector('.viewfinder-box').classList.contains('animate-in')) {
+    if (!document.getElementById('vbox').classList.contains('animate-in')) {
+      vid.play().catch(() => {});
       startAnimation();
     }
-  }, 800);
+  }, 900);
 })();
 
 function startAnimation() {
   const box  = document.getElementById('vbox');
   const btns = document.getElementById('btns');
   const pill = document.getElementById('pill');
-
   box.classList.add('animate-in');
+  setTimeout(() => btns.classList.add('show'), 520);
+  setTimeout(() => pill.classList.add('show'), 620);
+}
 
-  setTimeout(() => { btns.classList.add('show'); }, 520);
-  setTimeout(() => { pill.classList.add('show'); }, 620);
+function closePage() {
+  const box  = document.getElementById('vbox');
+  const btns = document.getElementById('btns');
+  const pill = document.getElementById('pill');
+
+  // hide buttons and pill first
+  btns.classList.remove('show');
+  btns.classList.add('hide');
+  pill.classList.remove('show');
+  pill.classList.add('hide');
+
+  // slight delay then animate box out
+  setTimeout(() => {
+    box.classList.remove('animate-in');
+    box.classList.add('animate-out');
+  }, 80);
+
+  // stop camera and navigate
+  setTimeout(() => {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    window.location.href = '/index.html';
+  }, 650);
 }
 
 function takePhoto() {
-  const vid  = document.getElementById('vid');
-  const off  = document.getElementById('offscreen');
-  const prev = document.getElementById('preview');
+  const vid   = document.getElementById('vid');
+  const off   = document.getElementById('offscreen');
+  const prev  = document.getElementById('preview');
   const flash = document.getElementById('flash');
 
   flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
@@ -364,11 +403,6 @@ function toggleTorch() {
   if (!caps?.torch) return;
   torchOn = !torchOn;
   track.applyConstraints({ advanced: [{ torch: torchOn }] });
-}
-
-function closePage() {
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  if (window.history.length > 1) history.back(); else window.close();
 }
 </script>
 </body>
