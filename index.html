@@ -12,10 +12,19 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/* Подключение шрифта */
+@font-face {
+  font-family: 'CustomFont';
+  src: url('/1.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 html, body {
   height: 100%; width: 100%;
   background: #000;
-  font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+  font-family: 'CustomFont', -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
   color: #fff;
   overflow: hidden;
   user-select: none;
@@ -52,30 +61,29 @@ html, body {
 }
 .home-scroll::-webkit-scrollbar { display: none; }
 
-/* Увеличенная сетка — одна колонка для больших карточек */
+/* Две колонки */
 .cards-grid { 
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   overflow: visible;
 }
 
-/* Текстурная карточка — растянута на 100% ширины, фиксированная высота под изображение */
+/* Карточка — точный размер под текстуру */
 .card {
   position: relative;
   background-image: url('/src/cardtexturefinal.png');
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  width: 100%;
-  height: 180px;  /* Фиксированная высота под размер твоего изображения */
+  aspect-ratio: 1 / 0.9; /* Пропорция под твою текстуру, можно поменять */
   cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   transition: opacity 0.12s;
   border-radius: 0;
-  padding: 16px 20px;
+  padding: 14px 12px;
 }
 .card:active:not(.editing-mode .card) { opacity: 0.65; }
 .card.wobble { animation: wobble 0.10s ease-in-out infinite alternate; }
@@ -85,34 +93,34 @@ html, body {
 }
 
 .card-delete {
-  position: absolute; top: 12px; right: 12px;
-  width: 32px; height: 32px; border-radius: 50%;
+  position: absolute; top: 8px; right: 8px;
+  width: 28px; height: 28px; border-radius: 50%;
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
   border: none; cursor: pointer;
   display: none; align-items: center; justify-content: center;
   z-index: 10; box-shadow: none;
 }
-.card-delete svg { width: 14px; height: 14px; }
+.card-delete svg { width: 12px; height: 12px; }
 .editing-mode .card-delete { display: flex; }
 
 .card-date { 
-  font-size: 12px; 
-  color: rgba(255,255,255,0.6); 
-  margin-bottom: 6px; 
+  font-size: 10px; 
+  color: rgba(255,255,255,0.55); 
+  margin-bottom: 4px; 
   font-weight: 400;
 }
 .card-title { 
-  font-size: 18px; 
-  font-weight: 700; 
+  font-size: 13px; 
+  font-weight: 600; 
   line-height: 1.3; 
   color: #fff; 
-  margin-bottom: 6px; 
-  letter-spacing: -0.3px;
+  margin-bottom: 4px; 
+  letter-spacing: -0.2px;
 }
 .card-preview { 
-  font-size: 13px; 
-  color: rgba(255,255,255,0.55); 
-  line-height: 1.4;
+  font-size: 10px; 
+  color: rgba(255,255,255,0.5); 
+  line-height: 1.35;
 }
 
 .home-bottom {
@@ -209,7 +217,6 @@ html, body {
   border-radius: 20px; overflow: hidden;
 }
 
-/* Две текстуры поля ввода с fade */
 .input-bar-bg {
   position: absolute; inset: 0;
   background: url('/src/texture-enterprompt.png') center/100% 100% no-repeat;
@@ -228,7 +235,7 @@ html, body {
   position: relative; z-index: 2; flex: 1;
   background: transparent; border: none; outline: none;
   color: #fff; font-size: 16px;
-  font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+  font-family: 'CustomFont', -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
   padding: 0 14px; caret-color: #fff;
 }
 .input-field::placeholder { color: rgba(255,255,255,0.42); }
@@ -265,7 +272,6 @@ html, body {
   40% { opacity: 1; transform: scale(1); }
 }
 
-/* ══ ДИАЛОГ УДАЛЕНИЯ ══ */
 .delete-overlay {
   position: fixed; inset: 0; z-index: 300;
   background: rgba(0,0,0,0.5);
@@ -287,14 +293,12 @@ html, body {
 .delete-dialog img:first-child { border-radius: 29px 29px 0 0; }
 .delete-dialog img:last-child  { border-radius: 0 0 29px 29px; }
 
-/* Диктовка — анимация микрофона */
 .mic-recording { animation: micPulse 1s ease-in-out infinite; }
 @keyframes micPulse {
   0%,100% { filter: brightness(1); }
   50%      { filter: brightness(1.8) drop-shadow(0 0 6px #ff3b30); }
 }
 
-/* ══ ЗАГЛУШКА — не PWA ══ */
 #pwa-gate {
   position: fixed; inset: 0; z-index: 9999;
   background: #000;
@@ -457,7 +461,6 @@ html, body {
 </div>
 
 <script>
-/* ══ ХРАНИЛИЩЕ ══ */
 function loadChats() {
   try { return JSON.parse(localStorage.getItem('siri_chats') || '[]'); } catch { return []; }
 }
