@@ -573,6 +573,30 @@ html, body {
 
 #btnSettings { width: 52px; height: 52px; }
 #btnSettings svg { width: 24px; height: 24px; }
+  /* ── Card tap ripple effect (аналогично input) ── */
+.card {
+  position: relative;
+  overflow: hidden; /* Чтобы ripple не выходил за пределы карточки */
+}
+
+.card-ripple {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.12) 40%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  z-index: 5;
+  animation: cardRippleAnim 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes cardRippleAnim {
+  0%   { transform: translate(-50%, -50%) scale(0);   opacity: 1; }
+  40%  { transform: translate(-50%, -50%) scale(1.4); opacity: 0.8; }
+  70%  { transform: translate(-50%, -50%) scale(2.2); opacity: 0.4; }
+  100% { transform: translate(-50%, -50%) scale(3);   opacity: 0; }
+}
 </style>
 </head>
 <body>
@@ -895,12 +919,13 @@ function formatDate(ts) {
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function renderCards() {
-  const grid=document.getElementById('cardsGrid');
-  grid.innerHTML='';
-  chats.forEach((chat,i)=>{
-    const card=document.createElement('div');
-    card.className='card'+(editingMode?' wobble':'');
-    card.innerHTML=`
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+  chats.forEach((chat, i) => {
+    const card = document.createElement('div');
+    card.className = 'card' + (editingMode ? ' wobble' : '');
+    card.setAttribute('data-card-index', i);
+    card.innerHTML = `
       <button class="card-delete" data-i="${i}">
         <svg viewBox="0 0 14 14" fill="none" stroke="#ff3b30" stroke-width="2.4" stroke-linecap="round">
           <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
@@ -909,19 +934,91 @@ function renderCards() {
       <div class="card-date">${formatDate(chat.ts)}</div>
       <div class="card-title">${escHtml(chat.title)}</div>
       <div class="card-preview">${escHtml(chat.preview)}</div>`;
-    if(!editingMode) card.addEventListener('click',()=>openChatById(chat.id));
-    card.addEventListener('pointerdown',startLongPress);
-    card.addEventListener('pointerup',cancelLongPress);
-    card.addEventListener('pointercancel',cancelLongPress);
-    card.addEventListener('pointermove',cancelLongPress);
-    card.querySelector('.card-delete').addEventListener('click',e=>{e.stopPropagation();deleteChat(e,parseInt(e.currentTarget.dataset.i));});
+    
+    if (!editingMode) {
+      // Добавляем обработчик с ripple-эффектом
+      card.addEventListener('pointerdown', handleCardPointerDown);
+      card.addEventListener('click', (e) => {
+        // Предотвращаем двойной вызов, если ripple уже обработал
+        if (!card.hasAttribute('data-ripple-triggered')) {
+          openChatById(chat.id);
+        }
+        card.removeAttribute('data-ripple-triggered');
+      });
+    }
+    
+    card.addEventListener('pointerdown', startLongPress);
+    card.addEventListener('pointerup', cancelLongPress);
+    card.addEventListener('pointercancel', cancelLongPress);
+    card.addEventListener('pointermove', cancelLongPress);
+    
+    card.querySelector('.card-delete').addEventListener('click', e => {
+      e.stopPropagation();
+      deleteChat(e, parseInt(e.currentTarget.dataset.i));
+    });
+    
     grid.appendChild(card);
   });
-  grid.classList.toggle('editing-mode',editingMode);
-  document.getElementById('homeScroll').classList.toggle('editing-mode',editingMode);
-  document.getElementById('homeTitle').style.display=editingMode?'none':'';
-  document.getElementById('btnSettings').style.display=editingMode?'none':'';
-  document.getElementById('btnDone').style.display=editingMode?'':'none';
+  
+  grid.classList.toggle('editing-mode', editingMode);
+  document.getElementById('homeScroll').classList.toggle('editing-mode', editingMode);
+  document.getElementById('homeTitle').style.display = editingMode ? 'none' : '';
+  document.getElementById('btnSettings').style.display = editingMode ? 'none' : '';
+  document.getElementById('btnDone').style.display = editingMode ? '' : 'none';
+}
+
+// Функция ripple-эффекта для карточек
+function handleCardPointerDown(e) {
+  // Не показываем ripple в режиме редактирования
+  if (editingMode) return;
+  
+  const card = e.currentTarget;
+  const rect = card.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  // Создаем ripple элемент
+  const ripple = document.createElement('div');
+  ripple.className = 'card-ripple';
+  ripple.style.left = x + 'px';
+  ripple.style.top = y + 'px';
+  card.appendChild(ripple);
+  
+  // Удаляем ripple после анимации
+  ripple.addEventListener('animationend', () => {
+    ripple.remove();
+  });
+  
+  // Задержка перед переходом, чтобы анимация успела показаться
+  // (как минимум 50% анимации, которая длится 650ms)
+  const animationDelay = 250; // 250ms - видно ~40-50% анимации
+  
+  // Сохраняем ID чата для открытия после задержки
+  const chatId = card.closest('.card') ? 
+    chats[parseInt(card.getAttribute('data-card-index'))]?.id : null;
+  
+  if (chatId) {
+    card.setAttribute('data-ripple-triggered', 'true');
+    
+    // Таймер для открытия чата
+    const openTimer = setTimeout(() => {
+      openChatById(chatId);
+      card.removeAttribute('data-ripple-triggered');
+    }, animationDelay);
+    
+    // Отменяем открытие, если произошел long press или движение
+    const cancelOpen = () => {
+      clearTimeout(openTimer);
+      card.removeAttribute('data-ripple-triggered');
+      card.removeEventListener('pointerup', cancelOpen);
+      card.removeEventListener('pointercancel', cancelOpen);
+      card.removeEventListener('pointermove', cancelOpen);
+    };
+    
+    card.addEventListener('pointerup', cancelOpen, { once: true });
+    card.addEventListener('pointercancel', cancelOpen, { once: true });
+    card.addEventListener('pointermove', cancelOpen, { once: true });
+  }
 }
 function startLongPress(){cancelLongPress();longPressTimer=setTimeout(()=>{if(!editingMode){editingMode=true;renderCards();}},480);}
 function cancelLongPress(){clearTimeout(longPressTimer);}
