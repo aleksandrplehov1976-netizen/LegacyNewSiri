@@ -18,7 +18,7 @@
             var isPlaying = false;
             var isReversing = false;
             var isExpanded = false;
-            var forwardSkipFrames = 5;
+            var animationId = null;
             
             video.load();
             video.currentTime = 0;
@@ -36,18 +36,31 @@
                 }, 800);
             }
             
+            function stopReverseAnimation() {
+                if(animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+            
             function playForward() {
                 if(isPlaying) return;
+                
+                stopReverseAnimation();
                 isPlaying = true;
                 isReversing = false;
                 isExpanded = true;
                 video.playbackRate = 1.0;
                 
-                var frameTime = 1 / 30;
-                var skipTime = forwardSkipFrames * frameTime;
-                video.currentTime = skipTime;
+                var currentTime = video.currentTime;
+                if(currentTime >= video.duration - 0.01 || currentTime <= 0.01) {
+                    video.currentTime = 0;
+                }
                 
-                video.play().catch(function(e){});
+                var playPromise = video.play();
+                if(playPromise !== undefined) {
+                    playPromise.catch(function(e){});
+                }
                 
                 var onEnded = function() {
                     video.removeEventListener('ended', onEnded);
@@ -61,6 +74,8 @@
             function playReverse() {
                 if(isPlaying) return;
                 if(!isExpanded) return;
+                
+                stopReverseAnimation();
                 isPlaying = true;
                 isReversing = true;
                 video.pause();
@@ -69,8 +84,11 @@
                 if(startTime <= 0.01) startTime = video.duration - 0.001;
                 video.currentTime = startTime;
                 
-                var reverseStep = function() {
-                    if(!isReversing) return;
+                function reverseStep() {
+                    if(!isReversing) {
+                        animationId = null;
+                        return;
+                    }
                     var newTime = video.currentTime - 0.033;
                     if(newTime <= 0) {
                         video.currentTime = 0;
@@ -78,13 +96,14 @@
                         isPlaying = false;
                         isReversing = false;
                         isExpanded = false;
+                        animationId = null;
                         return;
                     }
                     video.currentTime = newTime;
-                    requestAnimationFrame(reverseStep);
-                };
+                    animationId = requestAnimationFrame(reverseStep);
+                }
                 
-                requestAnimationFrame(reverseStep);
+                animationId = requestAnimationFrame(reverseStep);
             }
             
             video.addEventListener('click', function(e){
@@ -94,10 +113,6 @@
                     showUps();
                     return;
                 }
-                if(video.currentTime >= video.duration - 0.01) {
-                    video.currentTime = 0;
-                    video.pause();
-                }
                 playForward();
             });
             
@@ -105,10 +120,6 @@
                 if(e.target === video) return;
                 if(!isExpanded) return;
                 if(isPlaying) return;
-                if(video.currentTime <= 0.01) {
-                    video.currentTime = video.duration - 0.001;
-                    video.pause();
-                }
                 playReverse();
             });
             
@@ -120,10 +131,6 @@
                 if(e.target === video) return;
                 if(!isExpanded) return;
                 if(isPlaying) return;
-                if(video.currentTime <= 0.01) {
-                    video.currentTime = video.duration - 0.001;
-                    video.pause();
-                }
                 playReverse();
             });
             
@@ -131,6 +138,13 @@
                 video.currentTime = 0;
                 video.pause();
                 isExpanded = false;
+                stopReverseAnimation();
+            });
+            
+            video.addEventListener('play', function(){
+                if(!isReversing && isPlaying) {
+                    video.playbackRate = 1.0;
+                }
             });
         })();
     </script>
