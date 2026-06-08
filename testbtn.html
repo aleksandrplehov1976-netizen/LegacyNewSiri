@@ -10,11 +10,15 @@
            style="width:auto; height:auto; max-width:90vw; max-height:90vh; cursor:pointer; display:block; user-select:none; -webkit-tap-highlight-color:transparent;"
            muted playsinline
            preload="auto"></video>
+    <div id="upsMessage" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); color:white; font-size:24px; padding:20px 40px; border-radius:12px; display:none; z-index:100; font-family:sans-serif; pointer-events:none;">УПС, заглушка</div>
     <script>
         (function(){
             var video = document.getElementById('mainVideo');
+            var upsDiv = document.getElementById('upsMessage');
             var isPlaying = false;
             var isReversing = false;
+            var isExpanded = false;
+            var forwardSkipFrames = 3;
             
             video.load();
             video.currentTime = 0;
@@ -25,11 +29,24 @@
                 video.pause();
             });
             
+            function showUps() {
+                upsDiv.style.display = 'block';
+                setTimeout(function(){
+                    upsDiv.style.display = 'none';
+                }, 800);
+            }
+            
             function playForward() {
                 if(isPlaying) return;
                 isPlaying = true;
                 isReversing = false;
+                isExpanded = true;
                 video.playbackRate = 1.0;
+                
+                var frameTime = 1 / 30;
+                var skipTime = forwardSkipFrames * frameTime;
+                video.currentTime = skipTime;
+                
                 video.play().catch(function(e){});
                 
                 var onEnded = function() {
@@ -43,11 +60,13 @@
             
             function playReverse() {
                 if(isPlaying) return;
+                if(!isExpanded) return;
                 isPlaying = true;
                 isReversing = true;
                 video.pause();
                 
-                var startTime = video.duration - 0.001;
+                var startTime = video.currentTime;
+                if(startTime <= 0.01) startTime = video.duration - 0.001;
                 video.currentTime = startTime;
                 
                 var reverseStep = function() {
@@ -58,6 +77,7 @@
                         video.pause();
                         isPlaying = false;
                         isReversing = false;
+                        isExpanded = false;
                         return;
                     }
                     video.currentTime = newTime;
@@ -70,6 +90,10 @@
             video.addEventListener('click', function(e){
                 e.stopPropagation();
                 if(isPlaying) return;
+                if(isExpanded) {
+                    showUps();
+                    return;
+                }
                 if(video.currentTime >= video.duration - 0.01) {
                     video.currentTime = 0;
                     video.pause();
@@ -79,6 +103,7 @@
             
             document.body.addEventListener('click', function(e){
                 if(e.target === video) return;
+                if(!isExpanded) return;
                 if(isPlaying) return;
                 if(video.currentTime <= 0.01) {
                     video.currentTime = video.duration - 0.001;
@@ -93,6 +118,7 @@
             
             document.body.addEventListener('touchstart', function(e){
                 if(e.target === video) return;
+                if(!isExpanded) return;
                 if(isPlaying) return;
                 if(video.currentTime <= 0.01) {
                     video.currentTime = video.duration - 0.001;
@@ -104,6 +130,7 @@
             video.addEventListener('loadedmetadata', function(){
                 video.currentTime = 0;
                 video.pause();
+                isExpanded = false;
             });
         })();
     </script>
