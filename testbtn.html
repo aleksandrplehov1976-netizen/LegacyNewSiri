@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 </head>
-<body style="margin:0; padding:0; background:#000; overflow:hidden; position:fixed; width:100%; height:100%; top:0; left:0; display:flex; align-items:center; justify-content:center;">
+<body style="margin:0; padding:0; background:#000; overflow:hidden; position:fixed; width:100%; height:100%; top:0; left:0;">
     <video id="mainVideo" 
            src="/src/IMG_5249.MP4" 
-           style="width:auto; height:auto; max-width:90vw; max-height:90vh; cursor:pointer; display:block; user-select:none; -webkit-tap-highlight-color:transparent;"
+           style="position:fixed; bottom:16px; left:16px; width:100px; height:auto; cursor:pointer; display:block; user-select:none; -webkit-tap-highlight-color:transparent; z-index:10;"
            muted playsinline
            preload="auto"></video>
     <div id="upsMessage" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); color:white; font-size:24px; padding:20px 40px; border-radius:12px; display:none; z-index:100; font-family:sans-serif; pointer-events:none;">УПС, заглушка</div>
@@ -19,6 +19,8 @@
             var isReversing = false;
             var isExpanded = false;
             var animationId = null;
+            var originalWidth = 100;
+            var expandedWidth = 280;
             
             video.load();
             video.currentTime = 0;
@@ -50,6 +52,7 @@
                 isPlaying = true;
                 isReversing = false;
                 isExpanded = true;
+                video.style.width = expandedWidth + 'px';
                 video.playbackRate = 1.0;
                 
                 var currentTime = video.currentTime;
@@ -93,6 +96,7 @@
                     if(newTime <= 0) {
                         video.currentTime = 0;
                         video.pause();
+                        video.style.width = originalWidth + 'px';
                         isPlaying = false;
                         isReversing = false;
                         isExpanded = false;
@@ -137,6 +141,7 @@
             video.addEventListener('loadedmetadata', function(){
                 video.currentTime = 0;
                 video.pause();
+                video.style.width = originalWidth + 'px';
                 isExpanded = false;
                 stopReverseAnimation();
             });
