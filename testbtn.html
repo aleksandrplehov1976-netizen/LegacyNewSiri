@@ -7,7 +7,7 @@
 <body style="margin:0; padding:0; background:#000; overflow:hidden; position:fixed; width:100%; height:100%; top:0; left:0; display:flex; align-items:center; justify-content:center;">
     <video id="mainVideo" 
            src="/src/IMG_5249.MP4" 
-           style="width:calc(100% - 100px); max-width:280px; height:auto; cursor:pointer; -webkit-tap-highlight-color:transparent;"
+           style="width:auto; height:auto; max-width:90vw; max-height:90vh; cursor:pointer; display:block; user-select:none; -webkit-tap-highlight-color:transparent;"
            muted playsinline
            preload="auto"></video>
     <script>
@@ -20,37 +20,17 @@
             video.currentTime = 0;
             video.pause();
             
-            var forwardVideo = document.createElement('video');
-            forwardVideo.src = "/src/IMG_5249.MP4";
-            forwardVideo.muted = true;
-            forwardVideo.playsinline = true;
-            forwardVideo.preload = "auto";
-            forwardVideo.load();
-            
-            var reverseVideo = document.createElement('video');
-            reverseVideo.src = "/src/IMG_5247.MP4";
-            reverseVideo.muted = true;
-            reverseVideo.playsinline = true;
-            reverseVideo.preload = "auto";
-            reverseVideo.load();
+            video.addEventListener('loadeddata', function(){
+                video.currentTime = 0;
+                video.pause();
+            });
             
             function playForward() {
-                if(isPlaying || isReversing) return;
+                if(isPlaying) return;
                 isPlaying = true;
-                
-                video.pause();
-                video.currentTime = 0;
-                video.src = "/src/IMG_5249.MP4";
-                video.load();
-                
-                var playHandler = function() {
-                    video.removeEventListener('canplaythrough', playHandler);
-                    video.play().then(function() {
-                        isPlaying = true;
-                    }).catch(function(e){});
-                };
-                video.addEventListener('canplaythrough', playHandler);
-                video.load();
+                isReversing = false;
+                video.playbackRate = 1.0;
+                video.play().catch(function(e){});
                 
                 var onEnded = function() {
                     video.removeEventListener('ended', onEnded);
@@ -59,80 +39,72 @@
                     isPlaying = false;
                 };
                 video.addEventListener('ended', onEnded);
-                
-                setTimeout(function() {
-                    if(isPlaying && video.currentTime >= video.duration - 0.05) {
-                        video.pause();
-                        video.currentTime = video.duration - 0.001;
-                        isPlaying = false;
-                    }
-                }, (video.duration * 1000) + 100);
             }
             
             function playReverse() {
-                if(isPlaying || isReversing) return;
+                if(isPlaying) return;
+                isPlaying = true;
                 isReversing = true;
-                
                 video.pause();
-                video.currentTime = 0;
-                video.src = "/src/IMG_5247.MP4";
-                video.load();
                 
-                var playHandler = function() {
-                    video.removeEventListener('canplaythrough', playHandler);
-                    video.playbackRate = 1.4;
-                    video.play().then(function() {
-                        isReversing = true;
-                    }).catch(function(e){});
-                };
-                video.addEventListener('canplaythrough', playHandler);
-                video.load();
+                var startTime = video.duration - 0.001;
+                video.currentTime = startTime;
                 
-                var onEnded = function() {
-                    video.removeEventListener('ended', onEnded);
-                    video.pause();
-                    video.currentTime = video.duration - 0.001;
-                    video.src = "/src/IMG_5249.MP4";
-                    video.load();
-                    video.currentTime = 0;
-                    video.pause();
-                    isReversing = false;
-                };
-                video.addEventListener('ended', onEnded);
-                
-                setTimeout(function() {
-                    if(isReversing && video.currentTime >= video.duration - 0.05) {
-                        video.pause();
-                        video.currentTime = video.duration - 0.001;
-                        video.src = "/src/IMG_5249.MP4";
-                        video.load();
+                var reverseStep = function() {
+                    if(!isReversing) return;
+                    var newTime = video.currentTime - 0.033;
+                    if(newTime <= 0) {
                         video.currentTime = 0;
                         video.pause();
+                        isPlaying = false;
                         isReversing = false;
+                        return;
                     }
-                }, (video.duration * 1000 / 1.4) + 100);
+                    video.currentTime = newTime;
+                    requestAnimationFrame(reverseStep);
+                };
+                
+                requestAnimationFrame(reverseStep);
             }
             
             video.addEventListener('click', function(e){
                 e.stopPropagation();
+                if(isPlaying) return;
+                if(video.currentTime >= video.duration - 0.01) {
+                    video.currentTime = 0;
+                    video.pause();
+                }
                 playForward();
             });
             
             document.body.addEventListener('click', function(e){
                 if(e.target === video) return;
+                if(isPlaying) return;
+                if(video.currentTime <= 0.01) {
+                    video.currentTime = video.duration - 0.001;
+                    video.pause();
+                }
                 playReverse();
             });
             
-            video.addEventListener('loadeddata', function(){
-                if(!isPlaying && !isReversing){
-                    video.pause();
-                }
+            video.addEventListener('touchstart', function(e){
+                e.stopPropagation();
             });
             
-            setTimeout(function(){
-                video.pause();
+            document.body.addEventListener('touchstart', function(e){
+                if(e.target === video) return;
+                if(isPlaying) return;
+                if(video.currentTime <= 0.01) {
+                    video.currentTime = video.duration - 0.001;
+                    video.pause();
+                }
+                playReverse();
+            });
+            
+            video.addEventListener('loadedmetadata', function(){
                 video.currentTime = 0;
-            }, 100);
+                video.pause();
+            });
         })();
     </script>
 </body>
