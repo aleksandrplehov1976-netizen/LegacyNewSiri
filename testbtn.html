@@ -9,7 +9,8 @@
            src="/src/IMG_5249.MP4" 
            style="position:fixed; bottom:16px; left:16px; width:120px; height:auto; cursor:pointer; display:block; user-select:none; -webkit-tap-highlight-color:transparent; z-index:10;"
            muted playsinline
-           preload="auto"></video>
+           preload="auto"
+           controlslist="nodownload nofullscreen noremoteplayback"></video>
     <div id="upsMessage" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); color:white; font-size:24px; padding:20px 40px; border-radius:12px; display:none; z-index:100; font-family:sans-serif; pointer-events:none;">УПС, заглушка</div>
     <script>
         (function(){
@@ -27,16 +28,13 @@
                 video.style.height = 'auto';
             }
             
+            video.removeAttribute('controls');
+            video.controls = false;
+            
             video.load();
             video.currentTime = 0;
             video.pause();
             setVideoSize(normalSize);
-            
-            video.addEventListener('loadeddata', function(){
-                video.currentTime = 0;
-                video.pause();
-                setVideoSize(normalSize);
-            });
             
             function showUps() {
                 upsDiv.style.display = 'block';
@@ -61,11 +59,6 @@
                 isExpanded = true;
                 setVideoSize(expandedSize);
                 video.playbackRate = 1.0;
-                
-                var currentTime = video.currentTime;
-                if(currentTime >= video.duration - 0.01 || currentTime <= 0.01) {
-                    video.currentTime = 0;
-                }
                 
                 var playPromise = video.play();
                 if(playPromise !== undefined) {
@@ -151,12 +144,6 @@
                 setVideoSize(normalSize);
                 isExpanded = false;
                 stopReverseAnimation();
-            });
-            
-            video.addEventListener('play', function(){
-                if(!isReversing && isPlaying) {
-                    video.playbackRate = 1.0;
-                }
             });
         })();
     </script>
