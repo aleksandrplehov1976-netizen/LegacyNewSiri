@@ -4,145 +4,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 </head>
-<body style="margin:0; padding:0; background:#000; overflow:hidden; position:fixed; width:100%; height:100%; top:0; left:0;">
-    <img id="actionButton" src="/src/animbutton.jpg" 
-         style="position:fixed; bottom:16px; left:16px; width:72px; height:72px; cursor:pointer; z-index:20; -webkit-tap-highlight-color:transparent;"
-         draggable="false">
-    <video id="upVideo" 
+<body style="margin:0; padding:0; background:#000; overflow:hidden; position:fixed; width:100%; height:100%; top:0; left:0; display:flex; align-items:center; justify-content:center;">
+    <video id="mainVideo" 
            src="/src/IMG_5249.MP4" 
-           style="position:fixed; bottom:16px; left:16px; width:calc(100% - 100px); max-width:280px; height:auto; z-index:15; display:none; pointer-events:none; object-fit:contain;"
-           muted playsinline
-           preload="auto"></video>
-    <video id="downVideo" 
-           src="/src/IMG_5247.MP4" 
-           style="position:fixed; bottom:16px; left:16px; width:calc(100% - 100px); max-width:280px; height:auto; z-index:15; display:none; pointer-events:none; object-fit:contain;"
+           style="width:calc(100% - 100px); max-width:280px; height:auto; cursor:pointer; -webkit-tap-highlight-color:transparent;"
            muted playsinline
            preload="auto"></video>
     <script>
         (function(){
-            var btn = document.getElementById('actionButton');
-            var upVideo = document.getElementById('upVideo');
-            var downVideo = document.getElementById('downVideo');
+            var video = document.getElementById('mainVideo');
             var isPlaying = false;
+            var isReversing = false;
             
-            upVideo.load();
-            downVideo.load();
-            upVideo.playbackRate = 1.0;
-            downVideo.playbackRate = 1.4;
+            video.load();
+            video.currentTime = 0;
+            video.pause();
             
-            upVideo.addEventListener('canplaythrough', function(){});
-            downVideo.addEventListener('canplaythrough', function(){});
+            var forwardVideo = document.createElement('video');
+            forwardVideo.src = "/src/IMG_5249.MP4";
+            forwardVideo.muted = true;
+            forwardVideo.playsinline = true;
+            forwardVideo.preload = "auto";
+            forwardVideo.load();
             
-            function resetToButton(){
-                upVideo.style.display = 'none';
-                downVideo.style.display = 'none';
-                btn.style.display = 'block';
-                upVideo.pause();
-                upVideo.currentTime = 0;
-                downVideo.pause();
-                downVideo.currentTime = 0;
-                isPlaying = false;
-            }
+            var reverseVideo = document.createElement('video');
+            reverseVideo.src = "/src/IMG_5247.MP4";
+            reverseVideo.muted = true;
+            reverseVideo.playsinline = true;
+            reverseVideo.preload = "auto";
+            reverseVideo.load();
             
-            function playUpVideo(){
-                if(isPlaying) return;
-                btn.style.display = 'none';
-                upVideo.style.display = 'block';
-                downVideo.style.display = 'none';
-                upVideo.currentTime = 0;
-                upVideo.play().then(function(){
-                    isPlaying = true;
-                }).catch(function(e){});
+            function playForward() {
+                if(isPlaying || isReversing) return;
+                isPlaying = true;
                 
-                var onUpEnded = function(){
-                    upVideo.removeEventListener('ended', onUpEnded);
-                    if(upVideo.currentTime >= upVideo.duration - 0.05){
-                        upVideo.pause();
-                        upVideo.currentTime = upVideo.duration - 0.001;
-                        isPlaying = false;
-                    } else {
-                        setTimeout(function(){
-                            if(upVideo.currentTime >= upVideo.duration - 0.05){
-                                upVideo.pause();
-                                upVideo.currentTime = upVideo.duration - 0.001;
-                                isPlaying = false;
-                            }
-                        }, 50);
-                    }
+                video.pause();
+                video.currentTime = 0;
+                video.src = "/src/IMG_5249.MP4";
+                video.load();
+                
+                var playHandler = function() {
+                    video.removeEventListener('canplaythrough', playHandler);
+                    video.play().then(function() {
+                        isPlaying = true;
+                    }).catch(function(e){});
                 };
-                upVideo.addEventListener('ended', onUpEnded);
+                video.addEventListener('canplaythrough', playHandler);
+                video.load();
                 
-                setTimeout(function(){
-                    if(isPlaying && upVideo.currentTime >= upVideo.duration - 0.1){
-                        upVideo.pause();
-                        upVideo.currentTime = upVideo.duration - 0.001;
-                        isPlaying = false;
-                    }
-                }, (upVideo.duration * 1000) + 50);
-            }
-            
-            function playDownAndReset(){
-                if(isPlaying) return;
-                btn.style.display = 'none';
-                upVideo.style.display = 'none';
-                downVideo.style.display = 'block';
-                downVideo.currentTime = 0;
-                downVideo.play().then(function(){
-                    isPlaying = true;
-                }).catch(function(e){});
-                
-                var onDownEnded = function(){
-                    downVideo.removeEventListener('ended', onDownEnded);
-                    downVideo.pause();
-                    downVideo.currentTime = downVideo.duration - 0.001;
-                    resetToButton();
+                var onEnded = function() {
+                    video.removeEventListener('ended', onEnded);
+                    video.pause();
+                    video.currentTime = video.duration - 0.001;
+                    isPlaying = false;
                 };
-                downVideo.addEventListener('ended', onDownEnded);
+                video.addEventListener('ended', onEnded);
                 
-                setTimeout(function(){
-                    if(isPlaying && downVideo.currentTime >= downVideo.duration - 0.1){
-                        downVideo.pause();
-                        downVideo.currentTime = downVideo.duration - 0.001;
-                        resetToButton();
+                setTimeout(function() {
+                    if(isPlaying && video.currentTime >= video.duration - 0.05) {
+                        video.pause();
+                        video.currentTime = video.duration - 0.001;
                         isPlaying = false;
                     }
-                }, (downVideo.duration * 1000 / 1.4) + 50);
+                }, (video.duration * 1000) + 100);
             }
             
-            btn.addEventListener('click', function(e){
+            function playReverse() {
+                if(isPlaying || isReversing) return;
+                isReversing = true;
+                
+                video.pause();
+                video.currentTime = 0;
+                video.src = "/src/IMG_5247.MP4";
+                video.load();
+                
+                var playHandler = function() {
+                    video.removeEventListener('canplaythrough', playHandler);
+                    video.playbackRate = 1.4;
+                    video.play().then(function() {
+                        isReversing = true;
+                    }).catch(function(e){});
+                };
+                video.addEventListener('canplaythrough', playHandler);
+                video.load();
+                
+                var onEnded = function() {
+                    video.removeEventListener('ended', onEnded);
+                    video.pause();
+                    video.currentTime = video.duration - 0.001;
+                    video.src = "/src/IMG_5249.MP4";
+                    video.load();
+                    video.currentTime = 0;
+                    video.pause();
+                    isReversing = false;
+                };
+                video.addEventListener('ended', onEnded);
+                
+                setTimeout(function() {
+                    if(isReversing && video.currentTime >= video.duration - 0.05) {
+                        video.pause();
+                        video.currentTime = video.duration - 0.001;
+                        video.src = "/src/IMG_5249.MP4";
+                        video.load();
+                        video.currentTime = 0;
+                        video.pause();
+                        isReversing = false;
+                    }
+                }, (video.duration * 1000 / 1.4) + 100);
+            }
+            
+            video.addEventListener('click', function(e){
                 e.stopPropagation();
-                playUpVideo();
+                playForward();
             });
             
             document.body.addEventListener('click', function(e){
-                if(e.target === btn || e.target === upVideo || e.target === downVideo) return;
-                if(upVideo.style.display === 'block' || downVideo.style.display === 'block'){
-                    if(upVideo.style.display === 'block'){
-                        upVideo.pause();
-                        upVideo.currentTime = upVideo.duration - 0.001;
-                    }
-                    if(downVideo.style.display === 'block'){
-                        downVideo.pause();
-                        downVideo.currentTime = downVideo.duration - 0.001;
-                    }
-                    resetToButton();
+                if(e.target === video) return;
+                playReverse();
+            });
+            
+            video.addEventListener('loadeddata', function(){
+                if(!isPlaying && !isReversing){
+                    video.pause();
                 }
-                playDownAndReset();
             });
             
-            upVideo.addEventListener('click', function(e){ e.stopPropagation(); });
-            downVideo.addEventListener('click', function(e){ e.stopPropagation(); });
-            
-            resetToButton();
-            
-            upVideo.addEventListener('loadeddata', function(){
-                upVideo.pause();
-                upVideo.currentTime = 0;
-            });
-            downVideo.addEventListener('loadeddata', function(){
-                downVideo.pause();
-                downVideo.currentTime = 0;
-            });
+            setTimeout(function(){
+                video.pause();
+                video.currentTime = 0;
+            }, 100);
         })();
     </script>
 </body>
