@@ -52,37 +52,13 @@ html, body {
 }
 .bubble-user, .bubble-ai-content, .input-field { user-select: text; -webkit-user-select: text; }
 
-/* ── preloader ── */
+/* ── preloader — no logo, just black fade ── */
 #preloader {
   position: fixed; inset: 0; z-index: 10000;
-  background: #000; display: flex;
-  align-items: center; justify-content: center; pointer-events: none;
+  background: #000; pointer-events: none;
+  transition: opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.logo-preloader {
-  width: 80px; height: 80px; margin-top: -12vh;
-  opacity: 0; transform: scale(0.72);
-  will-change: opacity, transform;
-}
-.logo-preloader img { width: 100%; height: 100%; border-radius: 20px; object-fit: contain; }
-
-/* Apple HIG spring enter */
-.logo-preloader.enter {
-  animation: logoSpringIn 0.52s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-@keyframes logoSpringIn {
-  0%   { opacity: 0; transform: scale(0.72); }
-  60%  { opacity: 1; transform: scale(1.06); }
-  80%  { transform: scale(0.97); }
-  100% { opacity: 1; transform: scale(1); }
-}
-/* Apple HIG exit: fade + gentle zoom out */
-.logo-preloader.exit {
-  animation: logoFadeOut 0.38s cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-@keyframes logoFadeOut {
-  0%   { opacity: 1; transform: scale(1); filter: blur(0px); }
-  100% { opacity: 0; transform: scale(1.18); filter: blur(4px); }
-}
+#preloader.fade-out { opacity: 0; }
 
 /* ── screens ── */
 .screen {
@@ -94,15 +70,61 @@ html, body {
 }
 .screen.active { opacity: 1; pointer-events: all; }
 
-/* Staggered entrance for home items */
+/* Staggered entrance with unblur */
 .home-header { animation: none; }
-.app-loaded .home-header  { animation: slideUp 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; animation-delay: 0.05s; }
-.app-loaded .cards-grid   { animation: slideUp 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; animation-delay: 0.12s; }
-.app-loaded .home-bottom  { animation: slideUp 0.44s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; animation-delay: 0.18s; }
+.app-loaded .home-header  { animation: slideUnblur 0.46s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; animation-delay: 0.04s; }
+.app-loaded .cards-grid   { animation: slideUnblur 0.50s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; animation-delay: 0.11s; }
+.app-loaded .home-bottom  { animation: slideUnblur 0.46s cubic-bezier(0.175, 0.885, 0.32, 1.1) both; animation-delay: 0.17s; }
 
-@keyframes slideUp {
-  0%   { opacity: 0; transform: translateY(18px) scale(0.97); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes slideUnblur {
+  0%   { opacity: 0; transform: translateY(14px) scale(0.97); filter: blur(6px); }
+  60%  { filter: blur(1px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+}
+
+/* ══ Working indicator ══ */
+.working-indicator {
+  position: absolute;
+  /* Left-aligned like the screenshot */
+  left: 28px;
+  bottom: 120px; /* above input bar */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 25;
+}
+.working-video {
+  width: 28px; height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+  /* No animation on the video itself — it has its own */
+}
+.working-label {
+  font-size: 15px;
+  color: rgba(255,255,255,0.75);
+  font-family: 'CustomFont', -apple-system, sans-serif;
+  letter-spacing: -0.1px;
+}
+/* Enter: slide up from 6px + unblur over 0.8s */
+.working-indicator.entering .working-label {
+  animation: workingLabelIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes workingLabelIn {
+  0%   { opacity: 0; transform: translateY(6px); filter: blur(5px); }
+  100% { opacity: 1; transform: translateY(0);   filter: blur(0px); }
+}
+/* Exit: slide down + blur */
+.working-indicator.exiting .working-label {
+  animation: workingLabelOut 0.5s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.working-indicator.exiting .working-video {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+@keyframes workingLabelOut {
+  0%   { opacity: 1; transform: translateY(0);   filter: blur(0px); }
+  100% { opacity: 0; transform: translateY(5px);  filter: blur(5px); }
 }
 
 /* ══ HOME ══ */
@@ -158,52 +180,52 @@ html, body {
 .home-bottom button { pointer-events: all; }
 
 /* ══ BUTTONS — Liquid Glass style ══ */
-/* ══ BUTTONS — Liquid Glass style с яркостью ══ */
 .txbtn {
   border-radius: 1000px;
   background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.55), 0 6px 24px rgba(0,0,0,0.38), 0 1px 2px rgba(0,0,0,0.7);
-  transition: transform 0.055s cubic-bezier(0.2, 0, 0.3, 1), filter 0.055s ease;
-  filter: brightness(1);
-  will-change: transform, filter;
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.55),
+    0 6px 24px rgba(0,0,0,0.38),
+    0 1px 2px rgba(0,0,0,0.7);
+  /* Button frame: only subtle scale, no brightness */
+  transition: transform 0.055s cubic-bezier(0.2, 0, 0.3, 1);
+  will-change: transform;
 }
 
+/* SVG icon inside: dim at rest, brightens on press */
 .txbtn svg {
   filter: brightness(0.72);
   transition: filter 0.055s ease, drop-shadow 0.055s ease;
   will-change: filter;
 }
 
+/* Press: frame scales up, icon goes full bright + glow */
 .txbtn:active {
   transform: scale(1.13);
-  filter: brightness(1.3);
-  transition: transform 0.055s cubic-bezier(0.2, 0, 0.3, 1), filter 0.04s ease;
+  transition: transform 0.055s cubic-bezier(0.2, 0, 0.3, 1);
 }
-
 .txbtn:active svg {
-  filter: brightness(1.0) drop-shadow(0 0 4px rgba(255,255,255,0.9)) drop-shadow(0 0 8px rgba(255,255,255,0.5));
+  filter:
+    brightness(1.0)
+    drop-shadow(0 0 4px rgba(255,255,255,0.9))
+    drop-shadow(0 0 8px rgba(255,255,255,0.5));
   transition: filter 0.04s ease;
 }
 
+/* Release — frame returns, icon brightness decays */
 .txbtn.releasing {
   animation: btnFrameReturn 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-
 .txbtn.releasing svg {
   animation: iconGlowDecay 0.52s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes btnFrameReturn {
-  0%   { transform: scale(1.13); filter: brightness(1.3); }
-  100% { transform: scale(1); filter: brightness(1); }
+  0%   { transform: scale(1.13); }
+  100% { transform: scale(1); }
 }
-
 @keyframes iconGlowDecay {
   0%   { filter: brightness(1.0) drop-shadow(0 0 4px rgba(255,255,255,0.9)) drop-shadow(0 0 8px rgba(255,255,255,0.5)); }
   35%  { filter: brightness(0.95) drop-shadow(0 0 2px rgba(255,255,255,0.3)); }
@@ -372,12 +394,12 @@ html, body {
   transform: translate(-50%, -50%) scale(0);
   pointer-events: none;
   z-index: 3;
-  animation: inputGlow 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: inputGlow 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes inputGlow {
   0%   { transform: translate(-50%, -50%) scale(0);   opacity: 1; }
-  55%  { transform: translate(-50%, -50%) scale(1.8); opacity: 0.7; }
-  100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; }
+  45%  { transform: translate(-50%, -50%) scale(1.6); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
 }
 
 /* ── Bubbles ── */
@@ -573,39 +595,11 @@ html, body {
 
 #btnSettings { width: 52px; height: 52px; }
 #btnSettings svg { width: 24px; height: 24px; }
-  /* ── Card tap ripple effect (аналогично input) ── */
-.card {
-  position: relative;
-  overflow: hidden; /* Чтобы ripple не выходил за пределы карточки */
-}
-
-.card-ripple {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.12) 40%, transparent 70%);
-  transform: translate(-50%, -50%) scale(0);
-  pointer-events: none;
-  z-index: 5;
-  animation: cardRippleAnim 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes cardRippleAnim {
-  0%   { transform: translate(-50%, -50%) scale(0);   opacity: 1; }
-  40%  { transform: translate(-50%, -50%) scale(1.4); opacity: 0.8; }
-  70%  { transform: translate(-50%, -50%) scale(2.2); opacity: 0.4; }
-  100% { transform: translate(-50%, -50%) scale(3);   opacity: 0; }
-}
 </style>
 </head>
 <body>
 
-<div id="preloader">
-  <div class="logo-preloader" id="logoPreloader">
-    <img src="/src/logo.svg" alt="Siri" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23333%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.35em%22 fill=%22white%22%3ES%3C/text%3E%3C/svg%3E'">
-  </div>
-</div>
+<div id="preloader"></div>
 
 <!-- HOME -->
 <div class="screen active" id="home">
@@ -702,6 +696,17 @@ html, body {
     </button>
   </div>
 
+  <!-- Working indicator -->
+  <div class="working-indicator" id="workingIndicator" style="display:none;">
+    <video class="working-video" id="workingVideo"
+      src="/src/FakeThinkMov.MOV"
+      autoplay loop muted playsinline
+      disablepictureinpicture
+      style="pointer-events:none;">
+    </video>
+    <span class="working-label" id="workingLabel">Working…</span>
+  </div>
+
   <!-- Floating back button -->
   <div class="chat-header">
     <button class="txbtn txbtn-sm" id="goHomeBtn">
@@ -778,24 +783,15 @@ async function preloadResources() {
 }
 
 async function bootApplication() {
-  const logo = document.getElementById('logoPreloader');
+  // Brief intentional pause — feels native, not instant
+  await new Promise(r => setTimeout(r, 120));
 
-  // Apple HIG: brief pause before entering, feels intentional
-  await new Promise(r => setTimeout(r, 60));
-  logo.classList.add('enter');
+  const preloader = document.getElementById('preloader');
+  preloader.classList.add('fade-out');
+  await new Promise(r => setTimeout(r, 380));
+  preloader.style.display = 'none';
 
-  // Load while logo is showing
-  await Promise.race([preloadResources(), new Promise(r => setTimeout(r, 4000))]);
-
-  // Minimum display time so it doesn't feel like a flash
-  await new Promise(r => setTimeout(r, 320));
-
-  logo.classList.remove('enter');
-  logo.classList.add('exit');
-  await new Promise(r => setTimeout(r, 400));
-
-  document.getElementById('preloader').style.display = 'none';
-  // Trigger staggered entrance animations
+  // Trigger staggered unblur entrance
   document.body.classList.add('app-loaded');
 }
 
@@ -919,13 +915,12 @@ function formatDate(ts) {
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function renderCards() {
-  const grid = document.getElementById('cardsGrid');
-  grid.innerHTML = '';
-  chats.forEach((chat, i) => {
-    const card = document.createElement('div');
-    card.className = 'card' + (editingMode ? ' wobble' : '');
-    card.setAttribute('data-card-index', i);
-    card.innerHTML = `
+  const grid=document.getElementById('cardsGrid');
+  grid.innerHTML='';
+  chats.forEach((chat,i)=>{
+    const card=document.createElement('div');
+    card.className='card'+(editingMode?' wobble':'');
+    card.innerHTML=`
       <button class="card-delete" data-i="${i}">
         <svg viewBox="0 0 14 14" fill="none" stroke="#ff3b30" stroke-width="2.4" stroke-linecap="round">
           <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
@@ -934,91 +929,19 @@ function renderCards() {
       <div class="card-date">${formatDate(chat.ts)}</div>
       <div class="card-title">${escHtml(chat.title)}</div>
       <div class="card-preview">${escHtml(chat.preview)}</div>`;
-    
-    if (!editingMode) {
-      // Добавляем обработчик с ripple-эффектом
-      card.addEventListener('pointerdown', handleCardPointerDown);
-      card.addEventListener('click', (e) => {
-        // Предотвращаем двойной вызов, если ripple уже обработал
-        if (!card.hasAttribute('data-ripple-triggered')) {
-          openChatById(chat.id);
-        }
-        card.removeAttribute('data-ripple-triggered');
-      });
-    }
-    
-    card.addEventListener('pointerdown', startLongPress);
-    card.addEventListener('pointerup', cancelLongPress);
-    card.addEventListener('pointercancel', cancelLongPress);
-    card.addEventListener('pointermove', cancelLongPress);
-    
-    card.querySelector('.card-delete').addEventListener('click', e => {
-      e.stopPropagation();
-      deleteChat(e, parseInt(e.currentTarget.dataset.i));
-    });
-    
+    if(!editingMode) card.addEventListener('click',()=>openChatById(chat.id));
+    card.addEventListener('pointerdown',startLongPress);
+    card.addEventListener('pointerup',cancelLongPress);
+    card.addEventListener('pointercancel',cancelLongPress);
+    card.addEventListener('pointermove',cancelLongPress);
+    card.querySelector('.card-delete').addEventListener('click',e=>{e.stopPropagation();deleteChat(e,parseInt(e.currentTarget.dataset.i));});
     grid.appendChild(card);
   });
-  
-  grid.classList.toggle('editing-mode', editingMode);
-  document.getElementById('homeScroll').classList.toggle('editing-mode', editingMode);
-  document.getElementById('homeTitle').style.display = editingMode ? 'none' : '';
-  document.getElementById('btnSettings').style.display = editingMode ? 'none' : '';
-  document.getElementById('btnDone').style.display = editingMode ? '' : 'none';
-}
-
-// Функция ripple-эффекта для карточек
-function handleCardPointerDown(e) {
-  // Не показываем ripple в режиме редактирования
-  if (editingMode) return;
-  
-  const card = e.currentTarget;
-  const rect = card.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  
-  // Создаем ripple элемент
-  const ripple = document.createElement('div');
-  ripple.className = 'card-ripple';
-  ripple.style.left = x + 'px';
-  ripple.style.top = y + 'px';
-  card.appendChild(ripple);
-  
-  // Удаляем ripple после анимации
-  ripple.addEventListener('animationend', () => {
-    ripple.remove();
-  });
-  
-  // Задержка перед переходом, чтобы анимация успела показаться
-  // (как минимум 50% анимации, которая длится 650ms)
-  const animationDelay = 250; // 250ms - видно ~40-50% анимации
-  
-  // Сохраняем ID чата для открытия после задержки
-  const chatId = card.closest('.card') ? 
-    chats[parseInt(card.getAttribute('data-card-index'))]?.id : null;
-  
-  if (chatId) {
-    card.setAttribute('data-ripple-triggered', 'true');
-    
-    // Таймер для открытия чата
-    const openTimer = setTimeout(() => {
-      openChatById(chatId);
-      card.removeAttribute('data-ripple-triggered');
-    }, animationDelay);
-    
-    // Отменяем открытие, если произошел long press или движение
-    const cancelOpen = () => {
-      clearTimeout(openTimer);
-      card.removeAttribute('data-ripple-triggered');
-      card.removeEventListener('pointerup', cancelOpen);
-      card.removeEventListener('pointercancel', cancelOpen);
-      card.removeEventListener('pointermove', cancelOpen);
-    };
-    
-    card.addEventListener('pointerup', cancelOpen, { once: true });
-    card.addEventListener('pointercancel', cancelOpen, { once: true });
-    card.addEventListener('pointermove', cancelOpen, { once: true });
-  }
+  grid.classList.toggle('editing-mode',editingMode);
+  document.getElementById('homeScroll').classList.toggle('editing-mode',editingMode);
+  document.getElementById('homeTitle').style.display=editingMode?'none':'';
+  document.getElementById('btnSettings').style.display=editingMode?'none':'';
+  document.getElementById('btnDone').style.display=editingMode?'':'none';
 }
 function startLongPress(){cancelLongPress();longPressTimer=setTimeout(()=>{if(!editingMode){editingMode=true;renderCards();}},480);}
 function cancelLongPress(){clearTimeout(longPressTimer);}
@@ -1171,9 +1094,10 @@ function retryLastMessage(){
 async function callAPI(val) {
   isGenerating=true;toggleControls();
   const msgs=document.getElementById('chatMessages');
-  const typing=document.createElement('div');typing.className='bubble-typing';
-  typing.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-  msgs.appendChild(typing);
+
+  // Show Working indicator
+  showWorking();
+
   requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
   abortController=new AbortController();
   try {
@@ -1182,17 +1106,20 @@ async function callAPI(val) {
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${GROQ_API_KEY}`},
       body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:SYSTEM_PROMPT},...currentMessages],max_tokens:1024,temperature:0.7})
     });
-    typing.remove();
     if(!resp.ok) throw new Error(`API error ${resp.status}`);
     const data=await resp.json();
     const aiText=data.choices?.[0]?.message?.content?.trim()||'Не удалось получить ответ.';
     currentMessages.push({role:'assistant',content:aiText});
+    await hideWorking();
     appendBubble('ai',aiText,true);
     new Audio('/src/sound.mp3').play().catch(()=>{});
     if(currentChatId){const chat=chats.find(c=>c.id===currentChatId);if(chat){chat.messages.push({role:'user',text:val});chat.messages.push({role:'ai',text:aiText});chat.ts=Date.now();chat.title=val.length>50?val.slice(0,50)+'…':val;chat.preview=aiText.slice(0,62)+'…';}}
     else{const id='chat_'+Date.now();currentChatId=id;chats.unshift({id,ts:Date.now(),title:val.length>50?val.slice(0,50)+'…':val,preview:aiText.slice(0,62)+'…',messages:[{role:'user',text:val},{role:'ai',text:aiText}]});}
     saveChats(chats);
-  } catch(err){typing.remove();if(err.name!=='AbortError')appendBubble('ai','Произошла ошибка. Проверьте соединение.',true);}
+  } catch(err){
+    await hideWorking();
+    if(err.name!=='AbortError')appendBubble('ai','Произошла ошибка. Проверьте соединение.',true);
+  }
   isGenerating=false;abortController=null;toggleControls();
 }
 
@@ -1286,9 +1213,7 @@ async function sendMessageWithFile() {
   toggleControls();
 
   isGenerating = true; toggleControls();
-  const typing = document.createElement('div'); typing.className = 'bubble-typing';
-  typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-  msgs.appendChild(typing);
+  showWorking();
   requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
   abortController = new AbortController();
   try {
@@ -1297,11 +1222,11 @@ async function sendMessageWithFile() {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
       body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...currentMessages], max_tokens: 1024, temperature: 0.7 })
     });
-    typing.remove();
     if (!resp.ok) throw new Error('API ' + resp.status);
     const data = await resp.json();
     const aiText = ((data.choices||[])[0]||{}).message.content.trim() || 'Нет ответа.';
     currentMessages.push({ role: 'assistant', content: aiText });
+    await hideWorking();
     appendBubble('ai', aiText, true);
     new Audio('/src/sound.mp3').play().catch(()=>{});
     if (currentChatId) {
@@ -1313,7 +1238,7 @@ async function sendMessageWithFile() {
     }
     saveChats(chats);
   } catch(err) {
-    typing.remove();
+    await hideWorking();
     if (err.name!=='AbortError') appendBubble('ai','Произошла ошибка. Проверьте соединение.',true);
   }
   isGenerating=false; abortController=null; toggleControls();
