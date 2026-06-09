@@ -77,13 +77,13 @@ body {
 .chat-enter-anim { animation: chatBubbleEnter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 /* ══ HOME ══ */
-#home { display: flex; flex-direction: column; }
+#home { display: flex; flex-direction: column; height: 100%; }
 .home-header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 14px 18px 12px; }
 .home-title { font-size: 32px; font-weight: 700; letter-spacing: -0.6px; }
 
 .home-scroll {
   flex: 1;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
@@ -172,7 +172,7 @@ body {
 .settings-heading { font-size: 17px; font-weight: 600; color: #fff; letter-spacing: -0.2px; }
 .settings-close { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); }
 .settings-body {
-  flex: 1; overflow-y: scroll; padding: 6px 16px 20px; scrollbar-width: none;
+  flex: 1; overflow-y: auto; padding: 6px 16px 20px; scrollbar-width: none;
   -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
 }
 .settings-body::-webkit-scrollbar { display: none; }
@@ -201,7 +201,7 @@ body {
 /* Results fill the top, search bar pinned to bottom */
 .search-results {
   flex: 1;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
@@ -252,7 +252,7 @@ body {
 .search-empty { text-align: center; color: rgba(255,255,255,0.3); font-size: 15px; padding: 60px 0; }
 
 /* ══ CHAT ══ */
-#chat { display: flex; flex-direction: column; overflow: hidden; position: relative; }
+#chat { display: flex; flex-direction: column; height: 100%; position: relative; }
 
 .chat-top-texture {
   position: fixed; top: 0; left: 0; right: 0;
@@ -271,17 +271,16 @@ body {
 
 /* ── Chat scroll: iOS PWA scroll fix ── */
 .chat-messages {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  overflow-y: scroll;
+  flex: 1;
+  overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   scrollbar-width: none;
   padding: 72px 0 120px;
-  display: flex; flex-direction: column; gap: 4px;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 80px, black calc(100% - 90px), transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0px, black 80px, black calc(100% - 90px), transparent 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .chat-messages::-webkit-scrollbar { display: none; }
 
@@ -446,15 +445,14 @@ body {
 .action-btn svg { width: 18px; height: 18px; pointer-events: none; }
 
 /* ══ WORKING INDICATOR ══ */
-/* No bubble wrapper — just floating content */
 .working-placeholder {
   padding: 4px 0 4px 0 !important;
 }
 .working-row {
   display: flex;
   align-items: center;
-  gap: 8px; /* тighter gap */
-  padding-left: 4px; /* reduced left indent */
+  gap: 8px;
+  padding-left: 4px;
 }
 .working-video {
   width: 52px; height: 52px;
@@ -464,10 +462,9 @@ body {
 }
 .working-video.fading { opacity: 0; }
 
-/* Working text container — clips overflow for char animations */
 .working-text-area {
   overflow: hidden;
-  height: 28px; /* fixed height prevents layout shift */
+  height: 28px;
   display: flex; align-items: center;
   position: relative;
 }
@@ -481,7 +478,6 @@ body {
   white-space: nowrap;
 }
 
-/* Per-char working animation */
 @keyframes workCharIn {
   0%   { opacity: 0; transform: translateY(6px) scale(0.85); filter: blur(4px); }
   55%  { filter: blur(0.5px); }
@@ -499,7 +495,6 @@ body {
   animation: workCharOut 0.18s cubic-bezier(0.4, 0, 1, 1) both;
 }
 
-/* ══ Char animation for AI message text ══ */
 @keyframes charReveal {
   0%   { opacity: 0; transform: translateY(5px) scale(0.82); filter: blur(5px); }
   45%  { filter: blur(1px); transform: translateY(1px) scale(0.97); opacity: 0.7; }
@@ -526,7 +521,6 @@ body {
 #pwa-gate-title { font-size: 18px; font-weight: 600; color: #fff; line-height: 1.4; letter-spacing: -0.3px; }
 #pwa-gate-sub { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.5; }
 
-/* Syntax highlight */
 .hljs-keyword  { color: #ff79c6; }
 .hljs-string   { color: #f1fa8c; }
 .hljs-comment  { color: #6272a4; font-style: italic; }
@@ -542,7 +536,7 @@ body {
 <!-- HOME -->
 <div class="screen active" id="home">
   <div class="home-header">
-    <span class="home-title" id="homeTitle">Siri (бета-версия)</span>
+    <span class="home-title" id="homeTitle"></span>
     <button class="txbtn" id="btnSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -678,12 +672,6 @@ const GROQ_MODEL    = 'openai/gpt-oss-120b';
 const SYSTEM_PROMPT = 'Ты — Siri, умный, эмпатичный AI-помощник для ежедневного общения и бизнес-задач. Ответы формируй самостоятельно, без вызова внешних функций и инструментов. На простые приветствия, реплики и светскую беседу отвечай коротко, тепло и по-человечески. Переходи к строгой структуре (заголовкам, спискам, разделителям) только при решении комплексных вопросов. Если пользователь просит расчеты или аналитику — используй LaTeX ($inline$ или $$display$$). Тексты для постов пиши в сдержанном, дружелюбном стиле.';
 const MOV_DURATION  = 5000;
 const CHAR_DELAY    = 20;
-
-// Working phrases timing:
-// 0–2000ms: "Думаю над этим..." (chars animate in)
-// 2000ms: chars animate out one by one with delay
-// ~2400ms: "Складываю воедино..." chars animate in
-// 5000ms: video fades out (0.3s), then response shown
 
 // ══ STATE ══
 const loadChats = () => { try { return JSON.parse(localStorage.getItem('siri_chats') || '[]'); } catch { return []; } };
@@ -834,18 +822,12 @@ async function animateHtmlContent(container, htmlString) {
 }
 
 // ══ WORKING INDICATOR ══
-// Phases:
-// 0ms    → "Думаю над этим..." chars animate IN
-// 2000ms → chars animate OUT staggered
-// 2400ms → "Складываю воедино..." chars animate IN
-// 4700ms → video starts fade out (300ms)
-// 5000ms → resolve (AI response is ready by now)
 let workingWrap = null;
 
-function buildWorkingPhrase(text, mode /* 'in' | 'out' */) {
+function buildWorkingPhrase(text, mode) {
   const span = document.createElement('span');
   span.className = 'working-phrase';
-  const chars = [...text]; // handles emoji/surrogate pairs
+  const chars = [...text];
   chars.forEach((ch, i) => {
     if (ch === ' ') {
       const sp = document.createElement('span'); sp.textContent = '\u00a0'; sp.style.display='inline'; span.appendChild(sp);
@@ -879,7 +861,6 @@ function showWorkingInline() {
   const textArea = document.createElement('div');
   textArea.className = 'working-text-area';
 
-  // Phase 1: "Думаю над этим..."
   const phrase1 = buildWorkingPhrase('Думаю над этим...', 'in');
   textArea.appendChild(phrase1);
 
@@ -891,30 +872,24 @@ function showWorkingInline() {
 
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 
-  // Phase 2: at 2000ms — animate phrase1 OUT, then phrase2 IN
   const phase2Timer = setTimeout(() => {
     if (!workingWrap) return;
-    // Animate out each char of phrase1
     const chars1 = phrase1.querySelectorAll('.wchar');
     chars1.forEach((c, i) => { c.classList.add('out'); c.style.animationDelay = (i * 22) + 'ms'; });
-
     const outDuration = chars1.length * 22 + 200;
     setTimeout(() => {
       if (!workingWrap) return;
       phrase1.remove();
-      // phrase 2 in
       const phrase2 = buildWorkingPhrase('Складываю воедино...', 'in');
       textArea.appendChild(phrase2);
     }, outDuration);
   }, 2000);
 
-  // Phase 3: at 4700ms — fade video out
   const phase3Timer = setTimeout(() => {
     if (!workingWrap) return;
     video.classList.add('fading');
   }, 4700);
 
-  // Store timers on wrap for cleanup
   wrap._timers = [phase2Timer, phase3Timer];
 }
 
@@ -922,7 +897,6 @@ function hideWorkingInline(instant) {
   if (!workingWrap) return;
   const wrap = workingWrap;
   workingWrap = null;
-  // Clear pending timers
   (wrap._timers||[]).forEach(t => clearTimeout(t));
   if (instant) { wrap.remove(); return; }
   wrap.remove();
@@ -1032,15 +1006,12 @@ function appendBubble(role, text, animate) {
 
 function buildActionButtons(aiText) {
   const actions = document.createElement('div'); actions.className='bubble-ai-actions';
-
   const retryBtn = document.createElement('button'); retryBtn.className='action-btn'; retryBtn.title='Повторить';
   retryBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>';
   retryBtn.addEventListener('click', () => retryLastMessage());
-
   const speakBtn = document.createElement('button'); speakBtn.className='action-btn'; speakBtn.title='Озвучить';
   speakBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
   speakBtn.addEventListener('click', () => startTTS(aiText));
-
   actions.appendChild(retryBtn); actions.appendChild(speakBtn);
   return actions;
 }
@@ -1128,7 +1099,7 @@ function retryLastMessage() {
   callAPI(lastUserMessage);
 }
 
-// ══ API CALL — message only shown AFTER working indicator fully gone ══
+// ══ API CALL ══
 async function callAPI(val) {
   isGenerating=true; toggleControls(); showWorkingInline();
   const msgs=document.getElementById('chatMessages');
@@ -1159,9 +1130,7 @@ async function callAPI(val) {
   }
 
   currentMessages.push({role:'assistant',content:aiText});
-  // Remove working indicator — it fully disappears before message appears
   hideWorkingInline();
-  // Small gap so layout settles before bubble appears
   await new Promise(r=>setTimeout(r,60));
 
   const wrap=document.createElement('div'); wrap.className='bubble-ai-wrap entering';
@@ -1290,26 +1259,22 @@ function initInputRipple() {
 }
 
 // ══ iOS SCROLL FIX ══
-// The key insight: body is position:fixed, each scroll container
-// needs explicit touch-action and -webkit-overflow-scrolling
 function initScrollContainers() {
   const scrollables = [
     document.getElementById('chatMessages'),
     document.getElementById('homeScroll'),
-    document.getElementById('settingsOverlay').querySelector('.settings-body'),
+    document.querySelector('#settingsOverlay .settings-body'),
     document.getElementById('searchResults'),
   ];
   scrollables.forEach(el => {
     if (!el) return;
     el.style.webkitOverflowScrolling = 'touch';
-    el.style.overflowY = 'scroll';
-    // Prevent touchmove bubbling to body
+    el.style.overflowY = 'auto';
     el.addEventListener('touchstart', e => { e.stopPropagation(); }, { passive: true });
     el.addEventListener('touchmove', e => { e.stopPropagation(); }, { passive: true });
   });
-  // Block all other touchmove
   document.body.addEventListener('touchmove', e => {
-    const el = e.target.closest('#chatMessages,#homeScroll,.settings-body,#searchResults,.bubble-ai-content pre code,.table-wrap');
+    const el = e.target.closest('.chat-messages, .home-scroll, .settings-body, .search-results, .bubble-ai-content pre code, .table-wrap');
     if (!el) e.preventDefault();
   }, { passive: false });
 }
