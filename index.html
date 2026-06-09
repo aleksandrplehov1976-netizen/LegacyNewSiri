@@ -40,7 +40,7 @@ html, body {
 }
 #preloader.fade-out { opacity: 0; }
 
-/* ── screens: start visible (opacity 1) to avoid flicker, JS hides non-active ── */
+/* ── screens ── */
 .screen {
   position: fixed; inset: 0;
   display: flex; flex-direction: column;
@@ -50,7 +50,7 @@ html, body {
 }
 .screen.active { opacity: 1; pointer-events: all; }
 
-/* entrance animations — only apply AFTER app-loaded, and only to currently visible elements */
+/* entrance animations — home */
 .app-loaded #home.active .home-header { animation: slideUnblur 0.46s cubic-bezier(0.175,0.885,0.32,1.1) both; animation-delay: 0.04s; }
 .app-loaded #home.active .cards-grid  { animation: slideUnblur 0.50s cubic-bezier(0.175,0.885,0.32,1.1) both; animation-delay: 0.11s; }
 .app-loaded #home.active .home-bottom { animation: slideUnblur 0.46s cubic-bezier(0.175,0.885,0.32,1.1) both; animation-delay: 0.17s; }
@@ -59,6 +59,16 @@ html, body {
   0%   { opacity: 0; transform: translateY(14px) scale(0.97); filter: blur(6px); }
   60%  { filter: blur(1px); }
   100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* ── Chat enter: each bubble animates in when opening a chat ── */
+@keyframes chatBubbleEnter {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.96); filter: blur(4px); }
+  55%  { filter: blur(0.5px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.chat-enter-anim {
+  animation: chatBubbleEnter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ══ HOME ══ */
@@ -154,36 +164,29 @@ html, body {
 .settings-item-chevron svg { width: 14px; height: 14px; }
 
 /* ══ CHAT ══ */
-/* No absolute positioning on #chat itself — use normal flex column */
 #chat { display: flex; flex-direction: column; overflow: hidden; position: relative; }
 
-/* Top texture: fixed to viewport top, z above everything except back btn */
 .chat-top-texture {
   position: fixed; top: 0; left: 0; right: 0;
   height: 56px;
   background: url('/src/texture-always-on-top_onlyonchats_.png') top center / 100% 100% no-repeat;
   z-index: 30; pointer-events: none;
-  /* Only show when chat is active — controlled by JS */
   display: none;
 }
 .chat-active .chat-top-texture { display: block; }
 
-/* TTS bar under texture */
 .tts-bar { position: fixed; top: 56px; left: 0; right: 0; z-index: 29; display: none; align-items: center; gap: 8px; padding: 6px 16px; }
 .tts-bar.active { display: flex; }
 
-/* Back button floats above texture */
 .chat-header {
   position: fixed; top: 8px; left: 12px; z-index: 32; pointer-events: none;
 }
 .chat-header button { pointer-events: all; }
 
-/* Messages: full screen minus input area at bottom */
 .chat-messages {
   flex: 1;
   overflow-y: auto; overflow-x: hidden;
   -webkit-overflow-scrolling: touch; scrollbar-width: none;
-  /* top pad = texture height so content starts below it */
   padding: 72px 0 110px;
   display: flex; flex-direction: column; gap: 4px;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 80px, black calc(100% - 90px), transparent 100%);
@@ -191,12 +194,10 @@ html, body {
 }
 .chat-messages::-webkit-scrollbar { display: none; }
 
-/* Input area: fixed at bottom, fully floating */
 .chat-input-area {
   position: fixed; bottom: 0; left: 0; right: 0;
   padding: 10px 14px 36px;
   z-index: 20; pointer-events: none;
-  /* no background — truly floating */
 }
 .chat-input-area .input-row { pointer-events: all; }
 .input-row { display: flex; align-items: center; gap: 10px; position: relative; }
@@ -213,28 +214,35 @@ html, body {
 .input-tap-glow { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 40%, transparent 70%); transform: translate(-50%,-50%) scale(0); pointer-events: none; z-index: 3; animation: inputGlow 0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
 @keyframes inputGlow { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 45% { transform: translate(-50%,-50%) scale(1.6); opacity: 0.6; } 100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; } }
 
-/* ── Bubbles ── */
+/* ══ BUBBLES ══ */
 .bubble-user-wrap { display: flex; justify-content: flex-end; padding: 2px 16px; animation: bubbleIn 0.32s cubic-bezier(0.175,0.885,0.32,1.1) both; }
 .bubble-user-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; max-width: 78%; }
-.bubble-user { background: #3a3a3c; color: #fff; padding: 11px 16px; border-radius: 20px; font-size: 17px; line-height: 1.4; }
-.bubble-file { background: #2c2c2e; color: #ccc; padding: 8px 13px; border-radius: 14px; font-size: 13px; display: flex; align-items: center; gap: 7px; max-width: 220px; overflow: hidden; }
+
+/* ── USER BUBBLE: darker + higher border-radius ── */
+.bubble-user {
+  background: #252527;
+  color: #fff;
+  padding: 11px 16px;
+  border-radius: 26px;
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.bubble-file { background: #1e1e20; color: #ccc; padding: 8px 13px; border-radius: 16px; font-size: 13px; display: flex; align-items: center; gap: 7px; max-width: 220px; overflow: hidden; }
 .bubble-file svg { flex-shrink: 0; }
 .bubble-file-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'AppMono', monospace; font-size: 12px; color: #aaa; }
 
 .bubble-ai-wrap { display: flex; flex-direction: column; align-self: flex-start; width: 100%; padding: 8px 16px 2px; }
-/* AI bubble-wrap animates in — gentle slide-up + unblur, NOT bubbleIn */
 .bubble-ai-wrap.entering { animation: aiMessageIn 0.55s cubic-bezier(0.22,1,0.36,1) both; }
 
 @keyframes bubbleIn { 0% { opacity: 0; transform: translateY(10px) scale(0.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
-/* AI text reveal — each paragraph/line animates in */
 @keyframes aiMessageIn {
   0%   { opacity: 0; transform: translateY(8px); filter: blur(5px); }
   55%  { filter: blur(1px); }
   100% { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
-/* Cross-sender gap */
 .bubble-user-wrap + .bubble-ai-wrap,
 .bubble-ai-wrap + .bubble-user-wrap { padding-top: 10px; }
 
@@ -270,73 +278,48 @@ html, body {
 .action-btn:active { color: #fff; transform: scale(1.2); }
 .action-btn svg { width: 16px; height: 16px; }
 
-/* Typing indicator replaced by working indicator — keep for fallback */
 .bubble-typing { align-self: flex-start; padding: 14px 20px; display: flex; gap: 5px; align-items: center; }
 .dot { width: 7px; height: 7px; background: #666; border-radius: 50%; animation: dotpulse 1.2s ease-in-out infinite; }
 .dot:nth-child(2) { animation-delay: 0.2s; }
 .dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes dotpulse { 0%,80%,100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
 
-/* ══ Working indicator (NEW: larger, appears in place of AI message) ══ */
+/* ══ Working indicator — reduced left margin ══ */
 .working-indicator {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   pointer-events: none;
   opacity: 0;
-  margin: 8px 16px 12px;
+  margin: 8px 8px 12px;
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(8px);
   border-radius: 48px;
-  padding: 12px 24px;
+  padding: 12px 24px 12px 16px;
   width: fit-content;
   max-width: 85%;
   transition: opacity 0.3s ease;
 }
-.working-indicator.show {
-  opacity: 1;
-}
-.working-indicator.hide {
-  opacity: 0;
-}
-.working-video {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  flex-shrink: 0;
-  border-radius: 24px;
-}
-.working-label {
-  font-size: 18px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.9);
-  font-family: 'CustomFont', -apple-system, sans-serif;
-  letter-spacing: -0.2px;
-}
+.working-indicator.show { opacity: 1; }
+.working-indicator.hide  { opacity: 0; }
+.working-video { width: 48px; height: 48px; object-fit: contain; flex-shrink: 0; border-radius: 24px; }
+.working-label { font-size: 18px; font-weight: 500; color: rgba(255,255,255,0.9); font-family: 'CustomFont', -apple-system, sans-serif; letter-spacing: -0.2px; }
 
-/* Letter-by-letter animation for AI text */
-.char-animate {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(6px);
-  filter: blur(5px);
-  animation: charReveal 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
+/* ══ Char animation: unblur + slide in + zoom in ══ */
 @keyframes charReveal {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-    filter: blur(6px);
-  }
-  40% {
-    opacity: 0.5;
-    filter: blur(2px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
+  0%   { opacity: 0; transform: translateY(5px) scale(0.82); filter: blur(5px); }
+  45%  { filter: blur(1px); transform: translateY(1px) scale(0.97); opacity: 0.7; }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.char-animate {
+  display: inline;
+  opacity: 0;
+  animation: charReveal 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+/* Preserve whitespace properly */
+.char-space {
+  display: inline;
+  white-space: pre;
 }
 
 /* ── Delete dialog ── */
@@ -360,8 +343,6 @@ html, body {
 <body>
 
 <div id="preloader"></div>
-
-<!-- top texture — always in DOM, shown only when chat active -->
 <div class="chat-top-texture" id="chatTopTexture"></div>
 
 <!-- HOME -->
@@ -421,7 +402,6 @@ html, body {
 
 <!-- CHAT -->
 <div class="screen" id="chat">
-  <!-- TTS bar (fixed, shows when active) -->
   <div class="tts-bar" id="ttsBar">
     <button class="txbtn txbtn-sm" id="ttsPlayPauseBtn">
       <svg id="ttsPlayIcon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -432,7 +412,6 @@ html, body {
     </button>
   </div>
 
-  <!-- Back button (fixed, above top texture) -->
   <div class="chat-header">
     <button class="txbtn txbtn-sm" id="goHomeBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -447,7 +426,6 @@ html, body {
         <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.xml,.html,.htm,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.rtf,.yaml,.yml,.log,.ini,.toml,.js,.ts,.py,.css" style="display:none;"/>
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.42 16.41a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
       </label>
-      <!-- file pill -->
       <div id="attachedFilePill" style="display:none;position:absolute;bottom:calc(100% + 6px);left:14px;background:#2c2c2e;border-radius:12px;padding:5px 10px 5px 8px;font-size:13px;color:#fff;align-items:center;gap:6px;max-width:72%;overflow:hidden;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <span id="attachedFileName" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;"></span>
@@ -487,6 +465,28 @@ html, body {
 </div>
 
 <script>
+// ══ CONSTANTS ══
+const GROQ_API_KEY   = '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';
+const GROQ_MODEL     = 'openai/gpt-oss-120b';
+const SYSTEM_PROMPT  = 'Ты — Siri, умный, эмпатичный AI-помощник для ежедневного общения и бизнес-задач. Ответы формируй самостоятельно, без вызова внешних функций и инструментов. На простые приветствия, реплики и светскую беседу отвечай коротко, тепло и по-человечески. Переходи к строгой структуре (заголовкам, спискам, разделителям) только при решении комплексных вопросов. Если пользователь просит расчеты или аналитику — используй LaTeX ($inline$ или $$display$$). Тексты для постов пиши в сдержанном, дружелюбном стиле.';
+const MOV_DURATION   = 5000; // ms — wait for MOV to finish before showing AI text
+
+// ══ STATE ══
+const loadChats = () => { try { return JSON.parse(localStorage.getItem('siri_chats') || '[]'); } catch { return []; } };
+const saveChats = (a) => { try { localStorage.setItem('siri_chats', JSON.stringify(a)); } catch {} };
+
+let chats           = loadChats();
+let editingMode     = false;
+let longPressTimer  = null;
+let currentChatId   = null;
+let currentMessages = [];
+let abortController = null;
+let isGenerating    = false;
+let ttsUtterance    = null;
+let ttsActive       = false;
+let ttsPaused       = false;
+let lastUserMessage = '';
+
 // ══ BOOT ══
 async function bootApplication() {
   await new Promise(r => setTimeout(r, 80));
@@ -497,19 +497,16 @@ async function bootApplication() {
   document.body.classList.add('app-loaded');
 }
 
-// ══ STATE ══
-function loadChats() { try { return JSON.parse(localStorage.getItem('siri_chats')||'[]'); } catch { return []; } }
-function saveChats(a) { try { localStorage.setItem('siri_chats', JSON.stringify(a)); } catch {} }
-
-let chats = loadChats();
-let editingMode=false, longPressTimer=null, currentChatId=null, currentMessages=[];
-let abortController=null, isGenerating=false;
-let ttsUtterance=null, ttsActive=false, ttsPaused=false;
-let lastUserMessage='';
-
-const GROQ_API_KEY='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';
-const GROQ_MODEL='openai/gpt-oss-120b';
-const SYSTEM_PROMPT='Ты — Siri, умный, эмпатичный AI-помощник для ежедневного общения и бизнес-задач. Ответы формируй самостоятельно, без вызова внешних функций и инструментов. На простые приветствия, реплики и светскую беседу отвечай коротко, тепло и по-человечески. Переходи к строгой структуре (заголовкам, спискам, разделителям) только при решении комплексных вопросов. Если пользователь просит расчеты или аналитику — используй LaTeX ($inline$ или $$display$$). Тексты для постов пиши в сдержанном, дружелюбном стиле.';
+// ══ UTILS ══
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatDate(ts) {
+  const d = new Date(ts), n = new Date(), diff = n - d;
+  if (diff < 86400000 && d.getDate() === n.getDate()) return 'Сегодня';
+  if (diff < 172800000) return 'Вчера';
+  return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
 
 // ══ MARKDOWN ══
 function renderMarkdown(text) {
@@ -519,10 +516,10 @@ function renderMarkdown(text) {
 
   const mathBlocks = [];
   let s = text;
-  s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => { const i=mathBlocks.length; mathBlocks.push({t:'display',m}); return `MATH_${i}_`; });
-  s = s.replace(/\\\[([\s\S]+?)\\\]/g, (_, m) => { const i=mathBlocks.length; mathBlocks.push({t:'display',m}); return `MATH_${i}_`; });
-  s = s.replace(/\$([^\n$]{1,200}?)\$/g, (_, m) => { const i=mathBlocks.length; mathBlocks.push({t:'inline',m}); return `MATH_${i}_`; });
-  s = s.replace(/\\\((.+?)\\\)/g, (_, m) => { const i=mathBlocks.length; mathBlocks.push({t:'inline',m}); return `MATH_${i}_`; });
+  s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => { const i = mathBlocks.length; mathBlocks.push({t:'display', m}); return `MATH_${i}_`; });
+  s = s.replace(/\\\[([\s\S]+?)\\\]/g, (_, m) => { const i = mathBlocks.length; mathBlocks.push({t:'display', m}); return `MATH_${i}_`; });
+  s = s.replace(/\$([^\n$]{1,200}?)\$/g, (_, m) => { const i = mathBlocks.length; mathBlocks.push({t:'inline', m}); return `MATH_${i}_`; });
+  s = s.replace(/\\\((.+?)\\\)/g, (_, m) => { const i = mathBlocks.length; mathBlocks.push({t:'inline', m}); return `MATH_${i}_`; });
 
   marked.setOptions({ breaks: true, gfm: true });
   div.innerHTML = marked.parse(s);
@@ -531,28 +528,66 @@ function renderMarkdown(text) {
     let html = div.innerHTML;
     mathBlocks.forEach(({t, m}, i) => {
       try {
-        html = html.replace(`MATH_${i}_`, katex.renderToString(m.trim(), { displayMode: t==='display', throwOnError: false, strict: false }));
-      } catch(e) { html = html.replace(`MATH_${i}_`, `<span style="color:#ff6b6b">[math]</span>`); }
+        html = html.replace(`MATH_${i}_`, katex.renderToString(m.trim(), { displayMode: t === 'display', throwOnError: false, strict: false }));
+      } catch(e) {
+        html = html.replace(`MATH_${i}_`, `<span style="color:#ff6b6b">[math]</span>`);
+      }
     });
     div.innerHTML = html;
   }
 
   div.querySelectorAll('table').forEach(tbl => {
-    const w = document.createElement('div'); w.className = 'table-wrap';
-    tbl.parentNode.insertBefore(w, tbl); w.appendChild(tbl);
+    const w = document.createElement('div');
+    w.className = 'table-wrap';
+    tbl.parentNode.insertBefore(w, tbl);
+    w.appendChild(tbl);
   });
   return div;
 }
 
-// ══ CARDS ══
-function formatDate(ts) {
-  const d=new Date(ts),n=new Date(),diff=n-d;
-  if(diff<86400000&&d.getDate()===n.getDate()) return 'Сегодня';
-  if(diff<172800000) return 'Вчера';
-  return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-}
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// ══ CHAR-BY-CHAR ANIMATION (fixes spaces, adds zoom) ══
+// Delay between chars (ms) — lower = faster appearance
+const CHAR_DELAY = 28;
 
+async function animateTextCharByChar(container, text) {
+  container.innerHTML = '';
+  if (!text) return;
+
+  const msgs = document.getElementById('chatMessages');
+  let delay = 0;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const span = document.createElement('span');
+
+    if (ch === ' ' || ch === '\u00a0') {
+      // Space: render as a simple non-breaking space, no animation needed
+      span.className = 'char-space';
+      span.textContent = '\u00a0';
+      container.appendChild(span);
+    } else if (ch === '\n') {
+      container.appendChild(document.createElement('br'));
+    } else {
+      span.className = 'char-animate';
+      span.style.animationDelay = delay + 'ms';
+      span.textContent = ch;
+      container.appendChild(span);
+      delay += CHAR_DELAY;
+    }
+
+    // Scroll every ~10 chars
+    if (i % 10 === 0) {
+      requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
+    }
+  }
+
+  // Wait for all animations to finish
+  const totalDuration = delay + 220; // 220 = animation duration
+  await new Promise(r => setTimeout(r, totalDuration));
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
+}
+
+// ══ CARDS ══
 function renderCards() {
   const grid = document.getElementById('cardsGrid');
   grid.innerHTML = '';
@@ -571,14 +606,18 @@ function renderCards() {
     card.addEventListener('pointerup', cancelLongPress);
     card.addEventListener('pointercancel', cancelLongPress);
     card.addEventListener('pointermove', cancelLongPress);
-    card.querySelector('.card-delete').addEventListener('click', e => { e.stopPropagation(); deleteChat(parseInt(e.currentTarget.dataset.i)); });
+    card.querySelector('.card-delete').addEventListener('click', e => {
+      e.stopPropagation();
+      deleteChat(parseInt(e.currentTarget.dataset.i));
+    });
     grid.appendChild(card);
   });
-  grid.classList.toggle('editing-mode', editingMode);
-  document.getElementById('homeScroll').classList.toggle('editing-mode', editingMode);
-  document.getElementById('homeTitle').style.display = editingMode ? 'none' : '';
-  document.getElementById('btnSettings').style.display = editingMode ? 'none' : '';
-  document.getElementById('btnDone').style.display = editingMode ? '' : 'none';
+  const em = editingMode;
+  grid.classList.toggle('editing-mode', em);
+  document.getElementById('homeScroll').classList.toggle('editing-mode', em);
+  document.getElementById('homeTitle').style.display = em ? 'none' : '';
+  document.getElementById('btnSettings').style.display = em ? 'none' : '';
+  document.getElementById('btnDone').style.display = em ? '' : 'none';
 }
 
 function startLongPress() { cancelLongPress(); longPressTimer = setTimeout(() => { if (!editingMode) { editingMode = true; renderCards(); } }, 480); }
@@ -590,13 +629,50 @@ function deleteChat(i) { pendingDeleteIndex = i; document.getElementById('delete
 function closeDeleteDialog() { document.getElementById('deleteOverlay').classList.remove('open'); pendingDeleteIndex = null; }
 function confirmDelete() {
   if (pendingDeleteIndex !== null) {
-    chats.splice(pendingDeleteIndex, 1); saveChats(chats); closeDeleteDialog(); renderCards();
+    chats.splice(pendingDeleteIndex, 1);
+    saveChats(chats);
+    closeDeleteDialog();
+    renderCards();
     if (chats.length === 0) exitEditing();
   }
 }
 document.getElementById('dialogConfirmDelete').addEventListener('click', confirmDelete);
 document.getElementById('dialogCancel').addEventListener('click', closeDeleteDialog);
-document.getElementById('deleteOverlay').addEventListener('click', e => { if (e.target === document.getElementById('deleteOverlay')) closeDeleteDialog(); });
+document.getElementById('deleteOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('deleteOverlay')) closeDeleteDialog();
+});
+
+// ══ APPEND BUBBLE (used when loading history) ══
+function appendBubble(role, text, animate) {
+  const msgs = document.getElementById('chatMessages');
+  if (role === 'user') {
+    const wrap  = document.createElement('div'); wrap.className = 'bubble-user-wrap';
+    const stack = document.createElement('div'); stack.className = 'bubble-user-stack';
+    const bub   = document.createElement('div'); bub.className = 'bubble-user'; bub.textContent = text;
+    stack.appendChild(bub); wrap.appendChild(stack); msgs.appendChild(wrap);
+    if (animate) wrap.classList.add('chat-enter-anim');
+  } else {
+    const wrap    = document.createElement('div'); wrap.className = 'bubble-ai-wrap';
+    const content = renderMarkdown(text);
+    wrap.appendChild(content);
+    const actions  = buildActionButtons(text);
+    wrap.appendChild(actions);
+    msgs.appendChild(wrap);
+    if (animate) wrap.classList.add('chat-enter-anim');
+  }
+}
+
+function buildActionButtons(aiText) {
+  const actions  = document.createElement('div'); actions.className = 'bubble-ai-actions';
+  const retryBtn = document.createElement('button'); retryBtn.className = 'action-btn'; retryBtn.title = 'Повторить';
+  retryBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>';
+  retryBtn.addEventListener('click', retryLastMessage);
+  const speakBtn = document.createElement('button'); speakBtn.className = 'action-btn'; speakBtn.title = 'Озвучить';
+  speakBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+  speakBtn.addEventListener('click', () => startTTS(aiText));
+  actions.appendChild(retryBtn); actions.appendChild(speakBtn);
+  return actions;
+}
 
 // ══ SCREEN SWITCH ══
 function setChatActive(active) {
@@ -604,26 +680,39 @@ function setChatActive(active) {
 }
 
 function openNewChat() {
-  exitEditing(); currentChatId = null; currentMessages = [];
+  exitEditing();
+  currentChatId = null;
+  currentMessages = [];
   document.getElementById('home').classList.remove('active');
   document.getElementById('chat').classList.add('active');
   setChatActive(true);
   document.getElementById('chatMessages').innerHTML = '';
   document.getElementById('chatInput').value = '';
-  stopTTS(); toggleControls();
+  stopTTS();
+  toggleControls();
 }
 
 function openChatById(id) {
-  const chat = chats.find(c => c.id === id); if (!chat) return;
-  exitEditing(); currentChatId = id;
-  currentMessages = (chat.messages||[]).map(m => ({ role: m.role==='user'?'user':'assistant', content: m.text }));
+  const chat = chats.find(c => c.id === id);
+  if (!chat) return;
+  exitEditing();
+  currentChatId = id;
+  currentMessages = (chat.messages || []).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
   document.getElementById('home').classList.remove('active');
   document.getElementById('chat').classList.add('active');
   setChatActive(true);
-  const msgs = document.getElementById('chatMessages'); msgs.innerHTML = '';
-  (chat.messages||[]).forEach(m => appendBubble(m.role, m.text, false));
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML = '';
+  // Animate each bubble in with staggered delay
+  (chat.messages || []).forEach((m, idx) => {
+    appendBubble(m.role, m.text, true);
+    const el = msgs.lastElementChild;
+    if (el) el.style.animationDelay = (idx * 55) + 'ms';
+  });
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
-  document.getElementById('chatInput').value = ''; stopTTS(); toggleControls();
+  document.getElementById('chatInput').value = '';
+  stopTTS();
+  toggleControls();
 }
 
 function goHome() {
@@ -635,7 +724,7 @@ function goHome() {
   renderCards();
 }
 
-// ══ WORKING INDICATOR (now added as inline element in chat flow) ══
+// ══ WORKING INDICATOR ══
 let workingPlaceholderDiv = null;
 
 function showWorkingInline() {
@@ -663,54 +752,63 @@ function hideWorkingInline() {
 }
 
 // ══ TTS ══
-const ttsBar = document.getElementById('ttsBar');
+const ttsBar      = document.getElementById('ttsBar');
 const ttsPlayIcon = document.getElementById('ttsPlayIcon');
-const ttsPauseIcon = document.getElementById('ttsPauseIcon');
+const ttsPauseIcon= document.getElementById('ttsPauseIcon');
 
 function startTTS(text) {
   stopTTS();
   if (!('speechSynthesis' in window)) return;
-  const plain = text.replace(/\$\$[\s\S]*?\$\$/g,'формула').replace(/\$[^$]+\$/g,'формула').replace(/[#*`_~>]/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');
+  const plain = text
+    .replace(/\$\$[\s\S]*?\$\$/g, 'формула')
+    .replace(/\$[^$]+\$/g, 'формула')
+    .replace(/[#*`_~>]/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
   ttsUtterance = new SpeechSynthesisUtterance(plain);
   ttsUtterance.lang = 'ru-RU'; ttsUtterance.rate = 1;
-  ttsUtterance.onend = () => { ttsActive=false; ttsPaused=false; updateTTSBar(); };
-  ttsUtterance.onerror = () => { ttsActive=false; ttsPaused=false; updateTTSBar(); };
+  ttsUtterance.onend  = () => { ttsActive = false; ttsPaused = false; updateTTSBar(); };
+  ttsUtterance.onerror= () => { ttsActive = false; ttsPaused = false; updateTTSBar(); };
   window.speechSynthesis.speak(ttsUtterance);
-  ttsActive=true; ttsPaused=false; updateTTSBar();
+  ttsActive = true; ttsPaused = false; updateTTSBar();
 }
 function stopTTS() {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-  ttsActive=false; ttsPaused=false; ttsUtterance=null; updateTTSBar();
+  ttsActive = false; ttsPaused = false; ttsUtterance = null; updateTTSBar();
 }
 function toggleTTSPlayPause() {
   if (!ttsActive) return;
-  if (ttsPaused) { window.speechSynthesis.resume(); ttsPaused=false; }
-  else { window.speechSynthesis.pause(); ttsPaused=true; }
+  if (ttsPaused) { window.speechSynthesis.resume(); ttsPaused = false; }
+  else           { window.speechSynthesis.pause();  ttsPaused = true; }
   updateTTSBar();
 }
 function updateTTSBar() {
   ttsBar.classList.toggle('active', ttsActive);
-  ttsPlayIcon.style.display = ttsPaused ? 'block' : 'none';
-  ttsPauseIcon.style.display = ttsPaused ? 'none' : 'block';
+  ttsPlayIcon.style.display  = ttsPaused ? 'block' : 'none';
+  ttsPauseIcon.style.display = ttsPaused ? 'none'  : 'block';
 }
 document.getElementById('ttsPlayPauseBtn').addEventListener('click', toggleTTSPlayPause);
 document.getElementById('ttsCloseBtn').addEventListener('click', stopTTS);
 
 // ══ INPUT CONTROLS ══
 const chatInput = document.getElementById('chatInput');
-const btnMic = document.getElementById('btnMic');
-const btnSend = document.getElementById('btnSend');
-const btnStop = document.getElementById('btnStop');
-const inputBar = document.getElementById('inputBar');
+const btnMic    = document.getElementById('btnMic');
+const btnSend   = document.getElementById('btnSend');
+const btnStop   = document.getElementById('btnStop');
+const inputBar  = document.getElementById('inputBar');
 
 function toggleControls() {
   const has = chatInput.value.trim().length > 0;
   if (isGenerating) {
-    btnMic.style.display='none'; btnSend.style.display='none'; btnStop.style.display='flex';
-    inputBar.classList.add('thinking'); chatInput.placeholder='Думаю…';
+    btnMic.style.display  = 'none';
+    btnSend.style.display = 'none';
+    btnStop.style.display = 'flex';
+    inputBar.classList.add('thinking');
+    chatInput.placeholder = 'Думаю…';
   } else {
-    btnStop.style.display='none'; inputBar.classList.remove('thinking'); chatInput.placeholder='Спросите Siri';
-    btnMic.style.display = has ? 'none' : 'flex';
+    btnStop.style.display = 'none';
+    inputBar.classList.remove('thinking');
+    chatInput.placeholder = 'Спросите Siri';
+    btnMic.style.display  = has ? 'none' : 'flex';
     btnSend.style.display = has ? 'flex' : 'none';
   }
 }
@@ -718,257 +816,273 @@ chatInput.addEventListener('input', toggleControls);
 
 function stopGeneration() {
   if (abortController) abortController.abort();
-  isGenerating=false; toggleControls(); hideWorkingInline();
+  isGenerating = false;
+  toggleControls();
+  hideWorkingInline();
 }
 document.getElementById('btnStop').addEventListener('click', stopGeneration);
 
 function retryLastMessage() {
   if (!lastUserMessage || isGenerating) return;
-  const msgs = document.getElementById('chatMessages');
+  const msgs  = document.getElementById('chatMessages');
   const wraps = msgs.querySelectorAll('.bubble-ai-wrap');
-  if (wraps.length) wraps[wraps.length-1].remove();
-  if (currentMessages.length && currentMessages[currentMessages.length-1].role==='assistant') currentMessages.pop();
+  if (wraps.length) wraps[wraps.length - 1].remove();
+  if (currentMessages.length && currentMessages[currentMessages.length - 1].role === 'assistant')
+    currentMessages.pop();
   callAPI(lastUserMessage);
 }
 
-// Animate text letter by letter with delay
-async function animateTextLetterByLetter(container, text) {
-  container.innerHTML = '';
-  if (!text) return;
-  for (let i = 0; i < text.length; i++) {
-    const charSpan = document.createElement('span');
-    charSpan.className = 'char-animate';
-    charSpan.textContent = text[i];
-    container.appendChild(charSpan);
-    await new Promise(r => setTimeout(r, 100));
-    requestAnimationFrame(() => {
-      const msgs = document.getElementById('chatMessages');
-      msgs.scrollTop = msgs.scrollHeight;
-    });
-  }
-}
-
+// ══ API CALL (with MOV duration wait before showing text) ══
 async function callAPI(val) {
-  isGenerating=true; toggleControls(); showWorkingInline();
+  isGenerating = true;
+  toggleControls();
+  showWorkingInline();
+
   const msgs = document.getElementById('chatMessages');
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
+
   abortController = new AbortController();
+  let aiText = '';
+
+  // Fetch and MOV timer run in parallel; we wait for BOTH
+  const fetchPromise = fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    signal: abortController.signal,
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...currentMessages],
+      max_tokens: 1024,
+      temperature: 0.7
+    })
+  });
+
+  const movTimer = new Promise(r => setTimeout(r, MOV_DURATION));
+
   try {
-    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST', signal: abortController.signal,
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
-      body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...currentMessages], max_tokens: 1024, temperature: 0.7 })
-    });
+    const [resp] = await Promise.all([fetchPromise, movTimer]);
     if (!resp.ok) throw new Error('API ' + resp.status);
     const data = await resp.json();
-    const aiText = (data.choices?.[0]?.message?.content||'').trim() || 'Не удалось получить ответ.';
-    currentMessages.push({ role: 'assistant', content: aiText });
-    hideWorkingInline();
-    
-    // Create AI bubble container and animate each char
-    const wrap = document.createElement('div'); wrap.className = 'bubble-ai-wrap';
-    const contentDiv = document.createElement('div'); contentDiv.className = 'bubble-ai-content';
-    wrap.appendChild(contentDiv);
-    const actions = document.createElement('div'); actions.className = 'bubble-ai-actions';
-    const retryBtn = document.createElement('button'); retryBtn.className = 'action-btn'; retryBtn.title = 'Повторить';
-    retryBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>';
-    retryBtn.addEventListener('click', retryLastMessage);
-    const speakBtn = document.createElement('button'); speakBtn.className = 'action-btn'; speakBtn.title = 'Озвучить';
-    speakBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-    speakBtn.addEventListener('click', () => startTTS(aiText));
-    actions.appendChild(retryBtn); actions.appendChild(speakBtn);
-    wrap.appendChild(actions);
-    msgs.appendChild(wrap);
-    
-    // Animate letters
-    await animateTextLetterByLetter(contentDiv, aiText);
-    
-    new Audio('/src/sound.mp3').play().catch(() => {});
-    if (currentChatId) {
-      const chat = chats.find(c=>c.id===currentChatId);
-      if (chat) { chat.messages.push({role:'user',text:val}); chat.messages.push({role:'ai',text:aiText}); chat.ts=Date.now(); chat.title=val.length>50?val.slice(0,50)+'…':val; chat.preview=aiText.slice(0,62)+'…'; }
-    } else {
-      const id='chat_'+Date.now(); currentChatId=id;
-      chats.unshift({id,ts:Date.now(),title:val.length>50?val.slice(0,50)+'…':val,preview:aiText.slice(0,62)+'…',messages:[{role:'user',text:val},{role:'ai',text:aiText}]});
-    }
-    saveChats(chats);
+    aiText = (data.choices?.[0]?.message?.content || '').trim() || 'Не удалось получить ответ.';
   } catch(err) {
     hideWorkingInline();
-    if (err.name!=='AbortError') {
-      const wrap = document.createElement('div'); wrap.className = 'bubble-ai-wrap';
-      const contentDiv = document.createElement('div'); contentDiv.className = 'bubble-ai-content';
-      contentDiv.textContent = 'Произошла ошибка. Проверьте соединение.';
-      wrap.appendChild(contentDiv);
-      msgs.appendChild(wrap);
+    if (err.name !== 'AbortError') {
+      const eWrap    = document.createElement('div'); eWrap.className = 'bubble-ai-wrap';
+      const eContent = document.createElement('div'); eContent.className = 'bubble-ai-content';
+      eContent.textContent = 'Произошла ошибка. Проверьте соединение.';
+      eWrap.appendChild(eContent);
+      msgs.appendChild(eWrap);
     }
+    isGenerating = false; abortController = null; toggleControls();
+    return;
   }
-  isGenerating=false; abortController=null; toggleControls();
+
+  currentMessages.push({ role: 'assistant', content: aiText });
+  hideWorkingInline();
+
+  // Build AI bubble
+  const wrap       = document.createElement('div'); wrap.className = 'bubble-ai-wrap entering';
+  const contentDiv = document.createElement('div'); contentDiv.className = 'bubble-ai-content';
+  const actions    = buildActionButtons(aiText);
+  wrap.appendChild(contentDiv);
+  wrap.appendChild(actions);
+  msgs.appendChild(wrap);
+
+  // Animate chars
+  await animateTextCharByChar(contentDiv, aiText);
+
+  new Audio('/src/sound.mp3').play().catch(() => {});
+
+  // Persist
+  if (currentChatId) {
+    const chat = chats.find(c => c.id === currentChatId);
+    if (chat) {
+      chat.messages.push({ role: 'user', text: val });
+      chat.messages.push({ role: 'ai', text: aiText });
+      chat.ts      = Date.now();
+      chat.title   = val.length > 50 ? val.slice(0, 50) + '…' : val;
+      chat.preview = aiText.slice(0, 62) + '…';
+    }
+  } else {
+    const id = 'chat_' + Date.now();
+    currentChatId = id;
+    chats.unshift({
+      id, ts: Date.now(),
+      title:   val.length > 50 ? val.slice(0, 50) + '…' : val,
+      preview: aiText.slice(0, 62) + '…',
+      messages: [{ role: 'user', text: val }, { role: 'ai', text: aiText }]
+    });
+  }
+  saveChats(chats);
+
+  isGenerating = false; abortController = null; toggleControls();
 }
 
 // ══ FILE ATTACHMENT ══
-let attachedFileText='', attachedFileName='';
-const fileInput = document.getElementById('fileInput');
-const attachedFilePill = document.getElementById('attachedFilePill');
-const attachedFileNameEl = document.getElementById('attachedFileName');
+let attachedFileText = '', attachedFileName = '';
+const fileInput         = document.getElementById('fileInput');
+const attachedFilePill  = document.getElementById('attachedFilePill');
+const attachedFileNameEl= document.getElementById('attachedFileName');
 
 async function extractFileText(file) {
   const ext = file.name.split('.').pop().toLowerCase();
   const textExts = ['txt','md','csv','json','xml','html','htm','yaml','yml','log','ini','toml','rtf','js','ts','py','css','sh'];
   if (textExts.includes(ext)) return await file.text();
-  const buf = await file.arrayBuffer();
+  const buf   = await file.arrayBuffer();
   const bytes = new Uint8Array(buf);
   let raw = '';
-  for (let i=0;i<bytes.length;i++) {
-    const b=bytes[i];
-    if(b>=32&&b<127) raw+=String.fromCharCode(b);
-    else if(b===10||b===13) raw+=' ';
+  for (let i = 0; i < bytes.length; i++) {
+    const b = bytes[i];
+    if (b >= 32 && b < 127) raw += String.fromCharCode(b);
+    else if (b === 10 || b === 13) raw += ' ';
   }
-  if (ext==='pdf') {
-    const bt=raw.match(/BT[\s\S]{0,500}?ET/g)||[];
-    let ex=bt.map(m=>(m.match(/\(([^)]{1,200})\)/g)||[]).map(s=>s.slice(1,-1)).join(' ')).join(' ').replace(/\s+/g,' ').trim();
-    if(!ex) ex=(raw.match(/[\x20-\x7E]{5,}/g)||[]).join(' ').replace(/\s+/g,' ').trim();
-    return ex.slice(0,14000)||'[PDF: текст не извлечён]';
+  if (ext === 'pdf') {
+    const bt = raw.match(/BT[\s\S]{0,500}?ET/g) || [];
+    let ex = bt.map(m => (m.match(/\(([^)]{1,200})\)/g) || []).map(s => s.slice(1, -1)).join(' ')).join(' ').replace(/\s+/g, ' ').trim();
+    if (!ex) ex = (raw.match(/[\x20-\x7E]{5,}/g) || []).join(' ').replace(/\s+/g, ' ').trim();
+    return ex.slice(0, 14000) || '[PDF: текст не извлечён]';
   }
-  if(['docx','xlsx','pptx'].includes(ext)){
-    const tags=raw.match(/<(?:w:t|t|si)[^>]*>([^<]{1,500})<\/(?:w:t|t|si)>/g)||[];
-    let ex=tags.map(m=>m.replace(/<[^>]+>/g,'')).join(' ');
-    if(!ex) ex=(raw.match(/[\x20-\x7E]{6,}/g)||[]).filter(s=>s.length>5).join(' ');
-    return ex.replace(/\s+/g,' ').trim().slice(0,14000)||'['+ext+': текст не извлечён]';
+  if (['docx','xlsx','pptx'].includes(ext)) {
+    const tags = raw.match(/<(?:w:t|t|si)[^>]*>([^<]{1,500})<\/(?:w:t|t|si)>/g) || [];
+    let ex = tags.map(m => m.replace(/<[^>]+>/g, '')).join(' ');
+    if (!ex) ex = (raw.match(/[\x20-\x7E]{6,}/g) || []).filter(s => s.length > 5).join(' ');
+    return ex.replace(/\s+/g, ' ').trim().slice(0, 14000) || '[' + ext + ': текст не извлечён]';
   }
-  return (raw.match(/[\x20-\x7E]{6,}/g)||[]).join(' ').replace(/\s+/g,' ').trim().slice(0,14000)||'['+ext+': текст не извлечён]';
+  return (raw.match(/[\x20-\x7E]{6,}/g) || []).join(' ').replace(/\s+/g, ' ').trim().slice(0, 14000) || '[' + ext + ': текст не извлечён]';
 }
 
 fileInput.addEventListener('change', async (e) => {
-  const file=e.target.files[0]; if(!file) return;
-  attachedFileName=file.name;
+  const file = e.target.files[0]; if (!file) return;
+  attachedFileName = file.name;
   try {
-    attachedFileText=await extractFileText(file);
-    if(attachedFileText.length>14000) attachedFileText=attachedFileText.slice(0,14000)+'\n\n[...обрезано]';
-  } catch(err) { attachedFileText='[Ошибка: '+err.message+']'; }
-  attachedFileNameEl.textContent=file.name;
-  attachedFilePill.style.display='flex';
-  fileInput.value='';
+    attachedFileText = await extractFileText(file);
+    if (attachedFileText.length > 14000) attachedFileText = attachedFileText.slice(0, 14000) + '\n\n[...обрезано]';
+  } catch(err) { attachedFileText = '[Ошибка: ' + err.message + ']'; }
+  attachedFileNameEl.textContent = file.name;
+  attachedFilePill.style.display = 'flex';
+  fileInput.value = '';
 });
 
-function clearAttachment() { attachedFileText=''; attachedFileName=''; attachedFilePill.style.display='none'; }
+function clearAttachment() { attachedFileText = ''; attachedFileName = ''; attachedFilePill.style.display = 'none'; }
 
 async function sendMessageWithFile() {
   const val = chatInput.value.trim();
   if (!val && !attachedFileText) return;
   if (isGenerating) return;
 
-  const msgs = document.getElementById('chatMessages');
-  const wrap = document.createElement('div'); wrap.className = 'bubble-user-wrap';
+  const msgs  = document.getElementById('chatMessages');
+  const wrap  = document.createElement('div'); wrap.className = 'bubble-user-wrap';
   const stack = document.createElement('div'); stack.className = 'bubble-user-stack';
   if (attachedFileText) {
     const fb = document.createElement('div'); fb.className = 'bubble-file';
-    fb.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="bubble-file-name">'+escHtml(attachedFileName)+'</span>';
+    fb.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="bubble-file-name">' + escHtml(attachedFileName) + '</span>';
     stack.appendChild(fb);
   }
   if (val) {
-    const bub=document.createElement('div'); bub.className='bubble-user'; bub.textContent=val;
+    const bub = document.createElement('div'); bub.className = 'bubble-user'; bub.textContent = val;
     stack.appendChild(bub);
   }
   wrap.appendChild(stack); msgs.appendChild(wrap);
-  requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 
-  const userDisplay = val||('📎 '+attachedFileName);
-  const apiContent = attachedFileText
-    ? '[Файл: '+attachedFileName+']\n```\n'+attachedFileText+'\n```\n\n'+(val||'Прочитай и проанализируй этот файл.')
+  const userDisplay = val || ('📎 ' + attachedFileName);
+  const apiContent  = attachedFileText
+    ? '[Файл: ' + attachedFileName + ']\n```\n' + attachedFileText + '\n```\n\n' + (val || 'Прочитай и проанализируй этот файл.')
     : val;
 
-  lastUserMessage = val||attachedFileName;
-  currentMessages.push({role:'user',content:apiContent});
-  chatInput.value=''; clearAttachment(); toggleControls();
+  lastUserMessage = val || attachedFileName;
+  currentMessages.push({ role: 'user', content: apiContent });
+  chatInput.value = ''; clearAttachment(); toggleControls();
 
-  isGenerating=true; toggleControls(); showWorkingInline();
-  abortController=new AbortController();
+  isGenerating = true; toggleControls(); showWorkingInline();
+  abortController = new AbortController();
+
+  const fetchPromise = fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST', signal: abortController.signal,
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
+    body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...currentMessages], max_tokens: 1024, temperature: 0.7 })
+  });
+  const movTimer = new Promise(r => setTimeout(r, MOV_DURATION));
+
   try {
-    const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',signal:abortController.signal,
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_API_KEY},
-      body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:SYSTEM_PROMPT},...currentMessages],max_tokens:1024,temperature:0.7})
-    });
-    if(!resp.ok) throw new Error('API '+resp.status);
-    const data=await resp.json();
-    const aiText=((data.choices||[])[0]||{}).message?.content?.trim()||'Нет ответа.';
-    currentMessages.push({role:'assistant',content:aiText});
+    const [resp] = await Promise.all([fetchPromise, movTimer]);
+    if (!resp.ok) throw new Error('API ' + resp.status);
+    const data   = await resp.json();
+    const aiText = ((data.choices || [])[0] || {}).message?.content?.trim() || 'Нет ответа.';
+    currentMessages.push({ role: 'assistant', content: aiText });
     hideWorkingInline();
-    
-    const aWrap = document.createElement('div'); aWrap.className = 'bubble-ai-wrap';
+
+    const aWrap      = document.createElement('div'); aWrap.className = 'bubble-ai-wrap entering';
     const contentDiv = document.createElement('div'); contentDiv.className = 'bubble-ai-content';
-    aWrap.appendChild(contentDiv);
-    const actions = document.createElement('div'); actions.className = 'bubble-ai-actions';
-    const retryBtn = document.createElement('button'); retryBtn.className = 'action-btn';
-    retryBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>';
-    retryBtn.addEventListener('click', retryLastMessage);
-    const speakBtn = document.createElement('button'); speakBtn.className = 'action-btn';
-    speakBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-    speakBtn.addEventListener('click', () => startTTS(aiText));
-    actions.appendChild(retryBtn); actions.appendChild(speakBtn);
-    aWrap.appendChild(actions);
+    const actions    = buildActionButtons(aiText);
+    aWrap.appendChild(contentDiv); aWrap.appendChild(actions);
     msgs.appendChild(aWrap);
-    
-    await animateTextLetterByLetter(contentDiv, aiText);
-    
-    new Audio('/src/sound.mp3').play().catch(()=>{});
-    if(currentChatId){const c=chats.find(c=>c.id===currentChatId);if(c){c.messages.push({role:'user',text:userDisplay});c.messages.push({role:'ai',text:aiText});c.ts=Date.now();c.preview=aiText.slice(0,62)+'…';}}
-    else{const id='chat_'+Date.now();currentChatId=id;chats.unshift({id,ts:Date.now(),title:userDisplay.length>50?userDisplay.slice(0,50)+'…':userDisplay,preview:aiText.slice(0,62)+'…',messages:[{role:'user',text:userDisplay},{role:'ai',text:aiText}]});}
+
+    await animateTextCharByChar(contentDiv, aiText);
+
+    new Audio('/src/sound.mp3').play().catch(() => {});
+    if (currentChatId) {
+      const c = chats.find(c => c.id === currentChatId);
+      if (c) { c.messages.push({ role: 'user', text: userDisplay }); c.messages.push({ role: 'ai', text: aiText }); c.ts = Date.now(); c.preview = aiText.slice(0, 62) + '…'; }
+    } else {
+      const id = 'chat_' + Date.now(); currentChatId = id;
+      chats.unshift({ id, ts: Date.now(), title: userDisplay.length > 50 ? userDisplay.slice(0, 50) + '…' : userDisplay, preview: aiText.slice(0, 62) + '…', messages: [{ role: 'user', text: userDisplay }, { role: 'ai', text: aiText }] });
+    }
     saveChats(chats);
   } catch(err) {
     hideWorkingInline();
-    if(err.name!=='AbortError') {
+    if (err.name !== 'AbortError') {
       const eWrap = document.createElement('div'); eWrap.className = 'bubble-ai-wrap';
       const eContent = document.createElement('div'); eContent.className = 'bubble-ai-content';
       eContent.textContent = 'Произошла ошибка. Проверьте соединение.';
-      eWrap.appendChild(eContent);
-      msgs.appendChild(eWrap);
+      eWrap.appendChild(eContent); msgs.appendChild(eWrap);
     }
   }
-  isGenerating=false; abortController=null; toggleControls();
+  isGenerating = false; abortController = null; toggleControls();
 }
 
 document.getElementById('btnSend').addEventListener('click', sendMessageWithFile);
-chatInput.addEventListener('keydown', e => { if(e.key==='Enter'&&!isGenerating) sendMessageWithFile(); });
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !isGenerating) sendMessageWithFile(); });
 
 // ══ MIC ══
-let recognition=null, isRecording=false;
-function initSpeech(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR)return null;
-  const r=new SR(); r.lang='ru-RU'; r.continuous=false; r.interimResults=true;
-  r.onresult=e=>{let f='',t='';for(let i=e.resultIndex;i<e.results.length;i++){const s=e.results[i][0].transcript;if(e.results[i].isFinal)f+=s;else t+=s;}chatInput.value=f||t;toggleControls();};
-  r.onend=()=>{isRecording=false;btnMic.classList.remove('mic-recording');toggleControls();};
-  r.onerror=()=>{isRecording=false;btnMic.classList.remove('mic-recording');toggleControls();};
+let recognition = null, isRecording = false;
+function initSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR(); r.lang = 'ru-RU'; r.continuous = false; r.interimResults = true;
+  r.onresult = e => { let f = '', t = ''; for (let i = e.resultIndex; i < e.results.length; i++) { const s = e.results[i][0].transcript; if (e.results[i].isFinal) f += s; else t += s; } chatInput.value = f || t; toggleControls(); };
+  r.onend  = () => { isRecording = false; btnMic.classList.remove('mic-recording'); toggleControls(); };
+  r.onerror= () => { isRecording = false; btnMic.classList.remove('mic-recording'); toggleControls(); };
   return r;
 }
-btnMic.addEventListener('click',()=>{
-  if(isGenerating)return;
-  if(!recognition)recognition=initSpeech();
-  if(!recognition){alert('Диктовка не поддерживается.');return;}
-  if(isRecording)recognition.stop();
-  else{isRecording=true;btnMic.classList.add('mic-recording');recognition.start();}
+btnMic.addEventListener('click', () => {
+  if (isGenerating) return;
+  if (!recognition) recognition = initSpeech();
+  if (!recognition) { alert('Диктовка не поддерживается.'); return; }
+  if (isRecording) recognition.stop();
+  else { isRecording = true; btnMic.classList.add('mic-recording'); recognition.start(); }
 });
 
 // ══ SETTINGS ══
-function openSettings(){document.getElementById('settingsOverlay').classList.add('open');}
-function closeSettings(){document.getElementById('settingsOverlay').classList.remove('open');}
+function openSettings()  { document.getElementById('settingsOverlay').classList.add('open'); }
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 
 // ══ BUTTON RELEASE ANIMATION ══
-function initButtonInteractions(){
-  document.querySelectorAll('.txbtn').forEach(btn=>{
-    btn.addEventListener('pointerup',()=>{ btn.classList.remove('releasing'); void btn.offsetWidth; btn.classList.add('releasing'); });
-    btn.addEventListener('pointercancel',()=>{ btn.classList.remove('releasing'); });
-    btn.addEventListener('animationend',e=>{ if(e.animationName==='btnFrameReturn') btn.classList.remove('releasing'); });
+function initButtonInteractions() {
+  document.querySelectorAll('.txbtn').forEach(btn => {
+    btn.addEventListener('pointerup', () => { btn.classList.remove('releasing'); void btn.offsetWidth; btn.classList.add('releasing'); });
+    btn.addEventListener('pointercancel', () => { btn.classList.remove('releasing'); });
+    btn.addEventListener('animationend', e => { if (e.animationName === 'btnFrameReturn') btn.classList.remove('releasing'); });
   });
 }
 
 // ══ INPUT RIPPLE ══
-function initInputRipple(){
-  inputBar.addEventListener('pointerdown',e=>{
-    const rect=inputBar.getBoundingClientRect();
-    const g=document.createElement('div'); g.className='input-tap-glow';
-    g.style.left=(e.clientX-rect.left)+'px'; g.style.top=(e.clientY-rect.top)+'px';
-    inputBar.appendChild(g); g.addEventListener('animationend',()=>g.remove());
+function initInputRipple() {
+  inputBar.addEventListener('pointerdown', e => {
+    const rect = inputBar.getBoundingClientRect();
+    const g = document.createElement('div'); g.className = 'input-tap-glow';
+    g.style.left = (e.clientX - rect.left) + 'px'; g.style.top = (e.clientY - rect.top) + 'px';
+    inputBar.appendChild(g); g.addEventListener('animationend', () => g.remove());
   });
 }
 
@@ -980,17 +1094,22 @@ document.getElementById('newChatBtn2').addEventListener('click', openNewChat);
 document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
 document.getElementById('settingsBackdrop').addEventListener('click', closeSettings);
 document.getElementById('goHomeBtn').addEventListener('click', goHome);
-document.addEventListener('gesturestart', e=>e.preventDefault());
-document.addEventListener('contextmenu', e=>e.preventDefault());
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
 
-// PWA gate
-(function(){
-  const sa=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches;
-  if(!sa){document.getElementById('pwa-gate').style.display='flex';document.querySelectorAll('.screen').forEach(s=>{s.style.pointerEvents='none';s.style.opacity='0';});}
+// ══ PWA gate ══
+(function() {
+  const sa = window.navigator.standalone === true
+    || window.matchMedia('(display-mode: standalone)').matches
+    || window.matchMedia('(display-mode: fullscreen)').matches;
+  if (!sa) {
+    document.getElementById('pwa-gate').style.display = 'flex';
+    document.querySelectorAll('.screen').forEach(s => { s.style.pointerEvents = 'none'; s.style.opacity = '0'; });
+  }
 })();
 
-// init
-setChatActive(false); // start with home active
+// ══ INIT ══
+setChatActive(false);
 renderCards();
 initButtonInteractions();
 initInputRipple();
