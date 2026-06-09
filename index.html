@@ -305,21 +305,25 @@ html, body {
 .working-video { width: 48px; height: 48px; object-fit: contain; flex-shrink: 0; border-radius: 24px; }
 .working-label { font-size: 18px; font-weight: 500; color: rgba(255,255,255,0.9); font-family: 'CustomFont', -apple-system, sans-serif; letter-spacing: -0.2px; }
 
-/* ══ Char animation: unblur + slide in + zoom in ══ */
+/* ══ Char animation for text nodes ══ */
 @keyframes charReveal {
   0%   { opacity: 0; transform: translateY(5px) scale(0.82); filter: blur(5px); }
   45%  { filter: blur(1px); transform: translateY(1px) scale(0.97); opacity: 0.7; }
   100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 .char-animate {
-  display: inline;
+  display: inline-block;
   opacity: 0;
   animation: charReveal 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-/* Preserve whitespace properly */
 .char-space {
   display: inline;
   white-space: pre;
+}
+
+/* Preserve block elements visibility during animation */
+.bubble-ai-content.animating * {
+  visibility: visible;
 }
 
 /* ── Delete dialog ── */
@@ -470,6 +474,7 @@ const GROQ_API_KEY   = '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
 const GROQ_MODEL     = 'openai/gpt-oss-120b';
 const SYSTEM_PROMPT  = 'Ты — Siri, умный, эмпатичный AI-помощник для ежедневного общения и бизнес-задач. Ответы формируй самостоятельно, без вызова внешних функций и инструментов. На простые приветствия, реплики и светскую беседу отвечай коротко, тепло и по-человечески. Переходи к строгой структуре (заголовкам, спискам, разделителям) только при решении комплексных вопросов. Если пользователь просит расчеты или аналитику — используй LaTeX ($inline$ или $$display$$). Тексты для постов пиши в сдержанном, дружелюбном стиле.';
 const MOV_DURATION   = 5000; // ms — wait for MOV to finish before showing AI text
+const CHAR_DELAY     = 20;   // ms per character for animation
 
 // ══ STATE ══
 const loadChats = () => { try { return JSON.parse(localStorage.getItem('siri_chats') || '[]'); } catch { return []; } };
@@ -508,12 +513,10 @@ function formatDate(ts) {
   return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
 }
 
-// ══ MARKDOWN ══
-function renderMarkdown(text) {
-  const div = document.createElement('div');
-  div.className = 'bubble-ai-content';
-  if (typeof marked === 'undefined') { div.textContent = text; return div; }
-
+// ══ MARKDOWN RENDERER (returns HTML string) ══
+function renderMarkdownToHtml(text) {
+  if (typeof marked === 'undefined') return `<div class="bubble-ai-content">${escHtml(text)}</div>`;
+  
   const mathBlocks = [];
   let s = text;
   s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => { const i = mathBlocks.length; mathBlocks.push({t:'display', m}); return `MATH_${i}_`; });
@@ -522,68 +525,113 @@ function renderMarkdown(text) {
   s = s.replace(/\\\((.+?)\\\)/g, (_, m) => { const i = mathBlocks.length; mathBlocks.push({t:'inline', m}); return `MATH_${i}_`; });
 
   marked.setOptions({ breaks: true, gfm: true });
-  div.innerHTML = marked.parse(s);
-
+  let html = marked.parse(s);
+  
   if (mathBlocks.length && typeof katex !== 'undefined') {
-    let html = div.innerHTML;
     mathBlocks.forEach(({t, m}, i) => {
       try {
         html = html.replace(`MATH_${i}_`, katex.renderToString(m.trim(), { displayMode: t === 'display', throwOnError: false, strict: false }));
       } catch(e) {
-        html = html.replace(`MATH_${i}_`, `<span style="color:#ff6b6b">[math]</span>`);
+        html = html.replace(`MATH_${i}_`, `<span style="color:#ff6b6b">[math error]</span>`);
       }
     });
-    div.innerHTML = html;
   }
-
-  div.querySelectorAll('table').forEach(tbl => {
+  
+  // Wrap tables
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  tempDiv.querySelectorAll('table').forEach(tbl => {
     const w = document.createElement('div');
     w.className = 'table-wrap';
     tbl.parentNode.insertBefore(w, tbl);
     w.appendChild(tbl);
   });
-  return div;
+  return `<div class="bubble-ai-content">${tempDiv.innerHTML}</div>`;
 }
 
-// ══ CHAR-BY-CHAR ANIMATION (fixes spaces, adds zoom) ══
-// Delay between chars (ms) — lower = faster appearance
-const CHAR_DELAY = 28;
-
-async function animateTextCharByChar(container, text) {
-  container.innerHTML = '';
-  if (!text) return;
-
-  const msgs = document.getElementById('chatMessages');
-  let delay = 0;
-
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    const span = document.createElement('span');
-
-    if (ch === ' ' || ch === '\u00a0') {
-      // Space: render as a simple non-breaking space, no animation needed
-      span.className = 'char-space';
-      span.textContent = '\u00a0';
-      container.appendChild(span);
-    } else if (ch === '\n') {
-      container.appendChild(document.createElement('br'));
-    } else {
-      span.className = 'char-animate';
-      span.style.animationDelay = delay + 'ms';
-      span.textContent = ch;
-      container.appendChild(span);
-      delay += CHAR_DELAY;
+// ══ ANIMATE HTML CONTENT CHARACTER-BY-CHARACTER ══
+async function animateHtmlContent(container, htmlString) {
+  // Store original HTML
+  container.innerHTML = htmlString;
+  
+  // Find all text nodes within container
+  const textNodes = [];
+  const walker = document.createTreeWalker(
+    container,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: function(node) {
+        // Skip empty text nodes and script/style content
+        if (node.nodeValue.trim().length === 0) return NodeFilter.FILTER_SKIP;
+        // Don't animate inside pre, code, katex elements
+        let parent = node.parentElement;
+        while (parent && parent !== container) {
+          if (parent.tagName === 'PRE' || parent.tagName === 'CODE' || 
+              parent.classList?.contains('katex') || parent.classList?.contains('katex-display')) {
+            return NodeFilter.FILTER_SKIP;
+          }
+          parent = parent.parentElement;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
     }
-
-    // Scroll every ~10 chars
-    if (i % 10 === 0) {
-      requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
-    }
+  );
+  
+  let node;
+  while (node = walker.nextNode()) {
+    textNodes.push(node);
   }
-
-  // Wait for all animations to finish
-  const totalDuration = delay + 220; // 220 = animation duration
+  
+  // Hide all text nodes initially and prepare animation spans
+  const animations = [];
+  let globalDelay = 0;
+  
+  for (const textNode of textNodes) {
+    const originalText = textNode.nodeValue;
+    const parent = textNode.parentNode;
+    
+    // Create a fragment with animated spans
+    const fragment = document.createDocumentFragment();
+    let delay = globalDelay;
+    
+    for (let i = 0; i < originalText.length; i++) {
+      const ch = originalText[i];
+      if (ch === ' ' || ch === '\u00a0') {
+        const spaceSpan = document.createElement('span');
+        spaceSpan.className = 'char-space';
+        spaceSpan.textContent = '\u00a0';
+        fragment.appendChild(spaceSpan);
+        delay += CHAR_DELAY * 0.3; // Spaces animate faster
+      } else if (ch === '\n') {
+        fragment.appendChild(document.createElement('br'));
+      } else {
+        const charSpan = document.createElement('span');
+        charSpan.className = 'char-animate';
+        charSpan.style.animationDelay = delay + 'ms';
+        charSpan.textContent = ch;
+        fragment.appendChild(charSpan);
+        delay += CHAR_DELAY;
+      }
+    }
+    
+    // Replace text node with animated spans
+    parent.replaceChild(fragment, textNode);
+    animations.push(delay);
+    globalDelay = delay;
+  }
+  
+  // Calculate total animation duration
+  const maxDelay = Math.max(...animations, 0);
+  const totalDuration = maxDelay + 250;
+  
+  // Scroll while animating
+  const msgs = document.getElementById('chatMessages');
+  const scrollInterval = setInterval(() => {
+    requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
+  }, 100);
+  
   await new Promise(r => setTimeout(r, totalDuration));
+  clearInterval(scrollInterval);
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 }
 
@@ -653,8 +701,9 @@ function appendBubble(role, text, animate) {
     if (animate) wrap.classList.add('chat-enter-anim');
   } else {
     const wrap    = document.createElement('div'); wrap.className = 'bubble-ai-wrap';
-    const content = renderMarkdown(text);
-    wrap.appendChild(content);
+    const contentDiv = document.createElement('div');
+    contentDiv.innerHTML = renderMarkdownToHtml(text);
+    wrap.appendChild(contentDiv.firstChild);
     const actions  = buildActionButtons(text);
     wrap.appendChild(actions);
     msgs.appendChild(wrap);
@@ -666,7 +715,7 @@ function buildActionButtons(aiText) {
   const actions  = document.createElement('div'); actions.className = 'bubble-ai-actions';
   const retryBtn = document.createElement('button'); retryBtn.className = 'action-btn'; retryBtn.title = 'Повторить';
   retryBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>';
-  retryBtn.addEventListener('click', retryLastMessage);
+  retryBtn.addEventListener('click', () => retryLastMessage());
   const speakBtn = document.createElement('button'); speakBtn.className = 'action-btn'; speakBtn.title = 'Озвучить';
   speakBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
   speakBtn.addEventListener('click', () => startTTS(aiText));
@@ -703,7 +752,6 @@ function openChatById(id) {
   setChatActive(true);
   const msgs = document.getElementById('chatMessages');
   msgs.innerHTML = '';
-  // Animate each bubble in with staggered delay
   (chat.messages || []).forEach((m, idx) => {
     appendBubble(m.role, m.text, true);
     const el = msgs.lastElementChild;
@@ -844,7 +892,6 @@ async function callAPI(val) {
   abortController = new AbortController();
   let aiText = '';
 
-  // Fetch and MOV timer run in parallel; we wait for BOTH
   const fetchPromise = fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     signal: abortController.signal,
@@ -882,14 +929,15 @@ async function callAPI(val) {
 
   // Build AI bubble
   const wrap       = document.createElement('div'); wrap.className = 'bubble-ai-wrap entering';
-  const contentDiv = document.createElement('div'); contentDiv.className = 'bubble-ai-content';
+  const contentDiv = document.createElement('div');
   const actions    = buildActionButtons(aiText);
   wrap.appendChild(contentDiv);
   wrap.appendChild(actions);
   msgs.appendChild(wrap);
 
-  // Animate chars
-  await animateTextCharByChar(contentDiv, aiText);
+  // Render and animate HTML content
+  const htmlContent = renderMarkdownToHtml(aiText);
+  await animateHtmlContent(contentDiv, htmlContent);
 
   new Audio('/src/sound.mp3').play().catch(() => {});
 
@@ -1013,12 +1061,13 @@ async function sendMessageWithFile() {
     hideWorkingInline();
 
     const aWrap      = document.createElement('div'); aWrap.className = 'bubble-ai-wrap entering';
-    const contentDiv = document.createElement('div'); contentDiv.className = 'bubble-ai-content';
+    const contentDiv = document.createElement('div');
     const actions    = buildActionButtons(aiText);
     aWrap.appendChild(contentDiv); aWrap.appendChild(actions);
     msgs.appendChild(aWrap);
 
-    await animateTextCharByChar(contentDiv, aiText);
+    const htmlContent = renderMarkdownToHtml(aiText);
+    await animateHtmlContent(contentDiv, htmlContent);
 
     new Audio('/src/sound.mp3').play().catch(() => {});
     if (currentChatId) {
