@@ -444,15 +444,15 @@ body {
 }
 .action-btn svg { width: 18px; height: 18px; pointer-events: none; }
 
-/* ══ WORKING INDICATOR ══ */
+/* ══ WORKING INDICATOR — increased left padding ══ */
 .working-placeholder {
-  padding: 4px 0 4px 0 !important;
+  padding: 4px 0 4px 12px !important;
 }
 .working-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-left: 4px;
+  gap: 12px;
+  padding-left: 8px;
 }
 .working-video {
   width: 52px; height: 52px;
@@ -464,7 +464,7 @@ body {
 
 .working-text-area {
   overflow: hidden;
-  height: 28px;
+  height: 32px;
   display: flex; align-items: center;
   position: relative;
 }
@@ -478,21 +478,29 @@ body {
   white-space: nowrap;
 }
 
-@keyframes workCharIn {
-  0%   { opacity: 0; transform: translateY(6px) scale(0.85); filter: blur(4px); }
-  55%  { filter: blur(0.5px); }
-  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+/* Pulsing animation for working label */
+@keyframes workingPulse {
+  0% { color: rgba(255,248,235,0.92); text-shadow: 0 0 2px rgba(255,220,180,0.5); }
+  50% { color: rgba(180,180,190,0.88); text-shadow: 0 0 1px rgba(255,255,255,0.2); }
+  100% { color: rgba(255,248,235,0.92); text-shadow: 0 0 2px rgba(255,220,180,0.5); }
 }
-@keyframes workCharOut {
-  0%   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-  100% { opacity: 0; transform: translateY(-5px) scale(0.88); filter: blur(5px); }
+@keyframes workingBlurOut {
+  0% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  100% { opacity: 0; transform: translateY(-8px); filter: blur(8px); }
 }
-.wchar {
-  display: inline-block;
-  animation: workCharIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+@keyframes workingSlideIn {
+  0% { opacity: 0; transform: translateY(8px); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
-.wchar.out {
-  animation: workCharOut 0.18s cubic-bezier(0.4, 0, 1, 1) both;
+
+.working-phrase.pulse {
+  animation: workingPulse 2.2s ease-in-out infinite;
+}
+.working-phrase.blur-out {
+  animation: workingBlurOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.working-phrase.slide-in {
+  animation: workingSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes charReveal {
@@ -536,7 +544,7 @@ body {
 <!-- HOME -->
 <div class="screen active" id="home">
   <div class="home-header">
-    <span class="home-title" id="homeTitle"></span>
+    <span class="home-title" id="homeTitle">Siri (бета-версия)</span>
     <button class="txbtn" id="btnSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -821,25 +829,9 @@ async function animateHtmlContent(container, htmlString) {
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 }
 
-// ══ WORKING INDICATOR ══
+// ══ WORKING INDICATOR — with "Работаю над этим..." and "Суммаризирую..." ══
 let workingWrap = null;
-
-function buildWorkingPhrase(text, mode) {
-  const span = document.createElement('span');
-  span.className = 'working-phrase';
-  const chars = [...text];
-  chars.forEach((ch, i) => {
-    if (ch === ' ') {
-      const sp = document.createElement('span'); sp.textContent = '\u00a0'; sp.style.display='inline'; span.appendChild(sp);
-    } else {
-      const cs = document.createElement('span'); cs.className = 'wchar';
-      if (mode === 'in')  cs.style.animationDelay = (i * 28) + 'ms';
-      if (mode === 'out') cs.style.animationDelay = (i * 22) + 'ms';
-      cs.textContent = ch; span.appendChild(cs);
-    }
-  });
-  return span;
-}
+let pulseInterval = null;
 
 function showWorkingInline() {
   if (workingWrap) hideWorkingInline(true);
@@ -861,8 +853,10 @@ function showWorkingInline() {
   const textArea = document.createElement('div');
   textArea.className = 'working-text-area';
 
-  const phrase1 = buildWorkingPhrase('Думаю над этим...', 'in');
-  textArea.appendChild(phrase1);
+  const phraseSpan = document.createElement('span');
+  phraseSpan.className = 'working-phrase pulse';
+  phraseSpan.textContent = 'Работаю над этим...';
+  textArea.appendChild(phraseSpan);
 
   row.appendChild(video);
   row.appendChild(textArea);
@@ -872,32 +866,40 @@ function showWorkingInline() {
 
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 
-  const phase2Timer = setTimeout(() => {
+  // Phase 1: after 2.5 seconds, change to "Суммаризирую..."
+  const phaseTimer = setTimeout(() => {
     if (!workingWrap) return;
-    const chars1 = phrase1.querySelectorAll('.wchar');
-    chars1.forEach((c, i) => { c.classList.add('out'); c.style.animationDelay = (i * 22) + 'ms'; });
-    const outDuration = chars1.length * 22 + 200;
+    const phrase = workingWrap.querySelector('.working-phrase');
+    if (!phrase) return;
+    phrase.classList.remove('pulse');
+    phrase.classList.add('blur-out');
+    
     setTimeout(() => {
       if (!workingWrap) return;
-      phrase1.remove();
-      const phrase2 = buildWorkingPhrase('Складываю воедино...', 'in');
-      textArea.appendChild(phrase2);
-    }, outDuration);
-  }, 2000);
+      const newPhrase = workingWrap.querySelector('.working-phrase');
+      if (newPhrase) {
+        newPhrase.textContent = 'Суммаризирую...';
+        newPhrase.classList.remove('blur-out');
+        newPhrase.classList.add('slide-in', 'pulse');
+      }
+    }, 300);
+  }, 2500);
 
-  const phase3Timer = setTimeout(() => {
+  // Phase 2: at 4700ms — fade video out
+  const fadeTimer = setTimeout(() => {
     if (!workingWrap) return;
-    video.classList.add('fading');
+    const vid = workingWrap.querySelector('.working-video');
+    if (vid) vid.classList.add('fading');
   }, 4700);
 
-  wrap._timers = [phase2Timer, phase3Timer];
+  wrap._timers = [phaseTimer, fadeTimer];
 }
 
 function hideWorkingInline(instant) {
   if (!workingWrap) return;
   const wrap = workingWrap;
   workingWrap = null;
-  (wrap._timers||[]).forEach(t => clearTimeout(t));
+  if (wrap._timers) wrap._timers.forEach(t => clearTimeout(t));
   if (instant) { wrap.remove(); return; }
   wrap.remove();
 }
