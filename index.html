@@ -450,7 +450,7 @@ body {
 <!-- HOME -->
 <div class="screen active" id="home">
   <div class="home-header">
-    <span class="home-title" id="homeTitle">Si!ri</span>
+    <span class="home-title" id="homeTitle">PIZDA</span>
     <button class="txbtn" id="btnSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -1034,78 +1034,116 @@ function retryLastMessage() {
 
 /* ══ API CALL — ИСПРАВЛЕНА на GEMINI ══ */
 async function callAPI(val) {
-  isGenerating=true; toggleControls(); showWorkingInline();
-  const msgs=document.getElementById('chatMessages');
-  requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
-  abortController=new AbortController();
+  isGenerating = true;
+  toggleControls();
+  showWorkingInline();
+  const msgs = document.getElementById('chatMessages');
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
+  abortController = new AbortController();
 
-  // Формируем историю для Gemini
-  let conversationHistory = '';
-  for (const msg of currentMessages) {
-    conversationHistory += `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}\n`;
-  }
-  conversationHistory += `User: ${val}`;
+  // Собираем историю сообщений
+  const messages = [
+    { role: 'system', content: SYSTEM_PROMPT }
+  ];
   
-  const fullPrompt = SYSTEM_PROMPT + "\n\n" + conversationHistory;
+  for (const msg of currentMessages) {
+    messages.push({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content
+    });
+  }
+  messages.push({ role: 'user', content: val });
 
-  const fetchPromise = fetch(GEMINI_URL, {
+  const fetchPromise = fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     signal: abortController.signal,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer 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'
+    },
     body: JSON.stringify({
-      contents: [{
-        parts: [{ text: fullPrompt }]
-      }]
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      messages: messages,
+      max_tokens: 1024,
+      temperature: 0.7
     })
   });
-  
-  const movTimer=new Promise(r=>setTimeout(r,MOV_DURATION));
 
-  let aiText='';
+  const movTimer = new Promise(r => setTimeout(r, MOV_DURATION));
+
+  let aiText = '';
   try {
-    const [resp]=await Promise.all([fetchPromise,movTimer]);
-    if(!resp.ok) {
+    const [resp] = await Promise.all([fetchPromise, movTimer]);
+    if (!resp.ok) {
       const errorText = await resp.text();
-      throw new Error('API '+resp.status+': '+errorText);
+      throw new Error('API ' + resp.status + ': ' + errorText);
     }
-    const data=await resp.json();
-    aiText=(data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-    if(!aiText) aiText='Не удалось получить ответ от API.';
-  } catch(err) {
+    const data = await resp.json();
+    aiText = (data.choices?.[0]?.message?.content || '').trim();
+    if (!aiText) aiText = 'Не удалось получить ответ от API.';
+  } catch (err) {
     hideWorkingInline();
-    if(err.name!=='AbortError') {
-      const ew=document.createElement('div'); ew.className='bubble-ai-wrap';
-      const ec=document.createElement('div'); ec.className='bubble-ai-content'; ec.textContent='Произошла ошибка: ' + err.message;
-      ew.appendChild(ec); msgs.appendChild(ew);
+    if (err.name !== 'AbortError') {
+      const ew = document.createElement('div');
+      ew.className = 'bubble-ai-wrap';
+      const ec = document.createElement('div');
+      ec.className = 'bubble-ai-content';
+      ec.textContent = 'Произошла ошибка: ' + err.message;
+      ew.appendChild(ec);
+      msgs.appendChild(ew);
     }
-    isGenerating=false; abortController=null; toggleControls(); return;
+    isGenerating = false;
+    abortController = null;
+    toggleControls();
+    return;
   }
 
-  currentMessages.push({role:'assistant',content:aiText});
+  currentMessages.push({ role: 'assistant', content: aiText });
 
   // Убираем working — после этого DOM стабилизируется
   hideWorkingInline();
   // Tiny pause — один кадр — чтобы браузер убрал working из потока
-  await new Promise(r=>requestAnimationFrame(r));
-  await new Promise(r=>requestAnimationFrame(r));
+  await new Promise(r => requestAnimationFrame(r));
+  await new Promise(r => requestAnimationFrame(r));
 
-  const wrap=document.createElement('div'); wrap.className='bubble-ai-wrap entering';
-  const contentDiv=document.createElement('div');
-  wrap.appendChild(contentDiv); wrap.appendChild(buildActionButtons(aiText));
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble-ai-wrap entering';
+  const contentDiv = document.createElement('div');
+  wrap.appendChild(contentDiv);
+  wrap.appendChild(buildActionButtons(aiText));
   msgs.appendChild(wrap);
-  requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 
   await animateHtmlContent(contentDiv, renderMarkdownToHtml(aiText));
-  new Audio('/src/sound.mp3').play().catch(()=>{});
+  new Audio('/src/sound.mp3').play().catch(() => {});
 
-  if(currentChatId) {
-    const c=chats.find(c=>c.id===currentChatId);
-    if(c){c.messages.push({role:'user',text:val});c.messages.push({role:'ai',text:aiText});c.ts=Date.now();c.title=val.length>50?val.slice(0,50)+'…':val;c.preview=aiText.slice(0,62)+'…';}
+  if (currentChatId) {
+    const c = chats.find(c => c.id === currentChatId);
+    if (c) {
+      c.messages.push({ role: 'user', text: val });
+      c.messages.push({ role: 'ai', text: aiText });
+      c.ts = Date.now();
+      c.title = val.length > 50 ? val.slice(0, 50) + '…' : val;
+      c.preview = aiText.slice(0, 62) + '…';
+    }
   } else {
-    const id='chat_'+Date.now(); currentChatId=id;
-    chats.unshift({id,ts:Date.now(),title:val.length>50?val.slice(0,50)+'…':val,preview:aiText.slice(0,62)+'…',messages:[{role:'user',text:val},{role:'ai',text:aiText}]});
+    const id = 'chat_' + Date.now();
+    currentChatId = id;
+    chats.unshift({
+      id,
+      ts: Date.now(),
+      title: val.length > 50 ? val.slice(0, 50) + '…' : val,
+      preview: aiText.slice(0, 62) + '…',
+      messages: [
+        { role: 'user', text: val },
+        { role: 'ai', text: aiText }
+      ]
+    });
   }
-  saveChats(chats); isGenerating=false; abortController=null; toggleControls();
+  saveChats(chats);
+  isGenerating = false;
+  abortController = null;
+  toggleControls();
 }
 
 /* ══ FILE ATTACHMENT ══ */
