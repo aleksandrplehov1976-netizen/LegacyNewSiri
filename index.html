@@ -579,7 +579,7 @@ body {
 <script>
 const GEMINI_API_KEY = 'AQ.Ab8RN6ILAyitmMPRuZYCxzwRuoQyomJ9g5wviwRpdI24TFPkag';
 const GEMINI_MODEL   = 'gemini-2.0-flash';
-const GEMINI_URL     = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_URL     = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 const SYSTEM_PROMPT  = 'Ты — Siri, умный, эмпатичный AI-помощник для ежедневного общения и бизнес-задач. Ответы формируй самостоятельно, без вызова внешних функций и инструментов. На простые приветствия, реплики и светскую беседу отвечай коротко, тепло и по-человечески. Переходи к строгой структуре (заголовкам, спискам, разделителям) только при решении комплексных вопросов. Если пользователь просит расчеты или аналитику — используй LaTeX ($inline$ или $$display$$). Тексты для постов пиши в сдержанном, дружелюбном стиле.';
 const MOV_DURATION  = 5000;
 const CHAR_DELAY    = 20;
@@ -1032,31 +1032,50 @@ function retryLastMessage() {
   callAPI(lastUserMessage);
 }
 
-/* ══ API CALL ══ */
+/* ══ API CALL — ИСПРАВЛЕНА на GEMINI ══ */
 async function callAPI(val) {
   isGenerating=true; toggleControls(); showWorkingInline();
   const msgs=document.getElementById('chatMessages');
   requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
   abortController=new AbortController();
 
-  const fetchPromise=fetch('https://api.groq.com/openai/v1/chat/completions',{
-    method:'POST', signal:abortController.signal,
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_API_KEY},
-    body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:SYSTEM_PROMPT},...currentMessages],max_tokens:1024,temperature:0.7})
+  // Формируем историю для Gemini
+  let conversationHistory = '';
+  for (const msg of currentMessages) {
+    conversationHistory += `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}\n`;
+  }
+  conversationHistory += `User: ${val}`;
+  
+  const fullPrompt = SYSTEM_PROMPT + "\n\n" + conversationHistory;
+
+  const fetchPromise = fetch(GEMINI_URL, {
+    method: 'POST',
+    signal: abortController.signal,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: fullPrompt }]
+      }]
+    })
   });
+  
   const movTimer=new Promise(r=>setTimeout(r,MOV_DURATION));
 
   let aiText='';
   try {
     const [resp]=await Promise.all([fetchPromise,movTimer]);
-    if(!resp.ok) throw new Error('API '+resp.status);
+    if(!resp.ok) {
+      const errorText = await resp.text();
+      throw new Error('API '+resp.status+': '+errorText);
+    }
     const data=await resp.json();
-    aiText=(data.choices?.[0]?.message?.content||'').trim()||'Не удалось получить ответ.';
+    aiText=(data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+    if(!aiText) aiText='Не удалось получить ответ от API.';
   } catch(err) {
     hideWorkingInline();
     if(err.name!=='AbortError') {
       const ew=document.createElement('div'); ew.className='bubble-ai-wrap';
-      const ec=document.createElement('div'); ec.className='bubble-ai-content'; ec.textContent='Произошла ошибка. Проверьте соединение.';
+      const ec=document.createElement('div'); ec.className='bubble-ai-content'; ec.textContent='Произошла ошибка: ' + err.message;
       ew.appendChild(ec); msgs.appendChild(ew);
     }
     isGenerating=false; abortController=null; toggleControls(); return;
@@ -1131,18 +1150,39 @@ async function sendMessageWithFile() {
   isGenerating=true; toggleControls(); showWorkingInline();
   abortController=new AbortController();
 
-  const fetchPromise=fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',signal:abortController.signal,headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_API_KEY},body:JSON.stringify({model:GROQ_MODEL,messages:[{role:'system',content:SYSTEM_PROMPT},...currentMessages],max_tokens:1024,temperature:0.7})});
+  // Формируем историю для Gemini
+  let conversationHistory = '';
+  for (const msg of currentMessages) {
+    conversationHistory += `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}\n`;
+  }
+  const fullPrompt = SYSTEM_PROMPT + "\n\n" + conversationHistory;
+
+  const fetchPromise = fetch(GEMINI_URL, {
+    method: 'POST',
+    signal: abortController.signal,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: fullPrompt }]
+      }]
+    })
+  });
+  
   const movTimer=new Promise(r=>setTimeout(r,MOV_DURATION));
 
   let aiText='';
   try {
     const [resp]=await Promise.all([fetchPromise,movTimer]);
-    if(!resp.ok) throw new Error('API '+resp.status);
+    if(!resp.ok) {
+      const errorText = await resp.text();
+      throw new Error('API '+resp.status+': '+errorText);
+    }
     const data=await resp.json();
-    aiText=((data.choices||[])[0]||{}).message?.content?.trim()||'Нет ответа.';
+    aiText=(data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+    if(!aiText) aiText='Не удалось получить ответ от API.';
   } catch(err){
     hideWorkingInline();
-    if(err.name!=='AbortError'){const ew=document.createElement('div');ew.className='bubble-ai-wrap';const ec=document.createElement('div');ec.className='bubble-ai-content';ec.textContent='Произошла ошибка. Проверьте соединение.';ew.appendChild(ec);msgs.appendChild(ew);}
+    if(err.name!=='AbortError'){const ew=document.createElement('div');ew.className='bubble-ai-wrap';const ec=document.createElement('div');ec.className='bubble-ai-content';ec.textContent='Произошла ошибка: ' + err.message;ew.appendChild(ec);msgs.appendChild(ew);}
     isGenerating=false;abortController=null;toggleControls();return;
   }
 
