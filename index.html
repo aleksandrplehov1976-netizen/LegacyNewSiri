@@ -356,11 +356,11 @@ body {
 /* ══ WORKING INDICATOR ══ */
 /* Нет обёртки-пузыря — просто строка с видео и текстом */
 .working-placeholder { padding: 4px 0 4px 0 !important; }
-.working-row { display: flex; align-items: center; gap: 10px; padding-left: 8px; }
+.working-row { display: flex; align-items: center; gap: 12px; padding-left: 28px; }
 
 .working-video {
-  width: 52px; height: 52px; object-fit: contain; flex-shrink: 0;
-  border-radius: 26px;
+  width: 64px; height: 64px; object-fit: contain; flex-shrink: 0;
+  border-radius: 32px;
   transition: opacity 0.3s ease;
 }
 .working-video.fading { opacity: 0; }
@@ -450,7 +450,7 @@ body {
 <!-- HOME -->
 <div class="screen active" id="home">
   <div class="home-header">
-    <span class="home-title" id="homeTitle">Siri (бета-версия)</span>
+    <span class="home-title" id="homeTitle">Siri</span>
     <button class="txbtn" id="btnSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -577,9 +577,10 @@ body {
 </div>
 
 <script>
-const GROQ_API_KEY  = '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';
-const GROQ_MODEL    = 'openai/gpt-oss-120b';
-const SYSTEM_PROMPT = 'Ты — Siri, умный, эмпатичный AI-помощник для ежедневного общения и бизнес-задач. Ответы формируй самостоятельно, без вызова внешних функций и инструментов. На простые приветствия, реплики и светскую беседу отвечай коротко, тепло и по-человечески. Переходи к строгой структуре (заголовкам, спискам, разделителям) только при решении комплексных вопросов. Если пользователь просит расчеты или аналитику — используй LaTeX ($inline$ или $$display$$). Тексты для постов пиши в сдержанном, дружелюбном стиле.';
+const GEMINI_API_KEY = 'AQ.Ab8RN6ILAyitmMPRuZYCxzwRuoQyomJ9g5wviwRpdI24TFPkag';
+const GEMINI_MODEL   = 'gemini-2.0-flash';
+const GEMINI_URL     = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const SYSTEM_PROMPT  = 'Ты — Siri, умный, эмпатичный AI-помощник для ежедневного общения и бизнес-задач. Ответы формируй самостоятельно, без вызова внешних функций и инструментов. На простые приветствия, реплики и светскую беседу отвечай коротко, тепло и по-человечески. Переходи к строгой структуре (заголовкам, спискам, разделителям) только при решении комплексных вопросов. Если пользователь просит расчеты или аналитику — используй LaTeX ($inline$ или $$display$$). Тексты для постов пиши в сдержанном, дружелюбном стиле.';
 const MOV_DURATION  = 5000;
 const CHAR_DELAY    = 20;
 
