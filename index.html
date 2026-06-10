@@ -354,7 +354,6 @@ body {
 .action-btn svg { width: 18px; height: 18px; pointer-events: none; }
 
 /* ══ WORKING INDICATOR ══ */
-/* Нет обёртки-пузыря — просто строка с видео и текстом */
 .working-placeholder { padding: 4px 0 4px 0 !important; }
 .working-row { display: flex; align-items: center; gap: 12px; padding-left: 28px; }
 
@@ -365,16 +364,14 @@ body {
 }
 .working-video.fading { opacity: 0; }
 
-/* Контейнер текста — фиксированная высота, чтобы не прыгал лейаут */
 .working-text-area {
   position: relative;
   height: 28px;
   display: flex; align-items: center;
-  overflow: visible; /* буквы летают свободно */
+  overflow: visible;
   min-width: 200px;
 }
 
-/* Обёртка одной фразы */
 .working-phrase {
   position: absolute;
   left: 0; top: 50%; transform: translateY(-50%);
@@ -385,15 +382,11 @@ body {
   letter-spacing: -0.3px;
 }
 
-/* ── Анимации для отдельных букв ── */
-
-/* Влетает: slide-up + unblur + fade-in */
 @keyframes wCharIn {
   0%   { opacity: 0; transform: translateY(7px) scale(0.84); filter: blur(6px); }
   50%  { filter: blur(1px); }
   100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
-/* Улетает: slide-up + blur-out + fade-out */
 @keyframes wCharOut {
   0%   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
   100% { opacity: 0; transform: translateY(-6px) scale(0.88); filter: blur(5px); }
@@ -401,7 +394,6 @@ body {
 
 .wc {
   display: inline-block;
-  /* начальное состояние — невидима, пока не запустится анимация */
   opacity: 0;
 }
 .wc.in {
@@ -412,7 +404,6 @@ body {
   pointer-events: none;
 }
 
-/* ── Char animation для текста ответа ── */
 @keyframes charReveal {
   0%   { opacity: 0; transform: translateY(5px) scale(0.82); filter: blur(5px); }
   45%  { filter: blur(1px); transform: translateY(1px) scale(0.97); opacity: 0.7; }
@@ -421,7 +412,6 @@ body {
 .char-animate { display: inline-block; opacity: 0; animation: charReveal 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .char-space { display: inline; white-space: pre; }
 
-/* ── Delete dialog ── */
 .delete-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 0 20px; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 .delete-overlay.open { opacity: 1; pointer-events: all; }
 .delete-dialog { width: 100%; max-width: 310px; display: flex; flex-direction: column; position: relative; transform: scale(0.88) translateY(12px); opacity: 0; transition: transform 0.32s cubic-bezier(0.34,1.38,0.64,1), opacity 0.22s ease; }
@@ -450,7 +440,7 @@ body {
 <!-- HOME -->
 <div class="screen active" id="home">
   <div class="home-header">
-    <span class="home-title" id="homeTitle">PIZDA</span>
+    <span class="home-title" id="homeTitle">Siri</span>
     <button class="txbtn" id="btnSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -504,7 +494,7 @@ body {
         <div class="settings-item">
           <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
           <span class="settings-item-label">Apple Intelligence Core</span>
-          <span class="settings-item-value">1(RC)</span>
+          <span class="settings-item-value">1o(RC)</span>
         </div>
         <a class="settings-item" href="/help.html">
           <div class="settings-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
@@ -597,15 +587,10 @@ const SYSTEM_PROMPT = `Ты — Siri, умный, эмпатичный AI-пом
 const MOV_DURATION = 5000;
 const CHAR_DELAY = 20;
 
-// ── PHRASE 1 отображается 2000ms, потом буквы улетают одна за другой
-// ── Через ~400ms после старта вылета появляется PHRASE 2 (буквы влетают)
-// ── На 4700ms видео начинает fade-out (300ms)
-// ── На 5000ms Promise.all разрешается → working убирается → появляется сообщение
-
 const PHRASE1 = 'Думаю над этим...';
 const PHRASE2 = 'Складываю воедино...';
-const CHAR_OUT_STAGGER = 28; // ms между буквами при вылете
-const CHAR_IN_STAGGER  = 26; // ms между буквами при влёте
+const CHAR_OUT_STAGGER = 28;
+const CHAR_IN_STAGGER = 26;
 
 const loadChats = () => { try { return JSON.parse(localStorage.getItem('siri_chats') || '[]'); } catch { return []; } };
 const saveChats = a => { try { localStorage.setItem('siri_chats', JSON.stringify(a)); } catch {} };
@@ -737,19 +722,11 @@ async function animateHtmlContent(container, htmlString) {
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 }
 
-/* ══════════════════════════════════════════
-   WORKING INDICATOR — полный перезапис
-   ══════════════════════════════════════════ */
-
-// Собирает span-элементы для фразы.
-// mode 'in'  → у каждой буквы класс wc + in, animationDelay нарастающий
-// mode 'out' → то же, но класс wc + out
 function buildPhraseEl(text, mode) {
   const wrap = document.createElement('span');
   wrap.className = 'working-phrase';
-  // Начальный цвет кремовый; он единый на весь span
   wrap.style.color = 'rgba(255,248,235,0.92)';
-  const chars = [...text]; // unicode-safe split
+  const chars = [...text];
   chars.forEach((ch, i) => {
     if (ch === ' ') {
       const sp = document.createElement('span');
@@ -773,7 +750,6 @@ function showWorkingInline() {
   if (workingWrap) { workingWrap.remove(); workingWrap = null; }
   const msgs = document.getElementById('chatMessages');
 
-  // Контейнер — такой же класс как у AI-пузыря, чтобы отступы совпадали
   const wrap = document.createElement('div');
   wrap.className = 'bubble-ai-wrap working-placeholder';
 
@@ -790,7 +766,6 @@ function showWorkingInline() {
   const textArea = document.createElement('div');
   textArea.className = 'working-text-area';
 
-  // — Фраза 1 влетает сразу
   const phrase1 = buildPhraseEl(PHRASE1, 'in');
   textArea.appendChild(phrase1);
 
@@ -801,19 +776,15 @@ function showWorkingInline() {
   workingWrap = wrap;
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 
-  // — 2000ms: фраза1 улетает (буквы выходят одна за другой)
   const t1 = setTimeout(() => {
     if (!workingWrap) return;
-    // Меняем класс каждой буквы: убираем 'in', добавляем 'out'
     phrase1.querySelectorAll('.wc').forEach((cs, i) => {
       cs.classList.remove('in');
-      // Сброс через reflow чтобы анимация стартовала заново
       void cs.offsetWidth;
       cs.style.animationDelay = (i * CHAR_OUT_STAGGER) + 'ms';
       cs.classList.add('out');
     });
 
-    // — ~400ms после начала вылета (overlap) — фраза2 влетает
     const outTotal = [...text2chars(PHRASE1)].length * CHAR_OUT_STAGGER;
     const phrase2Delay = Math.min(400, outTotal * 0.45);
 
@@ -821,7 +792,6 @@ function showWorkingInline() {
       if (!workingWrap) return;
       const phrase2 = buildPhraseEl(PHRASE2, 'in');
       textArea.appendChild(phrase2);
-      // Удалим phrase1 после того как буквы улетели
       const cleanupDelay = outTotal + 250;
       setTimeout(() => { if (phrase1.parentNode) phrase1.remove(); }, cleanupDelay);
     }, phrase2Delay);
@@ -829,7 +799,6 @@ function showWorkingInline() {
     workingWrap._t2 = t2;
   }, 2000);
 
-  // — 4700ms: видео начинает fade out (0.3s)
   const t3 = setTimeout(() => {
     if (workingWrap) {
       const vid = workingWrap.querySelector('.working-video');
@@ -841,7 +810,6 @@ function showWorkingInline() {
   workingWrap._t3 = t3;
 }
 
-// Вспомогательная: количество «печатаемых» символов фразы (без пробелов)
 function text2chars(str) { return [...str].filter(c => c !== ' '); }
 
 function hideWorkingInline() {
@@ -851,7 +819,6 @@ function hideWorkingInline() {
   w.remove();
 }
 
-/* ══ CARDS ══ */
 function renderCards() {
   const grid = document.getElementById('cardsGrid');
   grid.innerHTML = '';
@@ -899,7 +866,6 @@ document.getElementById('dialogConfirmDelete').addEventListener('click', confirm
 document.getElementById('dialogCancel').addEventListener('click', closeDeleteDialog);
 document.getElementById('deleteOverlay').addEventListener('click', e => { if(e.target===document.getElementById('deleteOverlay')) closeDeleteDialog(); });
 
-/* ══ SEARCH ══ */
 function openSearch() {
   document.getElementById('searchOverlay').classList.add('open');
   renderSearchResults('');
@@ -933,7 +899,6 @@ document.getElementById('searchInput').addEventListener('input', e => renderSear
 document.getElementById('searchCancelBtn').addEventListener('click', closeSearch);
 document.getElementById('btnSearch').addEventListener('click', openSearch);
 
-/* ══ BUBBLES ══ */
 function appendBubble(role, text, animate) {
   const msgs = document.getElementById('chatMessages');
   if (role === 'user') {
@@ -963,7 +928,6 @@ function buildActionButtons(aiText) {
   return actions;
 }
 
-/* ══ SCREENS ══ */
 function setChatActive(a) { document.getElementById('chatTopTexture').style.display = a ? 'block' : 'none'; }
 
 function openNewChat() {
@@ -1001,7 +965,6 @@ function goHome() {
   setChatActive(false); renderCards();
 }
 
-/* ══ TTS ══ */
 const ttsBar=document.getElementById('ttsBar'), ttsPlayIcon=document.getElementById('ttsPlayIcon'), ttsPauseIcon=document.getElementById('ttsPauseIcon');
 function startTTS(text) {
   stopTTS(); if(!('speechSynthesis' in window)) return;
@@ -1017,7 +980,6 @@ function updateTTSBar() { ttsBar.classList.toggle('active',ttsActive); ttsPlayIc
 document.getElementById('ttsPlayPauseBtn').addEventListener('click',toggleTTSPlayPause);
 document.getElementById('ttsCloseBtn').addEventListener('click',stopTTS);
 
-/* ══ INPUT CONTROLS ══ */
 const chatInput=document.getElementById('chatInput'), btnMic=document.getElementById('btnMic');
 const btnSend=document.getElementById('btnSend'), btnStop=document.getElementById('btnStop');
 const inputBar=document.getElementById('inputBar');
@@ -1045,7 +1007,6 @@ function retryLastMessage() {
   callAPI(lastUserMessage);
 }
 
-/* ══ API CALL — ИСПРАВЛЕНА на GEMINI ══ */
 async function callAPI(val) {
   isGenerating = true;
   toggleControls();
@@ -1054,7 +1015,6 @@ async function callAPI(val) {
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
   abortController = new AbortController();
 
-  // Собираем историю сообщений
   const messages = [
     { role: 'system', content: SYSTEM_PROMPT }
   ];
@@ -1067,15 +1027,15 @@ async function callAPI(val) {
   }
   messages.push({ role: 'user', content: val });
 
-  const fetchPromise = fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const fetchPromise = fetch(GROQ_URL, {
     method: 'POST',
     signal: abortController.signal,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer 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'
+      'Authorization': 'Bearer ' + GROQ_API_KEY
     },
     body: JSON.stringify({
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      model: GROQ_MODEL,
       messages: messages,
       max_tokens: 1024,
       temperature: 0.7
@@ -1113,9 +1073,7 @@ async function callAPI(val) {
 
   currentMessages.push({ role: 'assistant', content: aiText });
 
-  // Убираем working — после этого DOM стабилизируется
   hideWorkingInline();
-  // Tiny pause — один кадр — чтобы браузер убрал working из потока
   await new Promise(r => requestAnimationFrame(r));
   await new Promise(r => requestAnimationFrame(r));
 
@@ -1159,7 +1117,6 @@ async function callAPI(val) {
   toggleControls();
 }
 
-/* ══ FILE ATTACHMENT ══ */
 let attachedFileText='', attachedFileName='';
 const fileInput=document.getElementById('fileInput'), attachedFilePill=document.getElementById('attachedFilePill'), attachedFileNameEl=document.getElementById('attachedFileName');
 
@@ -1184,105 +1141,174 @@ fileInput.addEventListener('change',async e=>{
 function clearAttachment(){ attachedFileText='';attachedFileName='';attachedFilePill.style.display='none'; }
 
 async function sendMessageWithFile() {
-  const val=chatInput.value.trim(); if(!val&&!attachedFileText) return; if(isGenerating) return;
-  const msgs=document.getElementById('chatMessages');
-  const wrap=document.createElement('div'); wrap.className='bubble-user-wrap';
-  const stack=document.createElement('div'); stack.className='bubble-user-stack';
-  if(attachedFileText){const fb=document.createElement('div');fb.className='bubble-file';fb.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="bubble-file-name">'+escHtml(attachedFileName)+'</span>';stack.appendChild(fb);}
-  if(val){const bub=document.createElement('div');bub.className='bubble-user';bub.textContent=val;stack.appendChild(bub);}
-  wrap.appendChild(stack); msgs.appendChild(wrap);
-  requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
-
-  const userDisplay=val||('📎 '+attachedFileName);
-  const apiContent=attachedFileText?'[Файл: '+attachedFileName+']\n```\n'+attachedFileText+'\n```\n\n'+(val||'Прочитай и проанализируй этот файл.'):val;
-  lastUserMessage=val||attachedFileName;
-  currentMessages.push({role:'user',content:apiContent});
-  chatInput.value=''; clearAttachment(); toggleControls();
-  isGenerating=true; toggleControls(); showWorkingInline();
-  abortController=new AbortController();
-
-  // Формируем историю для Gemini
-  let conversationHistory = '';
-  for (const msg of currentMessages) {
-    conversationHistory += `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}\n`;
+  const val = chatInput.value.trim();
+  if (!val && !attachedFileText) return;
+  if (isGenerating) return;
+  
+  const msgs = document.getElementById('chatMessages');
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble-user-wrap';
+  const stack = document.createElement('div');
+  stack.className = 'bubble-user-stack';
+  
+  if (attachedFileText) {
+    const fb = document.createElement('div');
+    fb.className = 'bubble-file';
+    fb.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="bubble-file-name">' + escHtml(attachedFileName) + '</span>';
+    stack.appendChild(fb);
   }
-  const fullPrompt = SYSTEM_PROMPT + "\n\n" + conversationHistory;
+  
+  if (val) {
+    const bub = document.createElement('div');
+    bub.className = 'bubble-user';
+    bub.textContent = val;
+    stack.appendChild(bub);
+  }
+  
+  wrap.appendChild(stack);
+  msgs.appendChild(wrap);
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 
-  const fetchPromise = fetch(GEMINI_URL, {
+  const userDisplay = val || ('📎 ' + attachedFileName);
+  const apiContent = attachedFileText 
+    ? '[Файл: ' + attachedFileName + ']\n```\n' + attachedFileText + '\n```\n\n' + (val || 'Прочитай и проанализируй этот файл.')
+    : val;
+  
+  lastUserMessage = val || attachedFileName;
+  currentMessages.push({ role: 'user', content: apiContent });
+  chatInput.value = '';
+  clearAttachment();
+  toggleControls();
+  
+  isGenerating = true;
+  toggleControls();
+  showWorkingInline();
+  abortController = new AbortController();
+
+  const messages = [
+    { role: 'system', content: SYSTEM_PROMPT }
+  ];
+  
+  for (const msg of currentMessages) {
+    messages.push({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content
+    });
+  }
+
+  const fetchPromise = fetch(GROQ_URL, {
     method: 'POST',
     signal: abortController.signal,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + GROQ_API_KEY
+    },
     body: JSON.stringify({
-      contents: [{
-        parts: [{ text: fullPrompt }]
-      }]
+      model: GROQ_MODEL,
+      messages: messages,
+      max_tokens: 1024,
+      temperature: 0.7
     })
   });
-  
-  const movTimer=new Promise(r=>setTimeout(r,MOV_DURATION));
 
-  let aiText='';
+  const movTimer = new Promise(r => setTimeout(r, MOV_DURATION));
+
+  let aiText = '';
   try {
-    const [resp]=await Promise.all([fetchPromise,movTimer]);
-    if(!resp.ok) {
+    const [resp] = await Promise.all([fetchPromise, movTimer]);
+    if (!resp.ok) {
       const errorText = await resp.text();
-      throw new Error('API '+resp.status+': '+errorText);
+      throw new Error('API ' + resp.status + ': ' + errorText);
     }
-    const data=await resp.json();
-    aiText=(data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-    if(!aiText) aiText='Не удалось получить ответ от API.';
-  } catch(err){
+    const data = await resp.json();
+    aiText = (data.choices?.[0]?.message?.content || '').trim();
+    if (!aiText) aiText = 'Не удалось получить ответ от API.';
+  } catch (err) {
     hideWorkingInline();
-    if(err.name!=='AbortError'){const ew=document.createElement('div');ew.className='bubble-ai-wrap';const ec=document.createElement('div');ec.className='bubble-ai-content';ec.textContent='Произошла ошибка: ' + err.message;ew.appendChild(ec);msgs.appendChild(ew);}
-    isGenerating=false;abortController=null;toggleControls();return;
+    if (err.name !== 'AbortError') {
+      const ew = document.createElement('div');
+      ew.className = 'bubble-ai-wrap';
+      const ec = document.createElement('div');
+      ec.className = 'bubble-ai-content';
+      ec.textContent = 'Произошла ошибка: ' + err.message;
+      ew.appendChild(ec);
+      msgs.appendChild(ew);
+    }
+    isGenerating = false;
+    abortController = null;
+    toggleControls();
+    return;
   }
 
-  currentMessages.push({role:'assistant',content:aiText});
+  currentMessages.push({ role: 'assistant', content: aiText });
   hideWorkingInline();
-  await new Promise(r=>requestAnimationFrame(r));
-  await new Promise(r=>requestAnimationFrame(r));
+  await new Promise(r => requestAnimationFrame(r));
+  await new Promise(r => requestAnimationFrame(r));
 
-  const aw=document.createElement('div'); aw.className='bubble-ai-wrap entering';
-  const cd=document.createElement('div'); const act=buildActionButtons(aiText);
-  aw.appendChild(cd); aw.appendChild(act); msgs.appendChild(aw);
-  requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
+  const aw = document.createElement('div');
+  aw.className = 'bubble-ai-wrap entering';
+  const cd = document.createElement('div');
+  const act = buildActionButtons(aiText);
+  aw.appendChild(cd);
+  aw.appendChild(act);
+  msgs.appendChild(aw);
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
 
   await animateHtmlContent(cd, renderMarkdownToHtml(aiText));
-  new Audio('/src/sound.mp3').play().catch(()=>{});
+  new Audio('/src/sound.mp3').play().catch(() => {});
 
-  if(currentChatId){const c=chats.find(c=>c.id===currentChatId);if(c){c.messages.push({role:'user',text:userDisplay});c.messages.push({role:'ai',text:aiText});c.ts=Date.now();c.preview=aiText.slice(0,62)+'…';}}
-  else{const id='chat_'+Date.now();currentChatId=id;chats.unshift({id,ts:Date.now(),title:userDisplay.length>50?userDisplay.slice(0,50)+'…':userDisplay,preview:aiText.slice(0,62)+'…',messages:[{role:'user',text:userDisplay},{role:'ai',text:aiText}]});}
-  saveChats(chats); isGenerating=false; abortController=null; toggleControls();
+  if (currentChatId) {
+    const c = chats.find(c => c.id === currentChatId);
+    if (c) {
+      c.messages.push({ role: 'user', text: userDisplay });
+      c.messages.push({ role: 'ai', text: aiText });
+      c.ts = Date.now();
+      c.preview = aiText.slice(0, 62) + '…';
+    }
+  } else {
+    const id = 'chat_' + Date.now();
+    currentChatId = id;
+    chats.unshift({
+      id,
+      ts: Date.now(),
+      title: userDisplay.length > 50 ? userDisplay.slice(0, 50) + '…' : userDisplay,
+      preview: aiText.slice(0, 62) + '…',
+      messages: [
+        { role: 'user', text: userDisplay },
+        { role: 'ai', text: aiText }
+      ]
+    });
+  }
+  saveChats(chats);
+  isGenerating = false;
+  abortController = null;
+  toggleControls();
 }
 
-document.getElementById('btnSend').addEventListener('click',sendMessageWithFile);
-chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!isGenerating)sendMessageWithFile();});
-document.getElementById('btnMic').addEventListener('click',()=>{});
+document.getElementById('btnSend').addEventListener('click', sendMessageWithFile);
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !isGenerating) sendMessageWithFile(); });
+document.getElementById('btnMic').addEventListener('click', () => {});
 
-/* ══ SETTINGS ══ */
 function openSettings(){ document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
 
-/* ══ BUTTON RELEASE ══ */
 function initButtonInteractions() {
-  document.querySelectorAll('.txbtn').forEach(btn=>{
-    btn.addEventListener('pointerup',()=>{ btn.classList.remove('releasing'); void btn.offsetWidth; btn.classList.add('releasing'); });
-    btn.addEventListener('pointercancel',()=>{ btn.classList.remove('releasing'); });
-    btn.addEventListener('animationend',e=>{ if(e.animationName==='btnFrameReturn') btn.classList.remove('releasing'); });
+  document.querySelectorAll('.txbtn').forEach(btn => {
+    btn.addEventListener('pointerup', () => { btn.classList.remove('releasing'); void btn.offsetWidth; btn.classList.add('releasing'); });
+    btn.addEventListener('pointercancel', () => { btn.classList.remove('releasing'); });
+    btn.addEventListener('animationend', e => { if (e.animationName === 'btnFrameReturn') btn.classList.remove('releasing'); });
   });
 }
 
-/* ══ INPUT RIPPLE ══ */
 function initInputRipple() {
-  inputBar.addEventListener('pointerdown',e=>{
-    const rect=inputBar.getBoundingClientRect();
-    const g=document.createElement('div'); g.className='input-tap-glow';
-    g.style.left=(e.clientX-rect.left)+'px'; g.style.top=(e.clientY-rect.top)+'px';
-    inputBar.appendChild(g); g.addEventListener('animationend',()=>g.remove());
+  inputBar.addEventListener('pointerdown', e => {
+    const rect = inputBar.getBoundingClientRect();
+    const g = document.createElement('div'); g.className = 'input-tap-glow';
+    g.style.left = (e.clientX - rect.left) + 'px'; g.style.top = (e.clientY - rect.top) + 'px';
+    inputBar.appendChild(g); g.addEventListener('animationend', () => g.remove());
   });
 }
 
-/* ══ iOS SCROLL FIX ══ */
 function initScrollContainers() {
   const scrollables = [
     document.getElementById('chatMessages'),
@@ -1291,31 +1317,30 @@ function initScrollContainers() {
     document.getElementById('searchResults'),
   ];
   scrollables.forEach(el => {
-    if(!el) return;
-    el.style.webkitOverflowScrolling='touch';
-    el.style.overflowY='auto';
-    el.addEventListener('touchstart',e=>{ e.stopPropagation(); },{ passive:true });
-    el.addEventListener('touchmove', e=>{ e.stopPropagation(); },{ passive:true });
+    if (!el) return;
+    el.style.webkitOverflowScrolling = 'touch';
+    el.style.overflowY = 'auto';
+    el.addEventListener('touchstart', e => { e.stopPropagation(); }, { passive: true });
+    el.addEventListener('touchmove', e => { e.stopPropagation(); }, { passive: true });
   });
-  document.body.addEventListener('touchmove', e=>{
-    const el=e.target.closest('.chat-messages,.home-scroll,.settings-body,.search-results,.bubble-ai-content pre code,.table-wrap');
-    if(!el) e.preventDefault();
-  },{ passive:false });
+  document.body.addEventListener('touchmove', e => {
+    const el = e.target.closest('.chat-messages,.home-scroll,.settings-body,.search-results,.bubble-ai-content pre code,.table-wrap');
+    if (!el) e.preventDefault();
+  }, { passive: false });
 }
 
-/* ══ EVENTS ══ */
-document.getElementById('btnSettings').addEventListener('click',openSettings);
-document.getElementById('btnDone').addEventListener('click',exitEditing);
-document.getElementById('newChatBtn2').addEventListener('click',openNewChat);
-document.getElementById('settingsCloseBtn').addEventListener('click',closeSettings);
-document.getElementById('settingsBackdrop').addEventListener('click',closeSettings);
-document.getElementById('goHomeBtn').addEventListener('click',goHome);
-document.addEventListener('gesturestart',e=>e.preventDefault());
-document.addEventListener('contextmenu',e=>e.preventDefault());
+document.getElementById('btnSettings').addEventListener('click', openSettings);
+document.getElementById('btnDone').addEventListener('click', exitEditing);
+document.getElementById('newChatBtn2').addEventListener('click', openNewChat);
+document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
+document.getElementById('settingsBackdrop').addEventListener('click', closeSettings);
+document.getElementById('goHomeBtn').addEventListener('click', goHome);
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
 
-(function(){
-  const sa=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches;
-  if(!sa){document.getElementById('pwa-gate').style.display='flex';document.querySelectorAll('.screen').forEach(s=>{s.style.pointerEvents='none';s.style.opacity='0';});}
+(function() {
+  const sa = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches;
+  if (!sa) { document.getElementById('pwa-gate').style.display = 'flex'; document.querySelectorAll('.screen').forEach(s => { s.style.pointerEvents = 'none'; s.style.opacity = '0'; }); }
 })();
 
 setChatActive(false);
