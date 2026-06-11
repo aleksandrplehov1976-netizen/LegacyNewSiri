@@ -110,15 +110,13 @@ body {
 
 .home-bottom {
   position: fixed; 
-  bottom: 0; 
-  left: 0; 
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   z-index: 50;
   height: 120px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px 32px;  /* ← увеличиваем боковые отступы (было 29px или 32px) */
+  padding: 0 40px 32px;
   background: linear-gradient(to top, #000 60%, transparent);
   pointer-events: none;
 }
@@ -212,8 +210,7 @@ body {
 #chat { display: flex; flex-direction: column; height: 100%; position: relative; }
 .chat-top-texture { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: url('/src/texture-always-on-top_onlyonchats_.png') top center / 100% 100% no-repeat; z-index: 30; pointer-events: none; display: none; }
 .chat-active .chat-top-texture { display: block; }
-.tts-bar { position: fixed; top: 56px; left: 0; right: 0; z-index: 29; display: none; align-items: center; gap: 8px; padding: 6px 16px; }
-.tts-bar.active { display: flex; }
+
 .chat-header { position: fixed; top: 8px; left: 20px; z-index: 32; pointer-events: none; }
 .chat-header button { pointer-events: all; }
 
@@ -229,10 +226,8 @@ body {
 /* ══ CHAT INPUT AREA ══ */
 .chat-input-area {
   position: fixed; 
-  bottom: 0; 
-  left: 0; 
-  right: 0;
-  padding: 10px 29px 36px;  /* ← здесь тоже нужно увеличить боковые отступы */
+  bottom: 0; left: 0; right: 0;
+  padding: 10px 29px 36px;
   z-index: 20;
   pointer-events: none;
   background: linear-gradient(to top, rgba(0,0,0,0.96) 60%, transparent);
@@ -251,7 +246,6 @@ body {
 .input-row { display: flex; align-items: center; gap: 10px; position: relative; }
 .input-bar { flex: 1; height: 49px; position: relative; display: flex; align-items: center; border-radius: 22px; overflow: hidden; opacity: 0.9; }
 .input-bar-bg { position: absolute; inset: 0; background: url('/src/texture-enterprompt.png') center/100% 100% no-repeat; }
-.input-bar-thinking { display: none; }
 .input-field { position: relative; z-index: 2; flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 19px; font-family: 'CustomFont', -apple-system, sans-serif; padding: 0 14px; caret-color: #fff; }
 .input-field::placeholder { color: #f5f5f5; }
 .btn-send { display: none; }
@@ -277,19 +271,10 @@ body {
 .bubble-user::after {
   content: '';
   position: absolute;
-  bottom: -4.9px;
-  right: -0.6px;
-  width: 18px;
-  height: 20px;
+  bottom: -4.9px; right: -0.6px;
+  width: 18px; height: 20px;
   background: url('/icons/ballsms.PNG') no-repeat center/contain;
-  pointer-events: none;
-  display: block;
-}
-
-/* interim voice bubble */
-.bubble-user.voice-interim {
-  opacity: 0.55;
-  font-style: italic;
+  pointer-events: none; display: block;
 }
 
 .bubble-file { background: #1e1e20; color: #ccc; padding: 8px 13px; border-radius: 16px; font-size: 13px; display: flex; align-items: center; gap: 7px; max-width: 220px; overflow: hidden; }
@@ -349,6 +334,27 @@ body {
 .reaction-btn:active { transform: scale(0.88); opacity: 0.7; }
 .reaction-btn img { width: 30px; height: 30px; display: block; object-fit: contain; pointer-events: none; }
 
+/* ══ THINK BACKGROUND VIDEO ══ */
+#thinkBgVideo {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%; min-height: 100%;
+  width: auto; height: auto;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(28px);
+  object-fit: cover;
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, filter;
+}
+#thinkBgVideo.visible {
+  opacity: 0.13;
+  filter: blur(18px);
+}
+
 /* ══ WORKING INDICATOR ══ */
 .working-placeholder { padding: 4px 0 4px 0 !important; }
 .working-row { display: flex; align-items: center; gap: 12px; padding-left: 28px; }
@@ -382,12 +388,10 @@ body {
 #voiceModeVideo {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  width: 100%;
-  height: 11vh;
+  width: 100%; height: 11vh;
   object-fit: fill;
   z-index: 18;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0; pointer-events: none;
   filter: blur(18px);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.8) 100%);
   mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.8) 100%);
@@ -395,7 +399,6 @@ body {
 }
 #voiceModeVideo.visible { opacity: 0.8; }
 
-/* Voice mode bottom bar — replaces input area in voice mode */
 #voiceModeBar {
   position: fixed; bottom: 0; left: 0; right: 0;
   z-index: 22;
@@ -414,9 +417,7 @@ body {
   filter: blur(0);
   pointer-events: all;
 }
-#voiceModeBar .vbar-row {
-  display: flex; align-items: center; gap: 10px;
-}
+#voiceModeBar .vbar-row { display: flex; align-items: center; gap: 10px; }
 
 .delete-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 0 20px; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 .delete-overlay.open { opacity: 1; pointer-events: all; }
@@ -442,6 +443,9 @@ body {
 
 <div id="preloader"></div>
 <div class="chat-top-texture" id="chatTopTexture"></div>
+
+<!-- Think background video (behind everything during working state) -->
+<video id="thinkBgVideo" src="/src/thinkbackground.mp4" autoplay loop muted playsinline disablepictureinpicture></video>
 
 <!-- HOME -->
 <div class="screen active" id="home">
@@ -514,15 +518,6 @@ body {
 
 <!-- CHAT -->
 <div class="screen" id="chat">
-  <div class="tts-bar" id="ttsBar">
-    <button class="txbtn txbtn-sm" id="ttsPlayPauseBtn">
-      <svg id="ttsPlayIcon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      <svg id="ttsPauseIcon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
-    </button>
-    <button class="txbtn txbtn-sm" id="ttsCloseBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
   <div class="chat-header">
     <button class="txbtn" id="goHomeBtn">
       <img src="/icons/back.png" width="22" height="22" alt="back">
@@ -567,7 +562,6 @@ body {
       <button class="txbtn txbtn-md" id="btnVoiceSound">
         <img src="/icons/soundon.png" id="btnVoiceSoundIcon" width="19" height="19" alt="sound">
       </button>
-      <!-- spacer -->
       <div style="flex:1;"></div>
       <button class="txbtn txbtn-md" id="btnVoiceKeyboard">
         <img src="/icons/openkeyboard.png" width="19" height="19" alt="keyboard">
@@ -611,8 +605,31 @@ const SYSTEM_PROMPT = `Ты — Siri, умный, эмпатичный AI-пом
 
 const MOV_DURATION = 5000;
 const CHAR_DELAY = 20;
-const PHRASE1 = 'Думаю над этим...';
-const PHRASE2 = 'Складываю воедино...';
+
+// ── 11 thinking phrases, pick 2 random each time ──
+const ALL_THINKING_PHRASES = [
+  'Думаю над этим...',
+  'Складываю воедино...',
+  'Анализирую запрос...',
+  'Ищу лучший ответ...',
+  'Обрабатываю мысли...',
+  'Соображаю...',
+  'Взвешиваю варианты...',
+  'Собираю данные...',
+  'Формулирую ответ...',
+  'Погружаюсь в вопрос...',
+  'Уточняю детали...'
+];
+
+function pickTwoPhrases() {
+  const arr = [...ALL_THINKING_PHRASES];
+  const i1 = Math.floor(Math.random() * arr.length);
+  const p1 = arr.splice(i1, 1)[0];
+  const i2 = Math.floor(Math.random() * arr.length);
+  const p2 = arr[i2];
+  return [p1, p2];
+}
+
 const CHAR_OUT_STAGGER = 28;
 const CHAR_IN_STAGGER = 26;
 
@@ -625,16 +642,29 @@ let chats = loadChats();
 let editingMode = false, longPressTimer = null;
 let currentChatId = null, currentMessages = [];
 let abortController = null, isGenerating = false;
-let ttsUtterance = null, ttsActive = false, ttsPaused = false;
 
 // ── VOICE MODE STATE ──
 let voiceMode = false;
-let voiceSoundEnabled = true; // true = озвучивать ответы
+let voiceSoundEnabled = true;
 let recognition = null;
-let voiceInterimBubble = null; // текущий interim пузырь
-let voiceFinalText = ''; // накопленный финальный текст
+let voiceInterimBubble = null;
+let voiceInterimText = '';
+let voiceFinalText = '';
 let voiceSilenceTimer = null;
-let voiceProcessing = false; // идёт ли запрос к API прямо сейчас
+let voiceProcessing = false;
+
+// ── THINK BG VIDEO ──
+const thinkBgVideo = document.getElementById('thinkBgVideo');
+
+function showThinkBg() {
+  thinkBgVideo.currentTime = 0;
+  thinkBgVideo.play().catch(() => {});
+  requestAnimationFrame(() => thinkBgVideo.classList.add('visible'));
+}
+function hideThinkBg() {
+  thinkBgVideo.classList.remove('visible');
+  setTimeout(() => thinkBgVideo.pause(), 700);
+}
 
 async function bootApplication() {
   await new Promise(r => setTimeout(r, 80));
@@ -714,8 +744,8 @@ function copyCode(btn) {
   });
 }
 
-// Анимированный char-reveal для plain text (голосовые пузыри)
-function animatePlainText(el, text) {
+// Animated char-reveal for plain text (voice bubbles)
+function animatePlainTextInEl(el, text) {
   el.innerHTML = '';
   const chars = [...text];
   chars.forEach((ch, i) => {
@@ -793,6 +823,12 @@ let workingWrap = null;
 
 function showWorkingInline() {
   if (workingWrap) { workingWrap.remove(); workingWrap = null; }
+
+  // Show think background
+  showThinkBg();
+
+  const [phrase1Text, phrase2Text] = pickTwoPhrases();
+
   const msgs = document.getElementById('chatMessages');
   const wrap = document.createElement('div');
   wrap.className = 'bubble-ai-wrap working-placeholder';
@@ -802,7 +838,7 @@ function showWorkingInline() {
   video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
   video.setAttribute('disablepictureinpicture',''); video.style.pointerEvents = 'none';
   const textArea = document.createElement('div'); textArea.className = 'working-text-area';
-  const phrase1 = buildPhraseEl(PHRASE1, 'in');
+  const phrase1 = buildPhraseEl(phrase1Text, 'in');
   textArea.appendChild(phrase1);
   row.appendChild(video); row.appendChild(textArea);
   wrap.appendChild(row); msgs.appendChild(wrap);
@@ -816,11 +852,11 @@ function showWorkingInline() {
       cs.style.animationDelay = (i * CHAR_OUT_STAGGER) + 'ms';
       cs.classList.add('out');
     });
-    const outTotal = [...text2chars(PHRASE1)].length * CHAR_OUT_STAGGER;
+    const outTotal = [...phrase1Text].filter(c=>c!==' ').length * CHAR_OUT_STAGGER;
     const phrase2Delay = Math.min(400, outTotal * 0.45);
     const t2 = setTimeout(() => {
       if (!workingWrap) return;
-      const phrase2 = buildPhraseEl(PHRASE2, 'in');
+      const phrase2 = buildPhraseEl(phrase2Text, 'in');
       textArea.appendChild(phrase2);
       setTimeout(() => { if (phrase1.parentNode) phrase1.remove(); }, outTotal + 250);
     }, phrase2Delay);
@@ -834,13 +870,13 @@ function showWorkingInline() {
   workingWrap._t1 = t1; workingWrap._t3 = t3;
 }
 
-function text2chars(str) { return [...str].filter(c => c !== ' '); }
-
 function hideWorkingInline() {
   if (!workingWrap) return;
   const w = workingWrap; workingWrap = null;
   clearTimeout(w._t1); clearTimeout(w._t2); clearTimeout(w._t3);
   w.remove();
+  // Hide think background
+  hideThinkBg();
 }
 
 /* ══════════════════════════════════════════════
@@ -851,28 +887,24 @@ function enterVoiceMode() {
   if (voiceMode) return;
   voiceMode = true;
   voiceFinalText = '';
+  voiceInterimText = '';
   voiceInterimBubble = null;
   voiceProcessing = false;
 
-  // Анимация ухода поля ввода
   const inputArea = document.getElementById('chatInputArea');
   inputArea.classList.add('voice-hiding');
 
-  // Показываем видео
   const vid = document.getElementById('voiceModeVideo');
   vid.currentTime = 0;
   vid.play().catch(() => {});
   setTimeout(() => vid.classList.add('visible'), 30);
 
-  // Показываем voice bar
   const vbar = document.getElementById('voiceModeBar');
   setTimeout(() => vbar.classList.add('visible'), 120);
 
-  // Сброс иконки звука
   voiceSoundEnabled = true;
   document.getElementById('btnVoiceSoundIcon').src = '/icons/soundon.png';
 
-  // Запуск распознавания
   setTimeout(() => startRecognition(), 280);
 }
 
@@ -883,27 +915,29 @@ function exitVoiceMode() {
   stopRecognition();
   clearTimeout(voiceSilenceTimer);
 
-  // Убираем voice bar
   document.getElementById('voiceModeBar').classList.remove('visible');
 
-  // Убираем видео
   const vid = document.getElementById('voiceModeVideo');
   vid.classList.remove('visible');
   setTimeout(() => vid.pause(), 560);
 
-  // Возвращаем поле ввода
   const inputArea = document.getElementById('chatInputArea');
   inputArea.classList.remove('voice-hiding');
 
-  // Убираем незаконченный interim пузырь
   if (voiceInterimBubble) {
     voiceInterimBubble.remove();
     voiceInterimBubble = null;
   }
+  voiceFinalText = '';
+  voiceInterimText = '';
 }
 
 function startRecognition() {
+  if (!voiceMode) return;
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+
+  stopRecognition(); // ensure clean slate
+
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
   recognition.lang = 'ru-RU';
@@ -915,7 +949,7 @@ function startRecognition() {
     if (!voiceMode || voiceProcessing) return;
     clearTimeout(voiceSilenceTimer);
 
-    let interim = '';
+    let interimChunk = '';
     let finalChunk = '';
 
     for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -923,21 +957,24 @@ function startRecognition() {
       if (res.isFinal) {
         finalChunk += res[0].transcript;
       } else {
-        interim += res[0].transcript;
+        interimChunk += res[0].transcript;
       }
     }
 
     if (finalChunk) {
-      voiceFinalText += finalChunk + ' ';
-      // Убираем interim пузырь, показываем финальный
+      voiceFinalText += finalChunk;
+      voiceInterimText = '';
+
+      const displayText = voiceFinalText.trim();
+
       if (voiceInterimBubble) {
-        voiceInterimBubble.querySelector('.bubble-user').classList.remove('voice-interim');
-        animatePlainText(voiceInterimBubble.querySelector('.bubble-user'), voiceFinalText.trim());
-        voiceInterimBubble = null;
+        // Update existing bubble with animated chars
+        animatePlainTextInEl(voiceInterimBubble.querySelector('.bubble-user'), displayText);
       } else {
-        showVoiceBubble(voiceFinalText.trim(), false);
+        voiceInterimBubble = createVoiceBubble(displayText);
       }
-      // Таймер тишины — 1.6с после последнего финального слова
+
+      // Silence timer — commit after 1.6s of no new final words
       voiceSilenceTimer = setTimeout(() => {
         if (voiceMode && !voiceProcessing && voiceFinalText.trim()) {
           commitVoiceMessage();
@@ -945,28 +982,28 @@ function startRecognition() {
       }, 1600);
     }
 
-    if (interim && !voiceProcessing) {
-      const displayText = (voiceFinalText + interim).trim();
+    if (interimChunk && !voiceProcessing) {
+      voiceInterimText = interimChunk;
+      const displayText = (voiceFinalText + interimChunk).trim();
       if (!voiceInterimBubble) {
-        voiceInterimBubble = showVoiceBubble(displayText, true);
+        voiceInterimBubble = createVoiceBubble(displayText);
       } else {
-        voiceInterimBubble.querySelector('.bubble-user').textContent = displayText;
+        // Animate new chars being appended (interim: just update text with char animation)
+        animatePlainTextInEl(voiceInterimBubble.querySelector('.bubble-user'), displayText);
       }
     }
   };
 
   recognition.onerror = (e) => {
     if (e.error === 'no-speech' || e.error === 'aborted') return;
-    // Перезапуск при других ошибках если ещё в voice mode
     if (voiceMode && !voiceProcessing) {
       setTimeout(() => { if (voiceMode && !voiceProcessing) startRecognition(); }, 400);
     }
   };
 
   recognition.onend = () => {
-    // Авторестарт пока в режиме и не обрабатываем
     if (voiceMode && !voiceProcessing) {
-      setTimeout(() => { if (voiceMode && !voiceProcessing) startRecognition(); }, 200);
+      setTimeout(() => { if (voiceMode && !voiceProcessing) startRecognition(); }, 150);
     }
   };
 
@@ -975,24 +1012,18 @@ function startRecognition() {
 
 function stopRecognition() {
   if (recognition) {
-    try { recognition.abort(); } catch(e) {}
+    try { recognition.onend = null; recognition.onerror = null; recognition.onresult = null; recognition.abort(); } catch(e) {}
     recognition = null;
   }
 }
 
-function showVoiceBubble(text, isInterim) {
+function createVoiceBubble(text) {
   const msgs = document.getElementById('chatMessages');
-  const wrap = document.createElement('div'); wrap.className = 'bubble-user-wrap';
+  const wrap = document.createElement('div'); wrap.className = 'bubble-user-wrap chat-enter-anim';
   const stack = document.createElement('div'); stack.className = 'bubble-user-stack';
   const bub = document.createElement('div'); bub.className = 'bubble-user';
-  if (isInterim) {
-    bub.classList.add('voice-interim');
-    bub.textContent = text;
-  } else {
-    animatePlainText(bub, text);
-  }
+  animatePlainTextInEl(bub, text);
   stack.appendChild(bub); wrap.appendChild(stack); msgs.appendChild(wrap);
-  wrap.classList.add('chat-enter-anim');
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
   return wrap;
 }
@@ -1002,14 +1033,13 @@ async function commitVoiceMessage() {
   if (!text) return;
   voiceProcessing = true;
   voiceFinalText = '';
+  voiceInterimText = '';
   voiceInterimBubble = null;
 
-  // Пауза распознавания пока отвечаем
   stopRecognition();
 
   currentMessages.push({ role: 'user', content: text });
 
-  // API call (без MOV_DURATION — в voice режиме сразу)
   showWorkingInline();
   const msgs = document.getElementById('chatMessages');
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
@@ -1038,8 +1068,7 @@ async function commitVoiceMessage() {
     }
     voiceProcessing = false;
     abortController = null;
-    // Возобновляем слушание
-    if (voiceMode) startRecognition();
+    if (voiceMode) setTimeout(() => startRecognition(), 200);
     return;
   }
 
@@ -1059,7 +1088,6 @@ async function commitVoiceMessage() {
   await animateHtmlContent(contentDiv, renderMarkdownToHtml(aiText));
   new Audio('/src/sound.mp3').play().catch(() => {});
 
-  // Сохраняем чат
   if (currentChatId) {
     const c = chats.find(c => c.id === currentChatId);
     if (c) { c.messages.push({role:'user',text}); c.messages.push({role:'ai',text:aiText}); c.ts=Date.now(); c.preview=aiText.slice(0,62)+'…'; }
@@ -1072,26 +1100,10 @@ async function commitVoiceMessage() {
   voiceProcessing = false;
   abortController = null;
 
-  // TTS ответа если включён звук
-  if (voiceSoundEnabled && voiceMode) {
-    await speakAndThenListen(aiText);
-  } else if (voiceMode) {
-    startRecognition();
+  // Always restart listening after response
+  if (voiceMode) {
+    setTimeout(() => startRecognition(), 300);
   }
-}
-
-function speakAndThenListen(text) {
-  return new Promise(resolve => {
-    if (!('speechSynthesis' in window) || !voiceSoundEnabled || !voiceMode) { resolve(); startRecognition(); return; }
-    stopTTS();
-    const plain = text.replace(/\$\$[\s\S]*?\$\$/g,'формула').replace(/\$[^$]+\$/g,'формула').replace(/[#*`_~>]/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');
-    ttsUtterance = new SpeechSynthesisUtterance(plain);
-    ttsUtterance.lang = 'ru-RU'; ttsUtterance.rate = 1;
-    ttsUtterance.onend = () => { resolve(); if (voiceMode && voiceSoundEnabled) startRecognition(); };
-    ttsUtterance.onerror = () => { resolve(); if (voiceMode) startRecognition(); };
-    window.speechSynthesis.speak(ttsUtterance);
-    ttsActive = true; ttsPaused = false; updateTTSBar();
-  });
 }
 
 /* ══ REACTION BUTTONS ══ */
@@ -1232,7 +1244,7 @@ function openNewChat() {
   setChatActive(true);
   document.getElementById('chatMessages').innerHTML='';
   document.getElementById('chatInput').value='';
-  stopTTS(); toggleControls();
+  toggleControls();
 }
 
 function openChatById(id) {
@@ -1249,32 +1261,16 @@ function openChatById(id) {
   });
   requestAnimationFrame(()=>{ msgs.scrollTop=msgs.scrollHeight; });
   document.getElementById('chatInput').value='';
-  stopTTS(); toggleControls();
+  toggleControls();
 }
 
 function goHome() {
   if (isGenerating) stopGeneration();
   if (voiceMode) exitVoiceMode();
-  stopTTS();
   document.getElementById('chat').classList.remove('active');
   document.getElementById('home').classList.add('active');
   setChatActive(false); renderCards();
 }
-
-const ttsBar=document.getElementById('ttsBar'), ttsPlayIcon=document.getElementById('ttsPlayIcon'), ttsPauseIcon=document.getElementById('ttsPauseIcon');
-function startTTS(text) {
-  stopTTS(); if(!('speechSynthesis' in window)) return;
-  const plain=text.replace(/\$\$[\s\S]*?\$\$/g,'формула').replace(/\$[^$]+\$/g,'формула').replace(/[#*`_~>]/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');
-  ttsUtterance=new SpeechSynthesisUtterance(plain); ttsUtterance.lang='ru-RU'; ttsUtterance.rate=1;
-  ttsUtterance.onend=()=>{ttsActive=false;ttsPaused=false;updateTTSBar();};
-  ttsUtterance.onerror=()=>{ttsActive=false;ttsPaused=false;updateTTSBar();};
-  window.speechSynthesis.speak(ttsUtterance); ttsActive=true; ttsPaused=false; updateTTSBar();
-}
-function stopTTS() { if('speechSynthesis' in window) window.speechSynthesis.cancel(); ttsActive=false;ttsPaused=false;ttsUtterance=null;updateTTSBar(); }
-function toggleTTSPlayPause() { if(!ttsActive) return; if(ttsPaused){window.speechSynthesis.resume();ttsPaused=false;}else{window.speechSynthesis.pause();ttsPaused=true;} updateTTSBar(); }
-function updateTTSBar() { ttsBar.classList.toggle('active',ttsActive); ttsPlayIcon.style.display=ttsPaused?'block':'none'; ttsPauseIcon.style.display=ttsPaused?'none':'block'; }
-document.getElementById('ttsPlayPauseBtn').addEventListener('click',toggleTTSPlayPause);
-document.getElementById('ttsCloseBtn').addEventListener('click',stopTTS);
 
 const chatInput=document.getElementById('chatInput'), btnMic=document.getElementById('btnMic');
 const btnSend=document.getElementById('btnSend'), btnStop=document.getElementById('btnStop');
@@ -1303,7 +1299,6 @@ btnMic.addEventListener('click', () => {
 document.getElementById('btnVoiceSound').addEventListener('click', () => {
   voiceSoundEnabled = !voiceSoundEnabled;
   document.getElementById('btnVoiceSoundIcon').src = voiceSoundEnabled ? '/icons/soundon.png' : '/icons/soundoff.png';
-  if (!voiceSoundEnabled) stopTTS();
 });
 
 document.getElementById('btnVoiceKeyboard').addEventListener('click', () => {
