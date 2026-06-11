@@ -147,12 +147,10 @@ body {
 .txbtn-lg { width: 68px; height: 68px; }
 .txbtn-lg img, .txbtn-lg svg { width: 26px; height: 26px; }
 
-/* --- SETTINGS ICON: цвет f5f5f5 --- */
 #btnSettings { width: 52px; height: 52px; }
 #btnSettings svg { width: 24px; height: 24px; filter: none; stroke: #f5f5f5; }
 #btnSettings:active svg { filter: brightness(1.0) drop-shadow(0 0 4px rgba(255,255,255,0.9)) drop-shadow(0 0 8px rgba(255,255,255,0.5)); }
 
-/* back button in chat — bigger */
 #goHomeBtn { width: 52px; height: 52px; }
 #goHomeBtn img { width: 22px; height: 22px; }
 
@@ -221,10 +219,21 @@ body {
 }
 .chat-messages::-webkit-scrollbar { display: none; }
 
+/* ══ CHAT INPUT AREA ══ */
 .chat-input-area {
   position: fixed; bottom: 0; left: 0; right: 0;
   padding: 10px 14px 36px; z-index: 20; pointer-events: none;
   background: linear-gradient(to top, rgba(0,0,0,0.96) 60%, transparent);
+  transform-origin: center bottom;
+  transition: transform 0.46s cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.chat-input-area.voice-hiding {
+  transform: translateY(28px) scale(0.88);
+  opacity: 0;
+  filter: blur(8px);
+  pointer-events: none !important;
 }
 .chat-input-area .input-row { pointer-events: all; }
 .input-row { display: flex; align-items: center; gap: 10px; position: relative; }
@@ -265,11 +274,16 @@ body {
   display: block;
 }
 
+/* interim voice bubble */
+.bubble-user.voice-interim {
+  opacity: 0.55;
+  font-style: italic;
+}
+
 .bubble-file { background: #1e1e20; color: #ccc; padding: 8px 13px; border-radius: 16px; font-size: 13px; display: flex; align-items: center; gap: 7px; max-width: 220px; overflow: hidden; }
 .bubble-file svg { flex-shrink: 0; }
 .bubble-file-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'AppMono', monospace; font-size: 12px; color: #aaa; }
 
-/* AI bubble: увеличенный шрифт + отступы по референсу */
 .bubble-ai-wrap { display: flex; flex-direction: column; align-self: flex-start; width: 100%; padding: 8px 29px 2px 29px; }
 .bubble-ai-wrap.entering { animation: aiMessageIn 0.55s cubic-bezier(0.22,1,0.36,1) both; }
 @keyframes bubbleIn { 0% { opacity: 0; transform: translateY(10px) scale(0.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
@@ -316,12 +330,9 @@ body {
 .reaction-btn {
   background: none; border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  width: 42px; height: 42px;
-  border-radius: 21px;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s;
-  padding: 0;
+  width: 42px; height: 42px; border-radius: 21px;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s; padding: 0;
 }
 .reaction-btn:active { transform: scale(0.88); opacity: 0.7; }
 .reaction-btn img { width: 30px; height: 30px; display: block; object-fit: contain; pointer-events: none; }
@@ -354,6 +365,46 @@ body {
 }
 .char-animate { display: inline-block; opacity: 0; animation: charReveal 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .char-space { display: inline; white-space: pre; }
+
+/* ══ VOICE MODE ══ */
+#voiceModeVideo {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  width: 100%;
+  height: 46vh;
+  object-fit: fill;
+  z-index: 18;
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(18px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.8) 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.8) 100%);
+  transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#voiceModeVideo.visible { opacity: 0.8; }
+
+/* Voice mode bottom bar — replaces input area in voice mode */
+#voiceModeBar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 22;
+  padding: 10px 14px 36px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(20px) scale(0.94);
+  filter: blur(6px);
+  transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+              filter 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#voiceModeBar.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+  pointer-events: all;
+}
+#voiceModeBar .vbar-row {
+  display: flex; align-items: center; gap: 10px;
+}
 
 .delete-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 0 20px; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 .delete-overlay.open { opacity: 1; pointer-events: all; }
@@ -466,11 +517,13 @@ body {
     </button>
   </div>
   <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input-area">
+
+  <!-- Normal input area -->
+  <div class="chat-input-area" id="chatInputArea">
     <div class="input-row">
-      <label class="txbtn txbtn-md" style="cursor:pointer;">
+      <label class="txbtn txbtn-md" id="attachLabel" style="cursor:pointer;">
         <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.xml,.html,.htm,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.rtf,.yaml,.yml,.log,.ini,.toml,.js,.ts,.py,.css" style="display:none;"/>
-        <img src="/icons/add.png" width="19" height="19" alt="attach">
+        <img src="/icons/add.png" id="attachIcon" width="19" height="19" alt="attach">
       </label>
       <div id="attachedFilePill" style="display:none;position:absolute;bottom:calc(100% + 6px);left:14px;background:#2c2c2e;border-radius:12px;padding:5px 10px 5px 8px;font-size:13px;color:#fff;align-items:center;gap:6px;max-width:72%;overflow:hidden;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -482,13 +535,30 @@ body {
         <input class="input-field" id="chatInput" type="text" placeholder="Спросите Siri" autocomplete="off" autocorrect="off" spellcheck="false"/>
       </div>
       <button class="txbtn txbtn-md" id="btnMic">
-        <img src="/icons/microphone.png" width="19" height="19" alt="mic">
+        <img src="/icons/microphone.png" id="btnMicIcon" width="19" height="19" alt="mic">
       </button>
       <button class="txbtn txbtn-md btn-send" id="btnSend">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
       </button>
       <button class="txbtn txbtn-md" id="btnStop" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Voice mode background video -->
+  <video id="voiceModeVideo" src="/src/voicemode.MP4" autoplay loop muted playsinline disablepictureinpicture></video>
+
+  <!-- Voice mode bottom bar -->
+  <div id="voiceModeBar">
+    <div class="vbar-row">
+      <button class="txbtn txbtn-md" id="btnVoiceSound">
+        <img src="/icons/soundon.png" id="btnVoiceSoundIcon" width="19" height="19" alt="sound">
+      </button>
+      <!-- spacer -->
+      <div style="flex:1;"></div>
+      <button class="txbtn txbtn-md" id="btnVoiceKeyboard">
+        <img src="/icons/openkeyboard.png" width="19" height="19" alt="keyboard">
       </button>
     </div>
   </div>
@@ -529,7 +599,6 @@ const SYSTEM_PROMPT = `Ты — Siri, умный, эмпатичный AI-пом
 
 const MOV_DURATION = 5000;
 const CHAR_DELAY = 20;
-
 const PHRASE1 = 'Думаю над этим...';
 const PHRASE2 = 'Складываю воедино...';
 const CHAR_OUT_STAGGER = 28;
@@ -537,8 +606,6 @@ const CHAR_IN_STAGGER = 26;
 
 const loadChats = () => { try { return JSON.parse(localStorage.getItem('siri_chats') || '[]'); } catch { return []; } };
 const saveChats = a => { try { localStorage.setItem('siri_chats', JSON.stringify(a)); } catch {} };
-
-// Reactions storage
 const loadReactions = () => { try { return JSON.parse(localStorage.getItem('siri_reactions') || '{}'); } catch { return {}; } };
 const saveReactions = r => { try { localStorage.setItem('siri_reactions', JSON.stringify(r)); } catch {} };
 
@@ -547,7 +614,15 @@ let editingMode = false, longPressTimer = null;
 let currentChatId = null, currentMessages = [];
 let abortController = null, isGenerating = false;
 let ttsUtterance = null, ttsActive = false, ttsPaused = false;
-let lastUserMessage = '';
+
+// ── VOICE MODE STATE ──
+let voiceMode = false;
+let voiceSoundEnabled = true; // true = озвучивать ответы
+let recognition = null;
+let voiceInterimBubble = null; // текущий interim пузырь
+let voiceFinalText = ''; // накопленный финальный текст
+let voiceSilenceTimer = null;
+let voiceProcessing = false; // идёт ли запрос к API прямо сейчас
 
 async function bootApplication() {
   await new Promise(r => setTimeout(r, 80));
@@ -627,6 +702,22 @@ function copyCode(btn) {
   });
 }
 
+// Анимированный char-reveal для plain text (голосовые пузыри)
+function animatePlainText(el, text) {
+  el.innerHTML = '';
+  const chars = [...text];
+  chars.forEach((ch, i) => {
+    if (ch === ' ') {
+      const sp = document.createElement('span'); sp.className='char-space'; sp.textContent='\u00a0';
+      el.appendChild(sp);
+    } else {
+      const cs = document.createElement('span'); cs.className='char-animate';
+      cs.style.animationDelay = (i * CHAR_DELAY * 0.7) + 'ms';
+      cs.textContent = ch; el.appendChild(cs);
+    }
+  });
+}
+
 async function animateHtmlContent(container, htmlString) {
   container.innerHTML = htmlString;
   const textNodes = [];
@@ -676,15 +767,11 @@ function buildPhraseEl(text, mode) {
   const chars = [...text];
   chars.forEach((ch, i) => {
     if (ch === ' ') {
-      const sp = document.createElement('span');
-      sp.style.display = 'inline-block'; sp.style.width = '0.28em';
-      wrap.appendChild(sp);
+      const sp = document.createElement('span'); sp.style.display = 'inline-block'; sp.style.width = '0.28em'; wrap.appendChild(sp);
     } else {
-      const cs = document.createElement('span');
-      cs.className = 'wc ' + mode;
+      const cs = document.createElement('span'); cs.className = 'wc ' + mode;
       cs.style.animationDelay = (i * (mode === 'in' ? CHAR_IN_STAGGER : CHAR_OUT_STAGGER)) + 'ms';
-      cs.textContent = ch;
-      wrap.appendChild(cs);
+      cs.textContent = ch; wrap.appendChild(cs);
     }
   });
   return wrap;
@@ -729,10 +816,7 @@ function showWorkingInline() {
   }, 2000);
 
   const t3 = setTimeout(() => {
-    if (workingWrap) {
-      const vid = workingWrap.querySelector('.working-video');
-      if (vid) vid.classList.add('fading');
-    }
+    if (workingWrap) { const vid = workingWrap.querySelector('.working-video'); if (vid) vid.classList.add('fading'); }
   }, 4700);
 
   workingWrap._t1 = t1; workingWrap._t3 = t3;
@@ -747,9 +831,293 @@ function hideWorkingInline() {
   w.remove();
 }
 
+/* ══════════════════════════════════════════════
+   VOICE MODE
+══════════════════════════════════════════════ */
+
+function enterVoiceMode() {
+  if (voiceMode) return;
+  voiceMode = true;
+  voiceFinalText = '';
+  voiceInterimBubble = null;
+  voiceProcessing = false;
+
+  // Анимация ухода поля ввода
+  const inputArea = document.getElementById('chatInputArea');
+  inputArea.classList.add('voice-hiding');
+
+  // Показываем видео
+  const vid = document.getElementById('voiceModeVideo');
+  vid.currentTime = 0;
+  vid.play().catch(() => {});
+  setTimeout(() => vid.classList.add('visible'), 30);
+
+  // Показываем voice bar
+  const vbar = document.getElementById('voiceModeBar');
+  setTimeout(() => vbar.classList.add('visible'), 120);
+
+  // Сброс иконки звука
+  voiceSoundEnabled = true;
+  document.getElementById('btnVoiceSoundIcon').src = '/icons/soundon.png';
+
+  // Запуск распознавания
+  setTimeout(() => startRecognition(), 280);
+}
+
+function exitVoiceMode() {
+  if (!voiceMode) return;
+  voiceMode = false;
+
+  stopRecognition();
+  clearTimeout(voiceSilenceTimer);
+
+  // Убираем voice bar
+  document.getElementById('voiceModeBar').classList.remove('visible');
+
+  // Убираем видео
+  const vid = document.getElementById('voiceModeVideo');
+  vid.classList.remove('visible');
+  setTimeout(() => vid.pause(), 560);
+
+  // Возвращаем поле ввода
+  const inputArea = document.getElementById('chatInputArea');
+  inputArea.classList.remove('voice-hiding');
+
+  // Убираем незаконченный interim пузырь
+  if (voiceInterimBubble) {
+    voiceInterimBubble.remove();
+    voiceInterimBubble = null;
+  }
+}
+
+function startRecognition() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'ru-RU';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (e) => {
+    if (!voiceMode || voiceProcessing) return;
+    clearTimeout(voiceSilenceTimer);
+
+    let interim = '';
+    let finalChunk = '';
+
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const res = e.results[i];
+      if (res.isFinal) {
+        finalChunk += res[0].transcript;
+      } else {
+        interim += res[0].transcript;
+      }
+    }
+
+    if (finalChunk) {
+      voiceFinalText += finalChunk + ' ';
+      // Убираем interim пузырь, показываем финальный
+      if (voiceInterimBubble) {
+        voiceInterimBubble.querySelector('.bubble-user').classList.remove('voice-interim');
+        animatePlainText(voiceInterimBubble.querySelector('.bubble-user'), voiceFinalText.trim());
+        voiceInterimBubble = null;
+      } else {
+        showVoiceBubble(voiceFinalText.trim(), false);
+      }
+      // Таймер тишины — 1.6с после последнего финального слова
+      voiceSilenceTimer = setTimeout(() => {
+        if (voiceMode && !voiceProcessing && voiceFinalText.trim()) {
+          commitVoiceMessage();
+        }
+      }, 1600);
+    }
+
+    if (interim && !voiceProcessing) {
+      const displayText = (voiceFinalText + interim).trim();
+      if (!voiceInterimBubble) {
+        voiceInterimBubble = showVoiceBubble(displayText, true);
+      } else {
+        voiceInterimBubble.querySelector('.bubble-user').textContent = displayText;
+      }
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    // Перезапуск при других ошибках если ещё в voice mode
+    if (voiceMode && !voiceProcessing) {
+      setTimeout(() => { if (voiceMode && !voiceProcessing) startRecognition(); }, 400);
+    }
+  };
+
+  recognition.onend = () => {
+    // Авторестарт пока в режиме и не обрабатываем
+    if (voiceMode && !voiceProcessing) {
+      setTimeout(() => { if (voiceMode && !voiceProcessing) startRecognition(); }, 200);
+    }
+  };
+
+  try { recognition.start(); } catch(e) {}
+}
+
+function stopRecognition() {
+  if (recognition) {
+    try { recognition.abort(); } catch(e) {}
+    recognition = null;
+  }
+}
+
+function showVoiceBubble(text, isInterim) {
+  const msgs = document.getElementById('chatMessages');
+  const wrap = document.createElement('div'); wrap.className = 'bubble-user-wrap';
+  const stack = document.createElement('div'); stack.className = 'bubble-user-stack';
+  const bub = document.createElement('div'); bub.className = 'bubble-user';
+  if (isInterim) {
+    bub.classList.add('voice-interim');
+    bub.textContent = text;
+  } else {
+    animatePlainText(bub, text);
+  }
+  stack.appendChild(bub); wrap.appendChild(stack); msgs.appendChild(wrap);
+  wrap.classList.add('chat-enter-anim');
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
+  return wrap;
+}
+
+async function commitVoiceMessage() {
+  const text = voiceFinalText.trim();
+  if (!text) return;
+  voiceProcessing = true;
+  voiceFinalText = '';
+  voiceInterimBubble = null;
+
+  // Пауза распознавания пока отвечаем
+  stopRecognition();
+
+  currentMessages.push({ role: 'user', content: text });
+
+  // API call (без MOV_DURATION — в voice режиме сразу)
+  showWorkingInline();
+  const msgs = document.getElementById('chatMessages');
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
+  abortController = new AbortController();
+
+  const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
+  for (const msg of currentMessages) messages.push({ role: msg.role === 'user' ? 'user' : 'assistant', content: msg.content });
+
+  let aiText = '';
+  try {
+    const resp = await fetch(GROQ_URL, {
+      method: 'POST', signal: abortController.signal,
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_API_KEY },
+      body: JSON.stringify({ model: GROQ_MODEL, messages, max_tokens: 1024, temperature: 0.7 })
+    });
+    if (!resp.ok) { const et = await resp.text(); throw new Error('API ' + resp.status + ': ' + et); }
+    const data = await resp.json();
+    aiText = (data.choices?.[0]?.message?.content || '').trim();
+    if (!aiText) aiText = 'Не удалось получить ответ.';
+  } catch (err) {
+    hideWorkingInline();
+    if (err.name !== 'AbortError') {
+      const ew = document.createElement('div'); ew.className = 'bubble-ai-wrap';
+      const ec = document.createElement('div'); ec.className = 'bubble-ai-content'; ec.textContent = 'Ошибка: ' + err.message;
+      ew.appendChild(ec); msgs.appendChild(ew);
+    }
+    voiceProcessing = false;
+    abortController = null;
+    // Возобновляем слушание
+    if (voiceMode) startRecognition();
+    return;
+  }
+
+  currentMessages.push({ role: 'assistant', content: aiText });
+  hideWorkingInline();
+  await new Promise(r => requestAnimationFrame(r));
+  await new Promise(r => requestAnimationFrame(r));
+
+  const reactionId = 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  const wrap = document.createElement('div'); wrap.className = 'bubble-ai-wrap entering';
+  const contentDiv = document.createElement('div');
+  wrap.appendChild(contentDiv);
+  wrap.appendChild(buildReactionButtons(reactionId));
+  msgs.appendChild(wrap);
+  requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
+
+  await animateHtmlContent(contentDiv, renderMarkdownToHtml(aiText));
+  new Audio('/src/sound.mp3').play().catch(() => {});
+
+  // Сохраняем чат
+  if (currentChatId) {
+    const c = chats.find(c => c.id === currentChatId);
+    if (c) { c.messages.push({role:'user',text}); c.messages.push({role:'ai',text:aiText}); c.ts=Date.now(); c.preview=aiText.slice(0,62)+'…'; }
+  } else {
+    const id = 'chat_' + Date.now(); currentChatId = id;
+    chats.unshift({id,ts:Date.now(),title:text.length>50?text.slice(0,50)+'…':text,preview:aiText.slice(0,62)+'…',messages:[{role:'user',text},{role:'ai',text:aiText}]});
+  }
+  saveChats(chats);
+
+  voiceProcessing = false;
+  abortController = null;
+
+  // TTS ответа если включён звук
+  if (voiceSoundEnabled && voiceMode) {
+    await speakAndThenListen(aiText);
+  } else if (voiceMode) {
+    startRecognition();
+  }
+}
+
+function speakAndThenListen(text) {
+  return new Promise(resolve => {
+    if (!('speechSynthesis' in window) || !voiceSoundEnabled || !voiceMode) { resolve(); startRecognition(); return; }
+    stopTTS();
+    const plain = text.replace(/\$\$[\s\S]*?\$\$/g,'формула').replace(/\$[^$]+\$/g,'формула').replace(/[#*`_~>]/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');
+    ttsUtterance = new SpeechSynthesisUtterance(plain);
+    ttsUtterance.lang = 'ru-RU'; ttsUtterance.rate = 1;
+    ttsUtterance.onend = () => { resolve(); if (voiceMode && voiceSoundEnabled) startRecognition(); };
+    ttsUtterance.onerror = () => { resolve(); if (voiceMode) startRecognition(); };
+    window.speechSynthesis.speak(ttsUtterance);
+    ttsActive = true; ttsPaused = false; updateTTSBar();
+  });
+}
+
+/* ══ REACTION BUTTONS ══ */
+function buildReactionButtons(reactionId) {
+  const reactions = loadReactions();
+  const state = reactions[reactionId] || { like: false, unlike: false };
+  const actions = document.createElement('div'); actions.className = 'bubble-ai-actions';
+  actions.dataset.reactionId = reactionId;
+
+  const likeBtn = document.createElement('button'); likeBtn.className = 'reaction-btn'; likeBtn.title = 'Нравится';
+  const likeImg = document.createElement('img'); likeImg.src = state.like ? '/src/like-pressed.png' : '/src/like-unpressed.png';
+  likeBtn.appendChild(likeImg);
+
+  const unlikeBtn = document.createElement('button'); unlikeBtn.className = 'reaction-btn'; unlikeBtn.title = 'Не нравится';
+  const unlikeImg = document.createElement('img'); unlikeImg.src = state.unlike ? '/src/unlike-pressed.png' : '/src/unlike-notpressed.png';
+  unlikeBtn.appendChild(unlikeImg);
+
+  likeBtn.addEventListener('click', () => {
+    const r = loadReactions(); const s = r[reactionId] || { like:false, unlike:false };
+    s.like = !s.like; if (s.like) s.unlike = false;
+    r[reactionId] = s; saveReactions(r);
+    likeImg.src = s.like ? '/src/like-pressed.png' : '/src/like-unpressed.png';
+    unlikeImg.src = s.unlike ? '/src/unlike-pressed.png' : '/src/unlike-notpressed.png';
+  });
+  unlikeBtn.addEventListener('click', () => {
+    const r = loadReactions(); const s = r[reactionId] || { like:false, unlike:false };
+    s.unlike = !s.unlike; if (s.unlike) s.like = false;
+    r[reactionId] = s; saveReactions(r);
+    likeImg.src = s.like ? '/src/like-pressed.png' : '/src/like-unpressed.png';
+    unlikeImg.src = s.unlike ? '/src/unlike-pressed.png' : '/src/unlike-notpressed.png';
+  });
+
+  actions.appendChild(likeBtn); actions.appendChild(unlikeBtn);
+  return actions;
+}
+
 function renderCards() {
-  const grid = document.getElementById('cardsGrid');
-  grid.innerHTML = '';
+  const grid = document.getElementById('cardsGrid'); grid.innerHTML = '';
   chats.forEach((chat, i) => {
     const card = document.createElement('div');
     card.className = 'card' + (editingMode ? ' wobble' : '');
@@ -765,9 +1133,7 @@ function renderCards() {
     card.addEventListener('pointerup', cancelLongPress);
     card.addEventListener('pointercancel', cancelLongPress);
     card.addEventListener('pointermove', cancelLongPress);
-    card.querySelector('.card-delete').addEventListener('click', e => {
-      e.stopPropagation(); deleteChat(parseInt(e.currentTarget.dataset.i));
-    });
+    card.querySelector('.card-delete').addEventListener('click', e => { e.stopPropagation(); deleteChat(parseInt(e.currentTarget.dataset.i)); });
     grid.appendChild(card);
   });
   const em = editingMode;
@@ -801,8 +1167,7 @@ function openSearch() {
 }
 function closeSearch() {
   document.getElementById('searchOverlay').classList.remove('open');
-  document.getElementById('searchInput').value = '';
-  renderSearchResults('');
+  document.getElementById('searchInput').value = ''; renderSearchResults('');
 }
 function renderSearchResults(query) {
   const container = document.getElementById('searchResults');
@@ -846,56 +1211,6 @@ function appendBubble(role, text, animate) {
   }
 }
 
-// ══ REACTION BUTTONS (like / unlike) ══
-function buildReactionButtons(reactionId) {
-  const reactions = loadReactions();
-  const state = reactions[reactionId] || { like: false, unlike: false };
-
-  const actions = document.createElement('div');
-  actions.className = 'bubble-ai-actions';
-  actions.dataset.reactionId = reactionId;
-
-  const likeBtn = document.createElement('button');
-  likeBtn.className = 'reaction-btn';
-  likeBtn.title = 'Нравится';
-  const likeImg = document.createElement('img');
-  likeImg.src = state.like ? '/src/like-pressed.png' : '/src/like-unpressed.png';
-  likeBtn.appendChild(likeImg);
-
-  const unlikeBtn = document.createElement('button');
-  unlikeBtn.className = 'reaction-btn';
-  unlikeBtn.title = 'Не нравится';
-  const unlikeImg = document.createElement('img');
-  unlikeImg.src = state.unlike ? '/src/unlike-pressed.png' : '/src/unlike-notpressed.png';
-  unlikeBtn.appendChild(unlikeImg);
-
-  likeBtn.addEventListener('click', () => {
-    const r = loadReactions();
-    const s = r[reactionId] || { like: false, unlike: false };
-    s.like = !s.like;
-    if (s.like) s.unlike = false; // взаимоисключение
-    r[reactionId] = s;
-    saveReactions(r);
-    likeImg.src = s.like ? '/src/like-pressed.png' : '/src/like-unpressed.png';
-    unlikeImg.src = s.unlike ? '/src/unlike-pressed.png' : '/src/unlike-notpressed.png';
-  });
-
-  unlikeBtn.addEventListener('click', () => {
-    const r = loadReactions();
-    const s = r[reactionId] || { like: false, unlike: false };
-    s.unlike = !s.unlike;
-    if (s.unlike) s.like = false; // взаимоисключение
-    r[reactionId] = s;
-    saveReactions(r);
-    likeImg.src = s.like ? '/src/like-pressed.png' : '/src/like-unpressed.png';
-    unlikeImg.src = s.unlike ? '/src/unlike-pressed.png' : '/src/unlike-notpressed.png';
-  });
-
-  actions.appendChild(likeBtn);
-  actions.appendChild(unlikeBtn);
-  return actions;
-}
-
 function setChatActive(a) { document.getElementById('chatTopTexture').style.display = a ? 'block' : 'none'; }
 
 function openNewChat() {
@@ -927,6 +1242,7 @@ function openChatById(id) {
 
 function goHome() {
   if (isGenerating) stopGeneration();
+  if (voiceMode) exitVoiceMode();
   stopTTS();
   document.getElementById('chat').classList.remove('active');
   document.getElementById('home').classList.add('active');
@@ -965,6 +1281,22 @@ chatInput.addEventListener('input', toggleControls);
 
 function stopGeneration() { if(abortController) abortController.abort(); isGenerating=false; toggleControls(); hideWorkingInline(); }
 document.getElementById('btnStop').addEventListener('click', stopGeneration);
+
+// ── MIC BUTTON → enter voice mode ──
+btnMic.addEventListener('click', () => {
+  if (!voiceMode) enterVoiceMode();
+});
+
+// ── VOICE BAR BUTTONS ──
+document.getElementById('btnVoiceSound').addEventListener('click', () => {
+  voiceSoundEnabled = !voiceSoundEnabled;
+  document.getElementById('btnVoiceSoundIcon').src = voiceSoundEnabled ? '/icons/soundon.png' : '/icons/soundoff.png';
+  if (!voiceSoundEnabled) stopTTS();
+});
+
+document.getElementById('btnVoiceKeyboard').addEventListener('click', () => {
+  exitVoiceMode();
+});
 
 async function callAPI(val) {
   isGenerating = true; toggleControls(); showWorkingInline();
@@ -1061,7 +1393,6 @@ async function sendMessageWithFile() {
 
   const userDisplay=val||('📎 '+attachedFileName);
   const apiContent=attachedFileText?'[Файл: '+attachedFileName+']\n```\n'+attachedFileText+'\n```\n\n'+(val||'Прочитай и проанализируй этот файл.'):val;
-  lastUserMessage=val||attachedFileName;
   currentMessages.push({role:'user',content:apiContent});
   chatInput.value=''; clearAttachment(); toggleControls();
   isGenerating=true; toggleControls(); showWorkingInline();
@@ -1109,7 +1440,6 @@ async function sendMessageWithFile() {
 
 document.getElementById('btnSend').addEventListener('click', sendMessageWithFile);
 chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !isGenerating) sendMessageWithFile(); });
-document.getElementById('btnMic').addEventListener('click', () => {});
 
 function openSettings(){ document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
