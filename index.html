@@ -109,9 +109,16 @@ body {
 .card-preview { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.35; }
 
 .home-bottom {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-  height: 120px; display: flex; align-items: center;
-  justify-content: space-between; padding: 0 27px 32px;
+  position: fixed; 
+  bottom: 0; 
+  left: 0; 
+  right: 0;
+  z-index: 50;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px 32px;  /* ← увеличиваем боковые отступы (было 29px или 32px) */
   background: linear-gradient(to top, #000 60%, transparent);
   pointer-events: none;
 }
@@ -221,8 +228,13 @@ body {
 
 /* ══ CHAT INPUT AREA ══ */
 .chat-input-area {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  padding: 10px 14px 36px; z-index: 20; pointer-events: none;
+  position: fixed; 
+  bottom: 0; 
+  left: 0; 
+  right: 0;
+  padding: 10px 29px 36px;  /* ← здесь тоже нужно увеличить боковые отступы */
+  z-index: 20;
+  pointer-events: none;
   background: linear-gradient(to top, rgba(0,0,0,0.96) 60%, transparent);
   transform-origin: center bottom;
   transition: transform 0.46s cubic-bezier(0.32, 0.72, 0, 1),
