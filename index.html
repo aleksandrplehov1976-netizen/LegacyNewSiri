@@ -866,7 +866,7 @@ function buildReactionButtons(reactionId) {
   unlikeBtn.className = 'reaction-btn';
   unlikeBtn.title = 'Не нравится';
   const unlikeImg = document.createElement('img');
-  unlikeImg.src = state.unlike ? '/src/unlike-pressed.png' : '/src/unlike-unpressed.png';
+  unlikeImg.src = state.unlike ? '/src/unlike-pressed.png' : '/src/unlike-notpressed.png';
   unlikeBtn.appendChild(unlikeImg);
 
   likeBtn.addEventListener('click', () => {
@@ -877,7 +877,7 @@ function buildReactionButtons(reactionId) {
     r[reactionId] = s;
     saveReactions(r);
     likeImg.src = s.like ? '/src/like-pressed.png' : '/src/like-unpressed.png';
-    unlikeImg.src = s.unlike ? '/src/unlike-pressed.png' : '/src/unlike-unpressed.png';
+    unlikeImg.src = s.unlike ? '/src/unlike-pressed.png' : '/src/unlike-notpressed.png';
   });
 
   unlikeBtn.addEventListener('click', () => {
@@ -888,7 +888,7 @@ function buildReactionButtons(reactionId) {
     r[reactionId] = s;
     saveReactions(r);
     likeImg.src = s.like ? '/src/like-pressed.png' : '/src/like-unpressed.png';
-    unlikeImg.src = s.unlike ? '/src/unlike-pressed.png' : '/src/unlike-unpressed.png';
+    unlikeImg.src = s.unlike ? '/src/unlike-pressed.png' : '/src/unlike-notpressed.png';
   });
 
   actions.appendChild(likeBtn);
