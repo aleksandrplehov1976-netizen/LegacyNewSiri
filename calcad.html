@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Siri">
+<link rel="apple-touch-icon" href="/yri.png">
+<link rel="manifest" href="/manifest.json">
+<title>Siri — Калькулятор переезжает</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@font-face {
+  font-family: 'CustomFont';
+  src: url('/1.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'AppExtra';
+  src: url('/extra.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+html {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  background: #000;
+  font-family: 'CustomFont', -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+  color: #fff;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.migration-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  overflow: hidden;
+  opacity: 1;
+  pointer-events: all;
+}
+
+.migration-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  padding: 20px 20px 140px;
+}
+
+.migration-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.migration-title {
+  font-family: 'AppExtra', -apple-system, sans-serif;
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-align: left;
+  margin-bottom: 24px;
+  padding-top: 8px;
+}
+
+.migration-text {
+  font-size: 19px;
+  line-height: 1.5;
+  color: #fff;
+  text-align: left;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  margin-bottom: 18px;
+  font-weight: normal;
+}
+
+.bottom-button-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px 28px;
+  background: linear-gradient(to top, #000 70%, transparent);
+  pointer-events: none;
+}
+
+.btn-migration {
+  pointer-events: all;
+  width: 85%;
+  max-width: 320px;
+  height: 64px;
+  border-radius: 1000px;
+  background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.65), 0 6px 24px rgba(0,0,0,0.4);
+  transition: transform 0.08s cubic-bezier(0.2, 0, 0.3, 1);
+  will-change: transform;
+  opacity: 0.96;
+}
+
+.btn-migration:active {
+  transform: scale(1.03);
+}
+
+.btn-migration span {
+  font-family: 'CustomFont', -apple-system, sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  letter-spacing: -0.2px;
+  color: #fff;
+  background: none;
+  padding: 0 8px;
+}
+
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+    filter: blur(6px);
+  }
+  60% {
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animated-title {
+  animation: slideUpFade 0.52s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+  animation-delay: 0.02s;
+}
+
+.animated-text {
+  animation: slideUpFade 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+  animation-delay: 0.1s;
+}
+
+.animated-text2 {
+  animation: slideUpFade 0.52s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+  animation-delay: 0.18s;
+}
+
+.animated-button {
+  animation: slideUpFade 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+  animation-delay: 0.26s;
+}
+
+#preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #000;
+  pointer-events: none;
+  transition: opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#preloader.fade-out {
+  opacity: 0;
+}
+</style>
+</head>
+<body>
+
+<div id="preloader"></div>
+
+<div class="migration-screen" id="migrationScreen">
+  <div class="migration-scroll">
+    <div class="migration-title animated-title">
+      Калькулятор переезжает в Siri
+    </div>
+
+    <div class="migration-text animated-text">
+      Siri умеет объяснять сгенерированные выражания.
+    </div>
+
+    <div class="migration-text animated-text2">
+      Кроме вычислений, помощник генерирует тексты и помогает с важными задачами - например, записать что-то важное.
+    </div>
+  </div>
+
+  <div class="bottom-button-container animated-button">
+    <button class="btn-migration" id="goToSiriBtn">
+      <span>Перейти в Siri</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+      setTimeout(() => {
+        preloader.classList.add('fade-out');
+        setTimeout(() => {
+          if (preloader.style) preloader.style.display = 'none';
+        }, 380);
+      }, 80);
+    }
+
+    const goBtn = document.getElementById('goToSiriBtn');
+    if (goBtn) {
+      goBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = '/index.html';
+      });
+    }
+
+    const btn = document.querySelector('.btn-migration');
+    if (btn) {
+      btn.addEventListener('pointerdown', () => {
+        btn.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+          if (btn) btn.style.transform = '';
+        }, 100);
+      });
+      btn.addEventListener('pointerup', () => {
+        btn.style.transform = '';
+      });
+    }
+
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    const scrollContainer = document.querySelector('.migration-scroll');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('touchstart', () => {}, { passive: true });
+    }
+
+    document.body.style.textAlign = 'left';
+  })();
+</script>
+</body>
+</html>
