@@ -62,8 +62,8 @@ body {
 .screen.active { opacity: 1; pointer-events: all; }
 
 .app-loaded #home.active .home-header { animation: slideUnblur 0.46s cubic-bezier(0.175,0.885,0.32,1.1) both; animation-delay: 0.04s; }
-.app-loaded #home.active .cards-list   { animation: slideUnblur 0.50s cubic-bezier(0.175,0.885,0.32,1.1) both; animation-delay: 0.11s; }
-.app-loaded #home.active .home-bottom  { animation: slideUnblur 0.46s cubic-bezier(0.175,0.885,0.32,1.1) both; animation-delay: 0.17s; }
+.app-loaded #home.active .cards-grid  { animation: slideUnblur 0.50s cubic-bezier(0.175,0.885,0.32,1.1) both; animation-delay: 0.11s; }
+.app-loaded #home.active .home-bottom { animation: slideUnblur 0.46s cubic-bezier(0.175,0.885,0.32,1.1) both; animation-delay: 0.17s; }
 
 @keyframes slideUnblur {
   0%   { opacity: 0; transform: translateY(14px) scale(0.97); filter: blur(6px); }
@@ -88,51 +88,20 @@ body {
 .home-scroll {
   flex: 1; overflow-y: auto; overflow-x: hidden;
   -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
-  scrollbar-width: none; padding: 10px 14px 130px;
+  scrollbar-width: none; padding: 10px 12px 130px;
 }
 .home-scroll::-webkit-scrollbar { display: none; }
 
-/* ══ CARDS — referece layout: single column, alternating tall/wide ══ */
-.cards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+.cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-/* Row: two cards side by side */
-.cards-row {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-}
-
-/* Full-width card */
 .card {
   position: relative;
   background-image: url('/src/cardtexturefinal.png');
   background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
-  cursor: pointer;
+  aspect-ratio: 1 / 0.9; cursor: pointer;
   display: flex; flex-direction: column; justify-content: flex-end;
   transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s;
-  padding: 14px 14px 16px; overflow: hidden;
-  border-radius: 20px;
-  min-height: 120px;
-}
-/* Full-width card is wider, shorter */
-.card-full {
-  width: 100%;
-  min-height: 110px;
-  max-height: 130px;
-}
-/* Tall card (left in pair) */
-.card-tall {
-  flex: 1.15;
-  min-height: 160px;
-}
-/* Short card (right in pair) */
-.card-short {
-  flex: 0.85;
-  min-height: 160px;
+  padding: 14px 12px; overflow: hidden;
 }
 
 .card:active:not(.editing-mode .card) { transform: scale(0.96); opacity: 0.75; }
@@ -147,18 +116,9 @@ body {
 }
 .card-delete svg { width: 12px; height: 12px; }
 .editing-mode .card-delete { display: flex; }
-.card-date { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 3px; }
-.card-title {
-  font-size: 14px; font-weight: 600; line-height: 1.25; color: #fff;
-  margin-bottom: 3px; letter-spacing: -0.2px;
-  /* FIX: правильный перенос в карточках */
-  word-break: break-word; overflow-wrap: break-word; white-space: normal;
-}
-.card-preview {
-  font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.3;
-  word-break: break-word; overflow-wrap: break-word; white-space: normal;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
+.card-date { font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 4px; }
+.card-title { font-size: 14px; font-weight: 600; line-height: 1.3; color: #fff; margin-bottom: 4px; letter-spacing: -0.2px; word-break: break-word; overflow-wrap: break-word; }
+.card-preview { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.35; word-break: break-word; overflow-wrap: break-word; }
 
 .home-bottom {
   position: fixed;
@@ -569,7 +529,7 @@ body {
     </button>
   </div>
   <div class="home-scroll" id="homeScroll">
-    <div class="cards-list" id="cardsGrid"></div>
+    <div class="cards-grid" id="cardsGrid"></div>
   </div>
   <div class="home-bottom">
     <!-- FIX: кнопки главного меню — только openSearch и openNewChat, без файлпикера/голоса -->
@@ -695,43 +655,31 @@ const GROQ_API_KEY = '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';
 const GROQ_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-/* ══════════════════════════════════════════════
-   SYSTEM PROMPT — полная версия с правилами
-   заголовков и переносов
-══════════════════════════════════════════════ */
-const SYSTEM_PROMPT = `Ты — Siri, умный, эмпатичный AI-помощник от Apple Intelligence.
+const SYSTEM_PROMPT = `Ты — Siri, умный и эмпатичный AI-ассистент.
 
-═══════════ ПРАВИЛА ФОРМАТИРОВАНИЯ ═══════════
+КРИТИЧЕСКИ ВАЖНО: ОТВЕЧАЙ ТОЛЬКО НА РУССКОМ ЯЗЫКЕ. Никогда не используй английские слова, если только пользователь сам не написал на английском или не попросил ответить на английском. Даже в примерах, цитатах и творческих текстах — только русский язык.
 
-ПРОСТЫЕ ДИАЛОГИ (приветствия, "как дела", "что нового", короткие вопросы):
-• Отвечай 1–3 предложения, обычный текст, никакого форматирования
-• Никаких заголовков, списков, жирного шрифта
+═══ ПРАВИЛА ФОРМАТИРОВАНИЯ ═══
 
-СРЕДНИЕ ВОПРОСЫ (объяснение факта, совет, мнение):
-• Связные абзацы, можно **жирный** для ключевых слов
-• Никаких заголовков, никаких списков
+ПРОСТЫЕ ДИАЛОГИ (приветствия, "как дела", короткие вопросы, мнения):
+— Отвечай 1–3 предложения, обычный текст
+— Никаких заголовков, списков, форматирования
 
-СЛОЖНЫЕ ЗАДАЧИ (анализ, эссе, статья, пост для соцсетей, руководство, рецепт, инструкция):
-• Используй заголовки Markdown: # для главного, ## для разделов, ### для подразделов
-• Заголовки — только Extra-шрифт, крупные, с уменьшенным межбуквенным интервалом
-• Заголовки используются ТОЛЬКО когда ответ явно делится на смысловые разделы
-• Можно и нужно использовать списки, таблицы, блоки кода
+СРЕДНИЕ ВОПРОСЫ (объяснение, совет, факт):
+— Связные абзацы, можно **жирный** для ключевых слов
+— Никаких заголовков, никаких списков
 
-ЗАПРЕТ ЗАГОЛОВКОВ: никогда не используй заголовки для:
-• Коротких ответов (менее 3 абзацев)
-• Приветствий и светской беседы
-• Простых фактических ответов
-• Ответов короче 150 слов
+СЛОЖНЫЕ ЗАДАЧИ — используй заголовки Markdown (# ## ###) ОБЯЗАТЕЛЬНО когда:
+— Пишешь текст, эссе, статью, пост, историю, рассказ, сочинение
+— Объясняешь тему с несколькими разделами
+— Даёшь инструкцию, рецепт, руководство
+— Ответ явно делится на смысловые части (от 3 абзацев)
 
-═══════════ ПРАВИЛА ПЕРЕНОСА СЛОВ ═══════════
-Пиши обычный связный текст. Никогда не добавляй искусственные переносы, дефисы или пробелы внутри слов. Слова должны переноситься естественно браузером.
+ЗАПРЕТ ЗАГОЛОВКОВ: короткие ответы, приветствия, простые факты, ответы короче 3 абзацев.
 
-═══════════ ОБЩИЕ ПРАВИЛА ═══════════
-1. Списки — только для инструкций, рецептов, чек-листов, технических шагов
-2. В обычном разговоре списки неестественны
-3. LaTeX для формул: $inline$ или $$display$$
-4. Будь дружелюбным, но без лишних эмодзи
-5. Не повторяй вопрос пользователя в ответе`;
+СПИСКИ: только для инструкций, рецептов, чек-листов, технических шагов. В разговоре — никогда.
+ФОРМУЛЫ: LaTeX — $inline$ или $$display$$.`;
+
 
 const MOV_DURATION = 5000;
 
