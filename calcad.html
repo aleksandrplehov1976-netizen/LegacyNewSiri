@@ -75,35 +75,57 @@ body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   scrollbar-width: none;
-  padding: 20px 20px 140px;
+  padding: 24px 20px 160px;
 }
 
 .migration-scroll::-webkit-scrollbar {
   display: none;
 }
 
+/* Единый шрифт для заголовка и основного текста — CustomFont (как у основного) */
 .migration-title {
-  font-family: 'AppExtra', -apple-system, sans-serif;
-  font-size: 44px;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-family: 'CustomFont', -apple-system, sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
   color: #fff;
   text-align: left;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   padding-top: 8px;
 }
 
 .migration-text {
-  font-size: 19px;
+  font-family: 'CustomFont', -apple-system, sans-serif;
+  font-size: 18px;
   line-height: 1.5;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.92);
   text-align: left;
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: normal;
-  margin-bottom: 18px;
-  font-weight: normal;
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+
+.migration-text-small {
+  font-family: 'CustomFont', -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: left;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  display: inline-block;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.migration-text-small:active {
+  opacity: 0.6;
 }
 
 .bottom-button-container {
@@ -112,52 +134,59 @@ body {
   left: 0;
   right: 0;
   z-index: 50;
-  height: 110px;
+  height: 130px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 0 20px 28px;
+  justify-content: flex-end;
+  padding: 0 20px 32px;
   background: linear-gradient(to top, #000 70%, transparent);
   pointer-events: none;
+  gap: 12px;
 }
 
+/* Кнопка отрисована без внешних изображений — чистый CSS */
 .btn-migration {
   pointer-events: all;
-  width: 85%;
-  max-width: 320px;
-  height: 64px;
-  border-radius: 1000px;
-  background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat;
-  border: none;
+  width: 86%;
+  max-width: 340px;
+  height: 56px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 0.8px solid rgba(255, 255, 255, 0.25);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.65), 0 6px 24px rgba(0,0,0,0.4);
-  transition: transform 0.08s cubic-bezier(0.2, 0, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  transition: all 0.12s cubic-bezier(0.2, 0, 0.3, 1);
   will-change: transform;
-  opacity: 0.96;
 }
 
 .btn-migration:active {
-  transform: scale(1.03);
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 .btn-migration span {
   font-family: 'CustomFont', -apple-system, sans-serif;
-  font-size: 20px;
-  font-weight: normal;
+  font-size: 18px;
+  font-weight: 500;
   letter-spacing: -0.2px;
   color: #fff;
   background: none;
-  padding: 0 8px;
+  padding: 0 12px;
 }
 
+/* Анимация появления */
 @keyframes slideUpFade {
   0% {
     opacity: 0;
     transform: translateY(18px) scale(0.97);
-    filter: blur(6px);
+    filter: blur(5px);
   }
   60% {
     filter: blur(1px);
@@ -170,23 +199,106 @@ body {
 }
 
 .animated-title {
-  animation: slideUpFade 0.52s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+  animation: slideUpFade 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
   animation-delay: 0.02s;
 }
 
-.animated-text {
+.animated-text1 {
   animation: slideUpFade 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
-  animation-delay: 0.1s;
+  animation-delay: 0.09s;
 }
 
 .animated-text2 {
-  animation: slideUpFade 0.52s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
-  animation-delay: 0.18s;
+  animation: slideUpFade 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+  animation-delay: 0.16s;
+}
+
+.animated-text3 {
+  animation: slideUpFade 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+  animation-delay: 0.23s;
+}
+
+.animated-small-link {
+  animation: slideUpFade 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
+  animation-delay: 0.31s;
 }
 
 .animated-button {
   animation: slideUpFade 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
-  animation-delay: 0.26s;
+  animation-delay: 0.35s;
+}
+
+/* Модальное окно (popup) */
+.info-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.info-modal.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 320px;
+  background: #1c1c1e;
+  border-radius: 28px;
+  overflow: hidden;
+  transform: scale(0.92) translateY(12px);
+  transition: transform 0.32s cubic-bezier(0.34, 1.38, 0.64, 1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-modal.open .modal-card {
+  transform: scale(1) translateY(0);
+}
+
+.modal-header {
+  padding: 20px 20px 8px 20px;
+  font-family: 'CustomFont', -apple-system, sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.modal-body {
+  padding: 0 20px 20px 20px;
+  font-family: 'CustomFont', -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.modal-close {
+  margin: 8px 20px 24px auto;
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  border-radius: 40px;
+  padding: 8px 20px;
+  font-family: 'CustomFont', -apple-system, sans-serif;
+  font-size: 15px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+  width: fit-content;
+}
+
+.modal-close:active {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 #preloader {
@@ -212,12 +324,21 @@ body {
       Калькулятор переезжает в Siri
     </div>
 
-    <div class="migration-text animated-text">
-      Siri умеет объяснять сгенерированные выражания.
+    <div class="migration-text animated-text1">
+      Приложение «Калькулятор» постепенно заменяется интеллектуальным ассистентом Siri. Теперь все вычисления, объяснения формул и подсказки доступны прямо в диалоге с Siri.
     </div>
 
     <div class="migration-text animated-text2">
-      Кроме вычислений, помощник генерирует тексты и помогает с важными задачами - например, записать что-то важное.
+      Siri не просто считает — она может объяснить любое математическое выражение, показать ход решения и подсказать, где вы ошиблись. Помимо этого, Siri генерирует тексты, помогает с планированием, анализом данных и отвечает на сложные вопросы.
+    </div>
+
+    <div class="migration-text animated-text3">
+      Переход делает интерфейс чище и удобнее: вместо двух приложений — один универсальный помощник. Все возможности классического калькулятора сохраняются, но добавляются интеллектуальные функции.
+    </div>
+
+    <!-- Кликабельная мелкая ссылка -->
+    <div class="migration-text-small animated-small-link" id="infoLink">
+      Подробнее о политике Apple об отключении стандартных приложений и замещении их «Приложением Siri»
     </div>
   </div>
 
@@ -228,8 +349,22 @@ body {
   </div>
 </div>
 
+<!-- Модальное окно с дополнительной информацией -->
+<div class="info-modal" id="infoModal">
+  <div class="modal-card">
+    <div class="modal-header">О переходе</div>
+    <div class="modal-body">
+      Apple постепенно интегрирует функции стандартных приложений в Siri. Калькулятор, ранее существовавший как отдельное приложение, становится частью универсального ассистента, чтобы уменьшить количество дублирующих инструментов и улучшить взаимодействие.<br><br>
+      Siri использует машинное обучение для распознавания выражений, поддерживает голосовой ввод и историю вычислений. Все данные остаются на устройстве и обрабатываются локально. Такая замена соответствует стратегии Apple по объединению простых утилит в единую умную среду.<br><br>
+      Вы по-прежнему можете выполнять базовые арифметические операции, но теперь — с пояснениями и дополнительным контекстом. При желании всегда можно вернуться к стандартному калькулятору через настройки, однако рекомендуемый сценарий — использование Siri.
+    </div>
+    <button class="modal-close" id="closeModalBtn">Понятно</button>
+  </div>
+</div>
+
 <script>
   (function() {
+    // Прелоадер
     const preloader = document.getElementById('preloader');
     if (preloader) {
       setTimeout(() => {
@@ -240,6 +375,7 @@ body {
       }, 80);
     }
 
+    // Кнопка перехода в Siri (/index.html)
     const goBtn = document.getElementById('goToSiriBtn');
     if (goBtn) {
       goBtn.addEventListener('click', (e) => {
@@ -249,28 +385,71 @@ body {
       });
     }
 
+    // Эффект тактильного нажатия на кнопку (без картинок)
     const btn = document.querySelector('.btn-migration');
     if (btn) {
       btn.addEventListener('pointerdown', () => {
-        btn.style.transform = 'scale(0.98)';
+        btn.style.transform = 'scale(0.97)';
         setTimeout(() => {
           if (btn) btn.style.transform = '';
-        }, 100);
+        }, 120);
       });
       btn.addEventListener('pointerup', () => {
         btn.style.transform = '';
       });
     }
 
+    // Модальное окно: открытие по ссылке
+    const infoLink = document.getElementById('infoLink');
+    const modal = document.getElementById('infoModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    function openModal() {
+      if (modal) modal.classList.add('open');
+    }
+    function closeModal() {
+      if (modal) modal.classList.remove('open');
+    }
+
+    if (infoLink) {
+      infoLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openModal();
+      });
+    }
+
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', () => {
+        closeModal();
+      });
+    }
+
+    // Закрытие по клику на фон
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+    }
+
+    // Блокировка ненужных жестов
     document.addEventListener('gesturestart', (e) => e.preventDefault());
     document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    const scrollContainer = document.querySelector('.migration-scroll');
-    if (scrollContainer) {
-      scrollContainer.addEventListener('touchstart', () => {}, { passive: true });
-    }
-
+    // Выравнивание всего текста по левому краю (гарантия)
     document.body.style.textAlign = 'left';
+    const allContainers = document.querySelectorAll('.migration-title, .migration-text, .migration-text-small, .modal-body, .modal-header');
+    allContainers.forEach(el => {
+      if (el) el.style.textAlign = 'left';
+    });
+
+    // Скролл остается плавным
+    const scrollArea = document.querySelector('.migration-scroll');
+    if (scrollArea) {
+      scrollArea.addEventListener('touchstart', () => {}, { passive: true });
+    }
   })();
 </script>
 </body>
