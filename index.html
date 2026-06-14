@@ -995,7 +995,7 @@ function enterVoiceMode() {
   document.getElementById('btnVoiceSoundIcon').src = '/icons/soundon.png';
   // Show interim display
   const dispEl = getOrCreateVoiceInterimDisplay();
-  dispEl.textContent = 'Слушаю...';
+  dispEl.textContent = '';
   setTimeout(() => startRecognition(), 280);
 }
 
