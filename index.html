@@ -446,7 +446,7 @@ let sendSoundBuffer = null;
 
 async function preloadSendSound() {
   try {
-    const resp = await fetch('/src/audiolol.png');
+    const resp = await fetch('/src/audiolol.mp3');
     if (!resp.ok) return;
     const ab = await resp.arrayBuffer();
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
