@@ -652,7 +652,7 @@ function hideWorkingInline() {
 function updateVoiceBubble(text) {
   if (!voiceMode) return;
   if (!voiceInterimBubble) { voiceInterimBubble = document.createElement('div'); voiceInterimBubble.className = 'voice-interim-bubble'; voiceInterimBubble.innerHTML = '<div class="voice-interim-text"></div>'; document.getElementById('chat').appendChild(voiceInterimBubble); }
-  voiceInterimBubble.querySelector('.voice-interim-text').textContent = text || 'Слушаю...';
+  voiceInterimBubble.querySelector('.voice-interim-text').textContent = text || 'Вся во внимании...';
 }
 function removeVoiceBubble() {
   if (voiceInterimBubble) { voiceInterimBubble.classList.add('hide-voice'); setTimeout(() => { if (voiceInterimBubble && voiceInterimBubble.parentNode) voiceInterimBubble.remove(); voiceInterimBubble = null; }, 300); }
