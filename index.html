@@ -438,7 +438,7 @@ const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MOV_DURATION = 5000;
 const CHAR_IN_STAGGER = 26;
 const CHAR_OUT_STAGGER = 28;
-const ALL_THINKING_PHRASES = ['Думаю над этим...','Складываю воедино...','Анализирую запрос...','Ищу лучший ответ...','Обрабатываю мысли...','Соображаю...','Взвешиваю варианты...','Собираю данные...','Формулирую ответ...','Погружаюсь в вопрос...','Уточняю детали...'];
+const ALL_THINKING_PHRASES = ['Думаю над этим...','Складываю воедино...','Анализирую запрос...','Ищу лучший ответ...','Обрабатываю мысли...','Соображаю...','Взвешиваю варианты...','Подождите...','Формулирую ответ...','Погружаюсь в вопрос...','Сравниваю подходящие ответы...'];
 
 // ══ FIX 4: Web Audio API — no browser media controls ══
 let audioCtx = null;
@@ -681,7 +681,7 @@ function startRecognition() {
   stopRecognition();
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR(); recognition.lang = 'ru-RU'; recognition.continuous = true; recognition.interimResults = true; recognition.maxAlternatives = 1;
-  recognition.onstart = () => { if (voiceMode) updateVoiceBubble((voiceFinalText + voiceInterimText).trim() || 'Слушаю...'); };
+  recognition.onstart = () => { if (voiceMode) updateVoiceBubble((voiceFinalText + voiceInterimText).trim() || 'Вся во внимании...'); };
   recognition.onresult = (e) => {
     if (!voiceMode || voiceProcessing) return;
     clearTimeout(voiceSilenceTimer);
@@ -689,7 +689,7 @@ function startRecognition() {
     for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) final += e.results[i][0].transcript; else interim += e.results[i][0].transcript; }
     if (final) { voiceFinalText += final; voiceInterimText = ''; }
     if (interim) voiceInterimText = interim;
-    updateVoiceBubble((voiceFinalText + voiceInterimText).trim() || 'Слушаю...');
+    updateVoiceBubble((voiceFinalText + voiceInterimText).trim() || 'Вся во внимании...');
     if (voiceFinalText.trim()) { voiceSilenceTimer = setTimeout(() => { if (voiceMode && !voiceProcessing && voiceFinalText.trim()) commitVoiceMessage(); }, 1600); }
   };
   recognition.onerror = (e) => { if (e.error === 'no-speech' || e.error === 'aborted') { if (voiceMode && !voiceProcessing) setTimeout(() => { if (voiceMode && !voiceProcessing) startRecognition(); }, 200); return; } if (voiceMode && !voiceProcessing) setTimeout(() => { if (voiceMode && !voiceProcessing) startRecognition(); }, 400); };
