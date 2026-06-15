@@ -10,17 +10,9 @@
 <link rel="manifest" href="/manifest.json">
 <title>Siri</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-@font-face { font-family: 'CustomFont'; src: url('/1.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
-@font-face { font-family: 'AppBold'; src: url('/bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
-@font-face { font-family: 'AppMono'; src: url('/mono.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
-@font-face { font-family: 'AppBookworm'; src: url('/bookworm.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
-@font-face { font-family: 'AppExtra'; src: url('/extra.otf') format('opentype'); font-weight: 800; font-style: normal; font-display: swap; }
-html { height: 100%; width: 100%; overflow: hidden; }
+@font-face
 body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif; color: #fff; overflow: hidden; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overscroll-behavior: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .bubble-user, .bubble-ai-content, .input-field { user-select: text; -webkit-user-select: text; word-break: break-word; overflow-wrap: break-word; white-space: normal; }
 
@@ -45,10 +37,7 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
 .card { width: 172px; height: 230px; flex-shrink: 0; position: relative; background-image: url('/src/plitka.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #1c1c1e; border-radius: 28px; cursor: pointer; display: flex; flex-direction: column; justify-content: flex-start; padding: 22px 18px 18px; overflow: hidden; transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s; }
 .card:active:not(.editing-mode .card) { transform: scale(0.96); opacity: 0.75; }
 .card.wobble { animation: wobble 0.10s ease-in-out infinite alternate; }
-@keyframes wobble { 0% { transform: rotate(-1.5deg) scale(0.97); } 100% { transform: rotate(1.5deg) scale(0.97); } }
-.card-delete { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 10; }
-.card-delete svg { width: 16px; height: 16px; }
-.editing-mode .card-delete { display: flex; }
+@keyframes wobble { 0% { transform: rotate(-1.5de
 .card-time { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 8px; letter-spacing: 0.2px; }
 .card-title { font-size: 22px; font-weight: 800; line-height: 1.25; color: #fff; letter-spacing: -0.5px; word-break: break-word; overflow-wrap: break-word; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 
@@ -60,8 +49,7 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
 #btnSettings svg { width: 22px; height: 16px; filter: none; }
 #btnDone { position: fixed; top: 18px; right: 18px; z-index: 41; width: 52px; height: 52px; display: none; }
 
-.txbtn { border-radius: 1000px; background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.55), 0 6px 24px rgba(0,0,0,0.38), 0 1px 2px rgba(0,0,0,0.7); transition: transform 0.055s cubic-bezier(0.2,0,0.3,1); will-change: transform; opacity: 0.9; }
-.txbtn img { display: block; object-fit: contain; }
+.txbtn { border-radius: 1000px; background: url('/src/t; }
 .txbtn svg { filter: brightness(0.72); transition: filter 0.055s ease; will-change: filter; }
 .txbtn:active { transform: scale(1.13); }
 .txbtn:active img { opacity: 0.85; }
@@ -120,8 +108,6 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
 .search-input::placeholder { color: rgba(255,255,255,0.38); }
 .search-cancel { background: none; border: none; color: rgba(255,255,255,0.65); font-size: 16px; cursor: pointer; white-space: nowrap; font-family: 'CustomFont', -apple-system, sans-serif; padding: 4px 0 4px 4px; }
 .search-cancel:active { opacity: 0.5; }
-.search-results { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; scrollbar-width: none; padding: 8px 16px 40px; }
-.search-results::-webkit-scrollbar { display: none; }
 .search-result-item { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.07); cursor: pointer; transition: opacity 0.15s; }
 .search-result-item:active { opacity: 0.55; }
 .search-result-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 3px; }
@@ -142,15 +128,7 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
 #emptyChat img { width: 115px; display: block; border-radius: 0; }
 #emptyChat.visible { display: block; }
 
-.chat-input-area { position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 29px 36px; z-index: 20; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,0.96) 60%, transparent); transform-origin: center bottom; transition: transform 0.46s cubic-bezier(0.32,0.72,0,1), opacity 0.38s cubic-bezier(0.4,0,0.2,1), filter 0.38s cubic-bezier(0.4,0,0.2,1); }
-.chat-input-area.voice-hiding { transform: translateY(28px) scale(0.88); opacity: 0; filter: blur(8px); pointer-events: none !important; }
-.chat-input-area .input-row { pointer-events: all; }
-.input-row { display: flex; align-items: center; gap: 10px; position: relative; }
-.input-bar { flex: 1; height: 49px; position: relative; display: flex; align-items: center; border-radius: 22px; overflow: hidden; opacity: 0.9; }
-.input-bar-bg { position: absolute; inset: 0; background: url('/src/texture-enterprompt.png') center/100% 100% no-repeat; }
-.input-field { position: relative; z-index: 2; flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 19px; font-family: 'CustomFont', -apple-system, sans-serif; padding: 0 14px; caret-color: #fff; }
-.input-field::placeholder { color: #f5f5f5; }
-.btn-send { display: none; }
+.chat-input-area { position: fixe
 .input-tap-glow { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 40%, transparent 70%); transform: translate(-50%,-50%) scale(0); pointer-events: none; z-index: 3; animation: inputGlow 0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
 @keyframes inputGlow { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 45% { transform: translate(-50%,-50%) scale(1.6); opacity: 0.6; } 100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; } }
 
