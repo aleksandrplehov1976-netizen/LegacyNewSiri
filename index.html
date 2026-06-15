@@ -10,9 +10,19 @@
 <link rel="manifest" href="/manifest.json">
 <title>Siri</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-@font-face
+@font-face { font-family: 'CustomFont'; src: url('/1.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'AppBold'; src: url('/bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'AppMono'; src: url('/mono.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'AppBookworm'; src: url('/bookworm.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'AppExtra'; src: url('/extra.otf') format('opentype'); font-weight: 800; font-style: normal; font-display: swap; }
+/* FIX 5: Plitka font for card titles/times */
+@font-face { font-family: 'PlitkaFont'; src: url('/src/plitka.otf') format('opentype'); font-weight: normal; font-style: normal; font-display: swap; }
+html { height: 100%; width: 100%; overflow: hidden; }
 body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif; color: #fff; overflow: hidden; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overscroll-behavior: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .bubble-user, .bubble-ai-content, .input-field { user-select: text; -webkit-user-select: text; word-break: break-word; overflow-wrap: break-word; white-space: normal; }
 
@@ -33,23 +43,29 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
 .home-scroll::-webkit-scrollbar { display: none; }
 
 .cards-area { display: flex; flex-direction: column; gap: 16px; }
-.cards-row { display: flex; flex-direction: row; gap: 16px; justify-content: center; margin: 0 auto; }
+/* FIX 4: align-items: flex-end makes cards sit to the bottom of each row like screenshot 2 */
+.cards-row { display: flex; flex-direction: row; gap: 16px; justify-content: center; margin: 0 auto; align-items: flex-end; }
 .card { width: 172px; height: 230px; flex-shrink: 0; position: relative; background-image: url('/src/plitka.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #1c1c1e; border-radius: 28px; cursor: pointer; display: flex; flex-direction: column; justify-content: flex-start; padding: 22px 18px 18px; overflow: hidden; transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s; }
 .card:active:not(.editing-mode .card) { transform: scale(0.96); opacity: 0.75; }
 .card.wobble { animation: wobble 0.10s ease-in-out infinite alternate; }
-@keyframes wobble { 0% { transform: rotate(-1.5de
-.card-time { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 8px; letter-spacing: 0.2px; }
-.card-title { font-size: 22px; font-weight: 800; line-height: 1.25; color: #fff; letter-spacing: -0.5px; word-break: break-word; overflow-wrap: break-word; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+@keyframes wobble { 0% { transform: rotate(-1.5deg) scale(0.97); } 100% { transform: rotate(1.5deg) scale(0.97); } }
+.card-delete { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 10; }
+.card-delete svg { width: 16px; height: 16px; }
+.editing-mode .card-delete { display: flex; }
+/* FIX 5: PlitkaFont on card time and title */
+.card-time { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 8px; letter-spacing: 0.2px; font-family: 'PlitkaFont', 'CustomFont', sans-serif; }
+.card-title { font-size: 22px; line-height: 1.25; color: #fff; letter-spacing: -0.5px; word-break: break-word; overflow-wrap: break-word; text-shadow: 0 1px 2px rgba(0,0,0,0.3); font-family: 'PlitkaFont', 'CustomFont', sans-serif; }
 
 .home-bottom { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; height: 120px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px 32px; background: linear-gradient(to top, #000 60%, transparent); pointer-events: none; }
 .home-bottom button { pointer-events: all; }
 
-/* FIX 1: three-lines settings button, no overlap with done button */
+/* FIX 3: settings button with proper spacing from top, no overlap with done button */
 #btnSettings { position: fixed; top: 14px; right: 18px; z-index: 40; width: 52px; height: 52px; display: flex; }
 #btnSettings svg { width: 22px; height: 16px; filter: none; }
 #btnDone { position: fixed; top: 18px; right: 18px; z-index: 41; width: 52px; height: 52px; display: none; }
 
-.txbtn { border-radius: 1000px; background: url('/src/t; }
+.txbtn { border-radius: 1000px; background: url('/src/texture-btnssmall.png') center/100% 100% no-repeat; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.55), 0 6px 24px rgba(0,0,0,0.38), 0 1px 2px rgba(0,0,0,0.7); transition: transform 0.055s cubic-bezier(0.2,0,0.3,1); will-change: transform; opacity: 0.9; }
+.txbtn img { display: block; object-fit: contain; }
 .txbtn svg { filter: brightness(0.72); transition: filter 0.055s ease; will-change: filter; }
 .txbtn:active { transform: scale(1.13); }
 .txbtn:active img { opacity: 0.85; }
@@ -67,7 +83,7 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
 #goHomeBtn { width: 52px; height: 52px; }
 #goHomeBtn img { width: 22px; height: 22px; }
 
-/* FIX 2: clean settings, no colored icon backgrounds */
+/* FIX 2: Settings — no icon backgrounds, cleaner look */
 .settings-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.38s cubic-bezier(0.4,0,0.2,1); }
 .settings-overlay.open { opacity: 1; pointer-events: all; }
 .settings-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
@@ -84,8 +100,8 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
 .settings-item { display: flex; align-items: center; padding: 14px 16px; gap: 12px; text-decoration: none; color: #fff; cursor: pointer; transition: background 0.15s; }
 .settings-item:active { background: rgba(255,255,255,0.05); }
 .settings-item + .settings-item { border-top: 1px solid rgba(255,255,255,0.05); }
-.settings-item-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.5; }
-.settings-item-icon svg { width: 20px; height: 20px; }
+/* FIX 2: Icons completely removed */
+.settings-item-icon { display: none !important; }
 .settings-item-text { flex: 1; }
 .settings-item-label { font-size: 16px; color: #fff; line-height: 1.2; }
 .settings-item-sub { font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 2px; }
@@ -108,6 +124,8 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
 .search-input::placeholder { color: rgba(255,255,255,0.38); }
 .search-cancel { background: none; border: none; color: rgba(255,255,255,0.65); font-size: 16px; cursor: pointer; white-space: nowrap; font-family: 'CustomFont', -apple-system, sans-serif; padding: 4px 0 4px 4px; }
 .search-cancel:active { opacity: 0.5; }
+.search-results { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; scrollbar-width: none; padding: 8px 16px 40px; }
+.search-results::-webkit-scrollbar { display: none; }
 .search-result-item { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.07); cursor: pointer; transition: opacity 0.15s; }
 .search-result-item:active { opacity: 0.55; }
 .search-result-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 3px; }
@@ -123,12 +141,27 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
 .chat-messages { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; scrollbar-width: none; padding: 72px 0 120px; display: flex; flex-direction: column; gap: 4px; overscroll-behavior: contain; }
 .chat-messages::-webkit-scrollbar { display: none; }
 
-/* FIX 3: empty chat image */
 #emptyChat { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; display: none; z-index: 1; }
 #emptyChat img { width: 115px; display: block; border-radius: 0; }
 #emptyChat.visible { display: block; }
 
-.chat-input-area { position: fixe
+/* FIX 1: KEY FIX — chat UI elements are fully hidden when not in chat */
+.chat-ui-hidden {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  z-index: -999 !important;
+}
+
+.chat-input-area { position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 29px 36px; z-index: 20; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,0.96) 60%, transparent); transform-origin: center bottom; transition: transform 0.46s cubic-bezier(0.32,0.72,0,1), opacity 0.38s cubic-bezier(0.4,0,0.2,1), filter 0.38s cubic-bezier(0.4,0,0.2,1); }
+.chat-input-area.voice-hiding { transform: translateY(28px) scale(0.88); opacity: 0; filter: blur(8px); pointer-events: none !important; }
+.chat-input-area .input-row { pointer-events: all; }
+.input-row { display: flex; align-items: center; gap: 10px; position: relative; }
+.input-bar { flex: 1; height: 49px; position: relative; display: flex; align-items: center; border-radius: 22px; overflow: hidden; opacity: 0.9; }
+.input-bar-bg { position: absolute; inset: 0; background: url('/src/texture-enterprompt.png') center/100% 100% no-repeat; }
+.input-field { position: relative; z-index: 2; flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 19px; font-family: 'CustomFont', -apple-system, sans-serif; padding: 0 14px; caret-color: #fff; }
+.input-field::placeholder { color: #f5f5f5; }
+.btn-send { display: none; }
 .input-tap-glow { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 40%, transparent 70%); transform: translate(-50%,-50%) scale(0); pointer-events: none; z-index: 3; animation: inputGlow 0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
 @keyframes inputGlow { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 45% { transform: translate(-50%,-50%) scale(1.6); opacity: 0.6; } 100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; } }
 
@@ -279,9 +312,6 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
       <div class="settings-section-label">Профиль</div>
       <div class="settings-group">
         <div class="settings-item">
-          <div class="settings-item-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f5f5f5" stroke-width="1.6"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
           <div class="settings-item-text"><div class="settings-item-label">Ваше имя</div></div>
           <div class="name-input-wrap">
             <input class="name-input" id="userNameInput" type="text" placeholder="Не указано" autocomplete="off" spellcheck="false" maxlength="30"/>
@@ -291,9 +321,6 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
       <div class="settings-section-label">Голосовой ввод</div>
       <div class="settings-group">
         <div class="settings-item" id="voiceToggleItem">
-          <div class="settings-item-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f5f5f5" stroke-width="1.6"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </div>
           <div class="settings-item-text">
             <div class="settings-item-label">Голосовой режим</div>
             <div class="settings-item-sub">Распознавание речи</div>
@@ -301,9 +328,6 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
           <button class="settings-toggle on" id="voiceToggle"></button>
         </div>
         <div class="settings-item" id="soundToggleItem">
-          <div class="settings-item-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f5f5f5" stroke-width="1.6"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
-          </div>
           <div class="settings-item-text">
             <div class="settings-item-label">Звук</div>
             <div class="settings-item-sub">Воспроизведение при отправке</div>
@@ -314,18 +338,12 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
       <div class="settings-section-label">О программе</div>
       <div class="settings-group">
         <div class="settings-item">
-          <div class="settings-item-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f5f5f5" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          </div>
           <div class="settings-item-text">
             <div class="settings-item-label">Apple Intelligence Core</div>
             <div class="settings-item-sub">Версия 21o (RC)</div>
           </div>
         </div>
         <a class="settings-item" href="/help.html">
-          <div class="settings-item-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f5f5f5" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </div>
           <div class="settings-item-text"><div class="settings-item-label">Справка и отзывы</div></div>
           <div class="settings-item-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg></div>
         </a>
@@ -333,9 +351,6 @@ body { height: 100%; width: 100%; background: #000; font-family: 'CustomFont', -
       <div class="settings-section-label">Данные</div>
       <div class="settings-group">
         <div class="settings-item" id="clearChatsItem">
-          <div class="settings-item-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ff375f" stroke-width="1.6"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-          </div>
           <div class="settings-item-text">
             <div class="settings-item-label" style="color:#ff375f;">Очистить все чаты</div>
           </div>
@@ -418,7 +433,7 @@ const CHAR_IN_STAGGER = 26;
 const CHAR_OUT_STAGGER = 28;
 const ALL_THINKING_PHRASES = ['Думаю над этим...','Складываю воедино...','Анализирую запрос...','Ищу лучший ответ...','Обрабатываю мысли...','Соображаю...','Взвешиваю варианты...','Подождите...','Формулирую ответ...','Погружаюсь в вопрос...','Сравниваю подходящие ответы...'];
 
-// ══ FIX 4: Web Audio API — no browser media controls ══
+// ── Web Audio API — no browser media controls ──
 let audioCtx = null;
 let sendSoundBuffer = null;
 
@@ -503,7 +518,6 @@ function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'
 function formatTime(ts) { const d = new Date(ts); return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0'); }
 function pickTwoPhrases() { const arr = [...ALL_THINKING_PHRASES]; const i1 = Math.floor(Math.random() * arr.length); const p1 = arr.splice(i1, 1)[0]; return [p1, arr[Math.floor(Math.random() * arr.length)]]; }
 
-// FIX 3: empty state
 function updateEmptyState() {
   const msgs = document.getElementById('chatMessages');
   const empty = document.getElementById('emptyChat');
@@ -705,7 +719,6 @@ function renderCards() {
   const em = editingMode;
   area.classList.toggle('editing-mode', em);
   document.getElementById('homeScroll').classList.toggle('editing-mode', em);
-  // FIX 1: показываем только одну кнопку, никакого перекрытия
   document.getElementById('btnSettings').style.display = em ? 'none' : 'flex';
   document.getElementById('btnDone').style.display = em ? 'flex' : 'none';
 }
@@ -756,19 +769,34 @@ function renderSearchResults(query) {
 document.getElementById('searchInput').addEventListener('input', e => renderSearchResults(e.target.value));
 document.getElementById('searchCancelBtn').addEventListener('click', closeSearch);
 
-// FIX 5: setChatActive locks pointer-events on ALL fixed chat elements when on home
-function setChatActive(a) {
-  document.getElementById('chatTopTexture').style.display = a ? 'block' : 'none';
-  const chatInputArea = document.getElementById('chatInputArea');
-  const voiceModeBar = document.getElementById('voiceModeBar');
-  const attachLabel = document.getElementById('attachLabel');
-  if (a) {
-    chatInputArea.style.pointerEvents = '';
-    attachLabel.style.pointerEvents = '';
-  } else {
-    chatInputArea.style.pointerEvents = 'none';
-    voiceModeBar.style.pointerEvents = 'none';
-    attachLabel.style.pointerEvents = 'none';
+// ═══════════════════════════════════════════════════════════
+// FIX 1: THE BUTTON BUG — COMPLETE REWRITE OF setChatActive
+// All fixed-position chat UI elements are fully hidden with
+// visibility:hidden + z-index:-999 when on the home screen.
+// This prevents ANY interaction with chat elements from home.
+// ═══════════════════════════════════════════════════════════
+const CHAT_UI_IDS = ['chatInputArea', 'voiceModeBar', 'voiceModeVideo'];
+
+function setChatActive(active) {
+  // Always update the texture overlay
+  document.getElementById('chatTopTexture').style.display = active ? 'block' : 'none';
+
+  CHAT_UI_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (active) {
+      el.classList.remove('chat-ui-hidden');
+    } else {
+      el.classList.add('chat-ui-hidden');
+    }
+  });
+
+  // thinkBgVideo: only show when actively thinking, never on home
+  // It manages itself via showThinkBg/hideThinkBg, but must be hidden on home
+  const tbv = document.getElementById('thinkBgVideo');
+  if (!active) {
+    tbv.classList.remove('visible');
+    tbv.pause();
   }
 }
 
@@ -875,7 +903,6 @@ async function doAiRequest(userText, fromVoice) {
   aw.appendChild(buildReactionButtons(reactionId)); msgs.appendChild(aw); updateEmptyState();
   requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
   await animateHtmlContent(cd, renderMarkdownToHtml(aiText));
-  // FIX 4: NO Audio() element here — sound already played on send, no browser controls
   const isNew = !currentChatId;
   if (currentChatId) { const c = chats.find(c => c.id === currentChatId); if (c) { c.messages.push({ role: 'user', text: userText }); c.messages.push({ role: 'ai', text: aiText }); c.ts = Date.now(); } }
   else { const id = 'chat_' + Date.now(); currentChatId = id; chats.unshift({ id, ts: Date.now(), title: userText.slice(0, 40), messages: [{ role: 'user', text: userText }, { role: 'ai', text: aiText }] }); }
@@ -919,7 +946,7 @@ async function simpleSend() {
   updateEmptyState(); requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
   currentMessages.push({ role: 'user', content: val });
   chatInput.value = ''; toggleControls();
-  playSendSound(); // FIX 4: play immediately after user sends, no HTML audio element
+  playSendSound();
   await doAiRequest(val, false);
 }
 btnSend.addEventListener('click', simpleSend);
@@ -974,12 +1001,17 @@ function initScrollContainers() {
   document.body.addEventListener('touchmove', e => { const el = e.target.closest('.chat-messages,.home-scroll,.settings-body,.search-results,pre code,.table-wrap'); if (!el) e.preventDefault(); }, { passive: false });
 }
 
-// FIX 5: all home buttons guarded — only fire when home screen is actually active
+// FIX 1: Home screen buttons — only fire when home is active, use stopPropagation
 document.getElementById('btnSettings').addEventListener('click', e => {
   e.preventDefault(); e.stopPropagation();
-  if (document.getElementById('home').classList.contains('active')) document.getElementById('settingsOverlay').classList.add('open');
+  if (document.getElementById('home').classList.contains('active')) {
+    document.getElementById('settingsOverlay').classList.add('open');
+  }
 });
-document.getElementById('btnDone').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exitEditing(); });
+document.getElementById('btnDone').addEventListener('click', e => {
+  e.preventDefault(); e.stopPropagation();
+  exitEditing();
+});
 document.getElementById('btnSearch').addEventListener('click', e => {
   e.preventDefault(); e.stopPropagation();
   if (document.getElementById('home').classList.contains('active')) openSearch();
@@ -999,6 +1031,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   if (!sa) { document.getElementById('pwa-gate').style.display = 'flex'; document.querySelectorAll('.screen').forEach(s => { s.style.pointerEvents = 'none'; s.style.opacity = '0'; }); }
 })();
 
+// Initial state: home is active, chat UI must be hidden
 setChatActive(false);
 renderCards();
 initSettingsUI();
