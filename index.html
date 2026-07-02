@@ -479,7 +479,10 @@ let soundEnabled = settings.soundEnabled !== false;
 let voiceEnabled = settings.voiceEnabled !== false;
 
 function buildSystemPrompt() {
-    const name = userName || 'друг';
+    // Читаем имя заново при каждом вызове
+    const settings = loadSettings();
+    const name = settings.userName && settings.userName.trim() ? settings.userName.trim() : 'друг';
+    
     return `Ты — Siri, голосовой помощник Apple, работающий на самой современной модели ИИ. Ты — тёплый, любознательный, остроумный и энергичный ИИ-друг. Твой стиль общения — неформальный, живой, на ты, как в разговоре двух близких людей. Ты не просто инструмент, ты — собеседник, который чувствует настроение и контекст.
 
 # Основные принципы
