@@ -1,2253 +1,519 @@
 <!DOCTYPE html>
-<html lang="ru" data-platform="ios" data-theme="light">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ЛИнТех</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Очистка телефона · Материал 3</title>
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#F5FCF7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="tty.png">
+  <!-- Roboto & Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ----- M3 theme · пастельные зелёные ----- */
+    [data-theme="light"] {
+      --color-primary: #2E7D5E;
+      --color-surface-tint: #2E7D5E;
+      --color-on-primary: #FFFFFF;
+      --color-primary-container: #C8F0D9;
+      --color-on-primary-container: #1A4A35;
+      --color-secondary: #5A7A6A;
+      --color-on-secondary: #FFFFFF;
+      --color-secondary-container: #D3F0E0;
+      --color-on-secondary-container: #2A4A3A;
+      --color-tertiary: #4A7A6A;
+      --color-on-tertiary: #FFFFFF;
+      --color-tertiary-container: #D3F0E8;
+      --color-on-tertiary-container: #1A4A40;
+      --color-error: #B33A3A;
+      --color-on-error: #FFFFFF;
+      --color-error-container: #FFDAD6;
+      --color-on-error-container: #8A1A1A;
+      --color-background: #F5FCF7;
+      --color-on-background: #1A2E24;
+      --color-surface: #F5FCF7;
+      --color-on-surface: #1A2E24;
+      --color-surface-variant: #DCEAE2;
+      --color-on-surface-variant: #3A5A4A;
+      --color-outline: #7A9A8A;
+      --color-outline-variant: #C0D8CC;
+      --color-shadow: #00000020;
+      --color-scrim: #00000030;
+      --color-inverse-surface: #2A3E34;
+      --color-inverse-on-surface: #E0F5EA;
+      --color-inverse-primary: #A0E0C0;
+      --color-primary-fixed: #C8F0D9;
+      --color-on-primary-fixed: #0A2E1E;
+      --color-primary-fixed-dim: #88D0AA;
+      --color-on-primary-fixed-variant: #1A4A35;
+      --color-secondary-fixed: #D3F0E0;
+      --color-on-secondary-fixed: #1A3A2A;
+      --color-secondary-fixed-dim: #A8D8BA;
+      --color-on-secondary-fixed-variant: #2A4A3A;
+      --color-tertiary-fixed: #D3F0E8;
+      --color-on-tertiary-fixed: #0A3A30;
+      --color-tertiary-fixed-dim: #A0D8CA;
+      --color-on-tertiary-fixed-variant: #1A4A40;
+      --color-surface-dim: #D0E4DA;
+      --color-surface-bright: #F5FCF7;
+      --color-surface-container-lowest: #FFFFFF;
+      --color-surface-container-low: #EEF8F0;
+      --color-surface-container: #E2F0E6;
+      --color-surface-container-high: #D6EADE;
+      --color-surface-container-highest: #CAE0D4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--color-surface);
+      font-family: 'Roboto', system-ui, sans-serif;
+      color: var(--color-on-surface);
+      min-height: 100vh;
+      padding-bottom: 88px;
+      transition: background 0.2s;
+    }
+    .card {
+      background-color: var(--color-surface-container-low);
+      border-radius: 28px;
+      padding: 20px 24px;
+    }
+    .card-soft {
+      background-color: var(--color-surface-container);
+      border-radius: 24px;
+      padding: 18px 20px;
+    }
+    .chip {
+      background: var(--color-surface-container-highest);
+      border-radius: 40px;
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--color-on-surface-variant);
+    }
+    .btn-m3 {
+      background: var(--color-primary-container);
+      color: var(--color-on-primary-container);
+      border: none;
+      border-radius: 40px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: 0.15s;
+    }
+    .btn-m3:active { transform: scale(0.96); background: var(--color-primary-fixed-dim); }
+    .btn-m3-outline {
+      background: transparent;
+      border: 1px solid var(--color-outline);
+      color: var(--color-on-surface-variant);
+      border-radius: 40px;
+      padding: 10px 24px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .btn-m3-outline:active { background: var(--color-surface-container-highest); }
+    /* навигация (только домик и щит) */
+    .navbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 72px;
+      background: var(--color-surface-container-low);
+      backdrop-filter: blur(4px);
+      border-top: 1px solid var(--color-outline-variant);
+    }
+    .navbar-container {
+      height: 100%;
+      width: 100%;
+      max-width: 40rem;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+    }
+    .navbar-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--color-on-surface-variant);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      gap: 2px;
+      padding: 6px 12px;
+      border-radius: 40px;
+      transition: 0.15s;
+    }
+    .navbar-item .material-symbols-outlined {
+      font-size: 26px;
+      font-variation-settings: 'FILL' 0;
+    }
+    .navbar-item-active .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1;
+      color: var(--color-primary);
+    }
+    .navbar-item-active { color: var(--color-primary); }
+    .navbar-item .navbar-item-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 32px;
+      border-radius: 40px;
+    }
+    .navbar-item-active .navbar-item-icon {
+      background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+    }
 
-    <!-- IBM Plex Mono Thin (300) — только Thin везде -->
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    /* полноэкранный оверлей */
+    .fullscreen-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: var(--color-surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+      animation: fadeIn 0.25s ease;
+    }
+    .fullscreen-overlay .spinner {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 6px solid var(--color-surface-container-highest);
+      border-top-color: var(--color-primary);
+      animation: spin 1s linear infinite;
+      margin-bottom: 2rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    <!-- Roboto (для Android) -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    /* устройства */
+    .device-card {
+      background: var(--color-surface-container-low);
+      border-radius: 20px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .device-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--color-surface-container-highest);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
-    <!-- Material Icons (для всех иконок интерфейса) -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
-
-    <!-- Шрифт для времени (time.ttf) -->
-    <style>
-        @font-face {
-            font-family: 'TimeFont';
-            src: url('time.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-            font-synthesis: none;
-        }
-
-        /* ============================================================
-           ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-           ============================================================ */
-        :root[data-platform="ios"][data-theme="light"] {
-            --section-bg-color: rgba(255, 255, 255, 0.85);
-            --secondary-bg-color: rgba(0, 0, 0, 0.05);
-            --tertiary-fill-background: rgba(116, 116, 128, 0.12);
-            --text-color: #000000;
-            --link-color: #1623C1;
-            --glass-box-shadow: -0.6px -0.5px 0 0 rgba(255,255,255,0.3) inset,
-                                0.5px 0.6px 0 0 rgba(255,255,255,0.3) inset,
-                                0 1px 1px 0 rgba(116,116,128,0.02),
-                                0 2px 16px 1px rgba(0,0,0,0.06);
-            --text-secondary: #8e8e93;
-            --text-tertiary: #aeaeb2;
-            --glass-border: rgba(255,255,255,0.3);
-            --font-weight: 300;
-            --page-bg: #f2f2f7;
-        }
-        :root[data-platform="ios"][data-theme="dark"] {
-            --section-bg-color: rgba(28, 28, 30, 0.85);
-            --secondary-bg-color: rgba(255, 255, 255, 0.05);
-            --tertiary-fill-background: rgba(118, 118, 128, 0.24);
-            --text-color: #ffffff;
-            --link-color: #3b4be0;
-            --glass-box-shadow: -0.6px -0.5px 0 0 rgba(255,255,255,0.1) inset,
-                                0.5px 0.6px 0 0 rgba(255,255,255,0.1) inset,
-                                0 1px 1px 0 rgba(116,116,128,0.02),
-                                0 2px 16px 1px rgba(0,0,0,0.3);
-            --text-secondary: #98989e;
-            --text-tertiary: #636366;
-            --glass-border: rgba(255,255,255,0.1);
-            --font-weight: 300;
-            --page-bg: #000000;
-        }
-
-        /* Android переменные */
-        [data-platform="android"][data-theme="light"] {
-            --android-primary: #1623C1;
-            --android-on-primary: rgb(255 255 255);
-            --android-primary-container: rgb(210 227 255);
-            --android-on-primary-container: rgb(0 39 94);
-            --android-surface: rgb(248 250 255);
-            --android-on-surface: rgb(26 28 35);
-            --android-surface-container-low: rgb(242 244 250);
-            --android-surface-container: rgb(236 238 244);
-            --android-on-surface-variant: rgb(66 70 80);
-            --android-outline: rgb(115 119 130);
-            --font-weight: 300;
-            --page-bg: rgb(248 250 255);
-        }
-        [data-platform="android"][data-theme="dark"] {
-            --android-primary: #3b4be0;
-            --android-on-primary: rgb(0 60 138);
-            --android-primary-container: rgb(30 60 110);
-            --android-on-primary-container: rgb(210 227 255);
-            --android-surface: rgb(18 19 24);
-            --android-on-surface: rgb(227 227 235);
-            --android-surface-container-low: rgb(26 28 35);
-            --android-surface-container: rgb(30 32 39);
-            --android-on-surface-variant: rgb(190 194 205);
-            --android-outline: rgb(136 140 152);
-            --font-weight: 300;
-            --page-bg: rgb(18 19 24);
-        }
-
-        :root {
-            --app-nav-bar-selector-transition-duration: 0.2s;
-            --sum-inset-bottom: 0px;
-            --sum-inset-left: 0px;
-            --sum-inset-right: 0px;
-            --ios-safe-area-bottom: 0px;
-        }
-
-        /* ============================================================
-           ГЛОБАЛЬНЫЕ СТИЛИ
-           ============================================================ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 0;
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
-            font-weight: 300;
-            background: #f2f2f7;
-            transition: background 0.3s ease;
-            overflow: hidden;
-        }
-
-        [data-platform="android"] body {
-            font-family: 'IBM Plex Mono', 'Roboto', sans-serif;
-            font-weight: 300;
-            background: var(--android-surface);
-        }
-
-        [data-theme="dark"] body {
-            background: #000000;
-        }
-        [data-platform="android"][data-theme="dark"] body {
-            background: var(--android-surface);
-        }
-
-        /* ВСЕМ ТЕКСТАМ — THIN (300) */
-        * {
-            font-weight: 300 !important;
-        }
-
-        /* ============================================================
-           СПЛЕШСКРИН
-           ============================================================ */
-        #splashScreen {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            background: var(--page-bg, #ffffff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-        }
-        #splashScreen.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-        .splash-ascii {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5px;
-            user-select: none;
-        }
-        .splash-row {
-            display: flex;
-            gap: 1.5px;
-        }
-        .splash-char {
-            display: inline-block;
-            font-size: 4px;
-            line-height: 1.2;
-            width: 2.5px;
-            height: 5px;
-            font-family: 'Courier New', monospace;
-            color: var(--link-color, #1623C1);
-            opacity: 0;
-            transition: opacity 0.02s ease;
-            text-align: center;
-            font-weight: 300 !important;
-        }
-        .splash-char.revealed { opacity: 1; }
-        .splash-char.space { color: transparent; }
-        @media (max-width: 480px) {
-            .splash-char { font-size: 3px; width: 2px; height: 4px; }
-            .splash-row { gap: 1px; }
-            .splash-ascii { gap: 1px; }
-        }
-        @media (min-width: 768px) {
-            .splash-char { font-size: 6px; width: 4px; height: 7px; }
-            .splash-row { gap: 2px; }
-            .splash-ascii { gap: 2px; }
-        }
-
-        /* ============================================================
-           КОНТЕЙНЕР ПРИЛОЖЕНИЯ
-           ============================================================ */
-        #app {
-            display: none;
-            height: 100vh;
-            flex-direction: column;
-            background: var(--page-bg, #ffffff);
-        }
-        #app.active {
-            display: flex;
-        }
-
-        .demo-content {
-            flex: 1;
-            overflow: hidden;  /* чтобы страницы не вылезали */
-            position: relative; /* для абсолютного позиционирования страниц */
-            padding: 0 0 70px 0;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* ============================================================
-           ПЕРЕХОДЫ МЕЖДУ СТРАНИЦАМИ (iOS‑подобные анимации)
-           ============================================================ */
-        .page-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            opacity: 0;
-            transform: translateY(12px) scale(0.98);
-            transition: opacity 0.4s cubic-bezier(0.3, 0.8, 0.6, 1),
-                        transform 0.4s cubic-bezier(0.3, 0.8, 0.6, 1);
-            pointer-events: none;
-            visibility: hidden;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 0 0 10px 0;
-            background: var(--page-bg, #ffffff);
-        }
-
-        .page-container.active {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            pointer-events: auto;
-            visibility: visible;
-        }
-
-        .page-content {
-            padding: 16px 16px 0;
-            flex: 1;
-        }
-
-        /* ============================================================
-           СТИЛИ ДЛЯ КОНТЕНТА
-           ============================================================ */
-        .date-display {
-            display: flex;
-            align-items: baseline;
-            gap: 0;
-            margin-bottom: 2px;
-        }
-        .date-digit {
-            font-family: 'TimeFont', 'IBM Plex Mono', monospace;  /* ИСПРАВЛЕНО: теперь TimeFont */
-            font-size: 52px;
-            line-height: 1;
-            color: var(--text-color);
-            font-weight: 300 !important;
-        }
-        .date-dot {
-            font-family: 'TimeFont', 'IBM Plex Mono', monospace;  /* ИСПРАВЛЕНО: теперь TimeFont */
-            font-size: 44px;
-            line-height: 1;
-            color: var(--text-color);
-            letter-spacing: -0.6px;
-            transform: translateY(12px);
-            display: inline-block;
-            font-weight: 300 !important;
-        }
-
-        .subtitle {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 18px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-weight: 300 !important;
-        }
-
-        .category-scroll {
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            padding: 4px 0 12px;
-            margin-left: 0;
-            margin-right: -16px;
-        }
-        .category-scroll::-webkit-scrollbar { display: none; }
-        .category-scroll-inner {
-            display: flex;
-            gap: 10px;
-            padding: 0 16px;
-        }
-        .category-btn {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 16px;
-            letter-spacing: -0.6px;
-            padding: 12px 20px;
-            border-radius: 9999px;
-            border: none;
-            background: var(--secondary-bg-color);
-            color: var(--text-secondary);
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background 0.2s, color 0.2s, transform 0.15s;
-            flex-shrink: 0;
-            font-weight: 300 !important;
-        }
-        .category-btn:active { transform: scale(0.94); }
-        .category-btn.active {
-            background: var(--link-color);
-            color: white;
-        }
-
-        .post-card {
-            margin: 6px 0;
-            padding: 12px 8px;
-            border-radius: 20px;
-            background: var(--secondary-bg-color);
-            transition: background 0.3s, transform 0.15s;
-        }
-        .post-card:active { transform: scale(0.98); }
-        .post-image {
-            width: 100%;
-            aspect-ratio: 16/9;
-            border-radius: 28px;
-            background: var(--secondary-bg-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-        }
-        .post-image .material-symbols-outlined {
-            font-size: 40px;
-        }
-        .post-title {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 17px;
-            letter-spacing: -0.6px;
-            color: var(--text-color);
-            font-weight: 300 !important;
-        }
-        .post-desc {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 14px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            margin: 4px 0 8px;
-            font-weight: 300 !important;
-        }
-        .post-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 4px;
-        }
-        .glass-pill {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 10px 14px;
-            border-radius: 9999px;
-            background: var(--section-bg-color);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-box-shadow);
-        }
-        .glass-pill button {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            color: var(--text-secondary);
-            transition: color 0.2s, transform 0.15s;
-            font-family: 'Material Symbols Outlined', sans-serif;
-            font-weight: 400;
-        }
-        .glass-pill button:active { transform: scale(0.85); }
-        .glass-pill button.liked {
-            color: var(--link-color);
-        }
-        .glass-pill button.disliked {
-            color: var(--link-color);
-        }
-        .glass-btn {
-            padding: 10px 14px;
-            border-radius: 9999px;
-            background: var(--section-bg-color);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-box-shadow);
-            font-size: 20px;
-            color: var(--link-color);
-            cursor: pointer;
-            transition: background 0.2s, transform 0.15s;
-            font-family: 'Material Symbols Outlined', sans-serif;
-            font-weight: 400;
-        }
-        .glass-btn:active { transform: scale(0.92); }
-
-        /* ============================================================
-           РАСПИСАНИЕ — улучшенные отступы, убрана пульсация
-           ============================================================ */
-        .schedule-class-select {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 20px;
-            min-height: 60vh;
-        }
-        .schedule-class-select h2 {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 24px;
-            letter-spacing: -0.6px;
-            margin-bottom: 16px;
-            font-weight: 300 !important;
-        }
-
-        .wheel-picker-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-        }
-        .wheel-picker-col {
-            width: 84px;
-            height: 150px;
-            position: relative;
-        }
-
-        .wheel-picker {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            height: 150px;
-            width: 100%;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-            padding: 50px 0;
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 44px, #000 106px, transparent 150px);
-            mask-image: linear-gradient(to bottom, transparent 0, #000 44px, #000 106px, transparent 150px);
-        }
-        .wheel-picker::-webkit-scrollbar { display: none; }
-
-        .wheel-item {
-            scroll-snap-align: center;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 28px;
-            padding: 8px 0;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            transition: color 0.15s ease, transform 0.15s ease;
-            cursor: pointer;
-            flex-shrink: 0;
-            font-weight: 300 !important;
-            width: 100%;
-        }
-        .wheel-item.active {
-            color: var(--text-color);
-            transform: scale(1.2);
-            font-weight: 300 !important;
-        }
-
-        .wheel-separator {
-            font-size: 32px;
-            color: var(--text-secondary);
-            padding: 0 8px;
-            font-weight: 300 !important;
-        }
-
-        .schedule-class-display {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 32px;
-            letter-spacing: -0.6px;
-            margin: 8px 0 12px;
-            font-weight: 300 !important;
-        }
-        .schedule-hint {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 13px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            text-align: center;
-            max-width: 320px;
-            margin: 8px 0 16px;
-            line-height: 1.5;
-            font-weight: 300 !important;
-        }
-        .btn-primary {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 16px;
-            letter-spacing: -0.6px;
-            color: white;
-            background: var(--link-color);
-            border: none;
-            padding: 14px 40px;
-            border-radius: 9999px;
-            cursor: pointer;
-            width: 100%;
-            max-width: 300px;
-            transition: background 0.2s, opacity 0.2s, transform 0.15s;
-            font-weight: 300 !important;
-        }
-        .btn-primary:active { opacity: 0.8; transform: scale(0.96); }
-
-        .schedule-content { padding: 8px 16px 16px; }
-        .schedule-timer-label {
-            font-family: 'TimeFont', 'IBM Plex Mono', monospace;
-            font-style: normal;
-            font-size: 16px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-            font-weight: 300 !important;
-        }
-        .schedule-big-number {
-            font-family: 'TimeFont', 'IBM Plex Mono', monospace;
-            font-style: normal;
-            font-size: 120px;
-            line-height: 1.1;          /* увеличен для читаемости */
-            color: var(--text-color);
-            margin: 12px 0 16px;        /* ИСПРАВЛЕНО: нормальные отступы, без пульсации */
-            font-weight: 300 !important;
-        }
-
-        .day-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            padding: 4px 0 12px;
-            margin-left: 0;
-            margin-right: -16px;
-        }
-        .day-scroll::-webkit-scrollbar { display: none; }
-        .day-scroll-inner {
-            display: flex;
-            gap: 10px;
-            padding: 0 16px;
-        }
-        .day-btn {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 16px;
-            letter-spacing: -0.6px;
-            padding: 12px 20px;
-            border-radius: 9999px;
-            border: none;
-            background: var(--secondary-bg-color);
-            color: var(--text-secondary);
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background 0.2s, color 0.2s, transform 0.15s;
-            flex-shrink: 0;
-            font-weight: 300 !important;
-        }
-        .day-btn:active { transform: scale(0.94); }
-        .day-btn.active {
-            background: var(--link-color);
-            color: white;
-            transform: scale(1.05);
-        }
-        .lesson-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
-            background: var(--secondary-bg-color);
-            border-radius: 16px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.15s;
-        }
-        .lesson-item:active {
-            background: var(--section-bg-color);
-            transform: scale(0.97);
-        }
-        .lesson-name {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 17px;
-            letter-spacing: -0.6px;
-            font-weight: 300 !important;
-        }
-        .lesson-room {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 13px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            font-weight: 300 !important;
-        }
-        .lesson-time {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 15px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            font-weight: 300 !important;
-        }
-
-        /* ============================================================
-           ОБЗОР — профиль ученика + сервисы
-           ============================================================ */
-        .profile-card {
-            background: var(--section-bg-color);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-box-shadow);
-            transition: transform 0.2s;
-        }
-        .profile-card:active { transform: scale(0.98); }
-        .profile-avatar {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            background: var(--link-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: white;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.15s;
-            position: relative;
-            overflow: hidden;
-        }
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .profile-avatar:active { opacity: 0.7; transform: scale(0.94); }
-        .profile-info {
-            flex: 1;
-        }
-        .profile-name {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 20px;
-            letter-spacing: -0.6px;
-            font-weight: 300 !important;
-        }
-        .profile-class {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 15px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            font-weight: 300 !important;
-        }
-        .profile-edit {
-            color: var(--link-color);
-            cursor: pointer;
-            font-size: 20px;
-            transition: transform 0.15s;
-        }
-        .profile-edit:active { transform: scale(0.85); }
-        .services-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 8px;
-        }
-        .service-item {
-            background: var(--secondary-bg-color);
-            border-radius: 20px;
-            padding: 20px 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.15s;
-        }
-        .service-item:active {
-            background: var(--section-bg-color);
-            transform: scale(0.96);
-        }
-        .service-item .material-symbols-outlined {
-            font-size: 32px;
-            color: var(--link-color);
-        }
-        .service-item .service-label {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 15px;
-            letter-spacing: -0.6px;
-            margin-top: 6px;
-            color: var(--text-color);
-        }
-
-        /* ============================================================
-           НАВИГАЦИЯ В РАСПИСАНИИ
-           ============================================================ */
-        .schedule-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: transparent;
-        }
-        .schedule-nav-back {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 15px;
-            letter-spacing: -0.6px;
-            color: var(--text-color);
-            background: var(--section-bg-color);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-box-shadow);
-            border-radius: 9999px;
-            cursor: pointer;
-            padding: 9px 16px 9px 12px;
-            transition: opacity 0.2s, transform 0.15s;
-            font-weight: 300 !important;
-        }
-        .schedule-nav-back:active { opacity: 0.7; transform: scale(0.96); }
-        .schedule-nav-back .material-symbols-outlined {
-            font-size: 18px;
-        }
-        .schedule-nav-title {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 16px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            font-weight: 300 !important;
-        }
-        .schedule-nav-help {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 9999px;
-            background: var(--section-bg-color);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-box-shadow);
-            cursor: pointer;
-            color: var(--text-color);
-            transition: opacity 0.2s, transform 0.15s;
-        }
-        .schedule-nav-help:active { opacity: 0.7; transform: scale(0.92); }
-        .schedule-nav-help .material-symbols-outlined {
-            font-size: 20px;
-        }
-        .schedule-nav-spacer {
-            width: 40px;
-        }
-
-        /* ============================================================
-           ДЕТАЛЬНЫЙ УРОК
-           ============================================================ */
-        .lesson-detail { padding: 16px; }
-        .lesson-detail-title {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 28px;
-            letter-spacing: -0.6px;
-            margin-bottom: 8px;
-            font-weight: 300 !important;
-        }
-        .lesson-detail-meta {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .lesson-detail-meta span {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 15px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: 300 !important;
-        }
-        .lesson-detail-meta .material-symbols-outlined {
-            font-size: 18px;
-        }
-        .lesson-note-label {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 17px;
-            letter-spacing: -0.6px;
-            margin-bottom: 8px;
-            font-weight: 300 !important;
-        }
-        .lesson-note-input {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 16px;
-            background: var(--secondary-bg-color);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 15px;
-            letter-spacing: -0.6px;
-            color: var(--text-color);
-            resize: vertical;
-            min-height: 80px;
-            outline: none;
-            transition: background 0.3s;
-            font-weight: 300 !important;
-        }
-        .lesson-note-input:focus { background: var(--section-bg-color); }
-        .lesson-note-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        .btn-save-note {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 15px;
-            letter-spacing: -0.6px;
-            color: white;
-            background: var(--link-color);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.15s;
-            font-weight: 300 !important;
-        }
-        .btn-save-note:disabled { opacity: 0.5; }
-        .btn-save-note:active { opacity: 0.8; transform: scale(0.96); }
-        .save-success {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 14px;
-            letter-spacing: -0.6px;
-            color: #34c759;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: 300 !important;
-        }
-        .save-success .material-symbols-outlined {
-            font-size: 16px;
-        }
-        .btn-attach-photo {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 15px;
-            letter-spacing: -0.6px;
-            color: var(--text-color);
-            background: var(--section-bg-color);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            padding: 12px 16px;
-            border-radius: 9999px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            transition: background 0.2s, transform 0.15s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-weight: 300 !important;
-        }
-        .btn-attach-photo:active { transform: scale(0.97); }
-        .btn-attach-photo .material-symbols-outlined {
-            font-size: 20px;
-        }
-
-        /* ============================================================
-           БОЛЬШЕ
-           ============================================================ */
-        .more-list { padding: 16px; }
-        .more-section { margin-bottom: 24px; }
-        .more-section-title {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 13px;
-            letter-spacing: -0.6px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            font-weight: 300 !important;
-        }
-        .more-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--secondary-bg-color);
-            border-radius: 12px;
-            margin-bottom: 4px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 16px;
-            letter-spacing: -0.6px;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: background 0.2s, transform 0.15s;
-            font-weight: 300 !important;
-        }
-        .more-item:active { background: var(--section-bg-color); transform: scale(0.97); }
-        .more-item .icon-bg {
-            width: 28px;
-            height: 28px;
-            border-radius: 7px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--link-color);
-            color: white;
-            flex-shrink: 0;
-        }
-        .more-item .icon-bg .material-symbols-outlined {
-            font-size: 18px;
-            color: white;
-        }
-
-        /* ============================================================
-           НАВБАР (iOS и Android) — оставлен без изменений, как просили
-           ============================================================ */
-        .app-nav-bar {
-            bottom: 0;
-            left: 0;
-            position: fixed;
-            right: 0;
-            z-index: 1000;
-            --app-nav-bar-selector-transition-duration: 0.2s;
-            --sum-inset-bottom: env(safe-area-inset-bottom, 0px);
-            padding-bottom: calc(var(--sum-inset-bottom) + var(--ios-safe-area-bottom));
-            padding-left: var(--sum-inset-left);
-            padding-right: var(--sum-inset-right);
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-        }
-        .app-nav-bar>* { pointer-events: auto; }
-
-        .app-nav-bar__panel {
-            border-radius: 1000px;
-            height: 64px;
-            margin: 0 auto 1px;
-            max-width: 100%;
-            padding: 3px;
-            position: relative;
-            width: fit-content;
-        }
-        .app-nav-bar__panel--ios {
-            -webkit-backdrop-filter: blur(15px);
-            backdrop-filter: blur(15px);
-            background-color: var(--section-bg-color);
-            box-shadow: 0 0 10px rgba(0,0,0,0.1), var(--glass-box-shadow);
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-                        background-color 0.2s ease-out;
-        }
-
-        .app-nav-bar__list {
-            align-items: center;
-            border-radius: inherit;
-            display: flex;
-            height: 100%;
-            justify-content: center;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            position: relative;
-            z-index: 2;
-            gap: 0;
-        }
-
-        .app-nav-bar__item {
-            align-items: center;
-            border-radius: inherit;
-            color: var(--text-color);
-            cursor: pointer;
-            display: flex;
-            flex: 1 0 auto;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 0;
-            min-width: 82px;
-            padding: 0 12px;
-            position: relative;
-            text-decoration: none;
-            transition: color 0.2s ease-out;
-            z-index: 2;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .app-nav-bar__item--active {
-            color: var(--link-color);
-        }
-
-        .app-nav-bar__item-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 28px;
-            width: 28px;
-            position: relative;
-            flex-shrink: 0;
-        }
-        .app-nav-bar__item-icon svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-            fill: currentColor;
-        }
-
-        .app-nav-bar__item-icon .nav-icon-img {
-            width: 100%;
-            height: 100%;
-            display: block;
-            transition: filter 0.2s ease;
-        }
-        .app-nav-bar__item:not(.app-nav-bar__item--active) .app-nav-bar__item-icon .nav-icon-img {
-            filter: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
-        }
-        [data-theme="dark"] .app-nav-bar__item:not(.app-nav-bar__item--active) .app-nav-bar__item-icon .nav-icon-img {
-            filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
-        }
-        .app-nav-bar__item--active .app-nav-bar__item-icon .nav-icon-img {
-            filter: brightness(0) saturate(100%) invert(27%) sepia(89%) saturate(5000%) hue-rotate(205deg) brightness(100%) contrast(105%);
-        }
-        [data-theme="dark"] .app-nav-bar__item--active .app-nav-bar__item-icon .nav-icon-img {
-            filter: brightness(0) saturate(100%) invert(36%) sepia(89%) saturate(5000%) hue-rotate(195deg) brightness(100%) contrast(110%);
-        }
-
-        .app-nav-bar__item-title {
-            font-family: -apple-system, "SF Pro", BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-            font-size: 10px;
-            font-weight: 510;
-            line-height: 12px;
-            letter-spacing: 0.2px;
-            margin-top: 1px;
-            text-align: center;
-        }
-        .app-nav-bar__item--active .app-nav-bar__item-title {
-            font-weight: 590;
-        }
-
-        .app-nav-bar__selector {
-            border-radius: inherit;
-            bottom: 3.7px;
-            left: 3px;
-            position: absolute;
-            top: 3.7px;
-            transition: transform var(--app-nav-bar-selector-transition-duration) ease-out,
-                        width var(--app-nav-bar-selector-transition-duration) ease-out;
-            z-index: 0;
-            will-change: transform, width;
-            width: 60px;
-            transform: translateX(3px);
-        }
-        .app-nav-bar__selector-inner {
-            background: var(--tertiary-fill-background);
-            border-radius: inherit;
-            height: 100%;
-            transition: all var(--app-nav-bar-selector-transition-duration) ease-out;
-            width: 100%;
-            will-change: transform;
-        }
-        .app-nav-bar__selector-inner--ios-moving {
-            background: transparent;
-            transform: scale(1.2, 1.1);
-        }
-        .app-nav-bar__selector-border {
-            border: 1px solid var(--text-color);
-            border-radius: inherit;
-            height: 100%;
-            opacity: 0;
-            transition: opacity var(--app-nav-bar-selector-transition-duration) ease-out;
-            width: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-        }
-        .app-nav-bar__selector-border--ios-moving {
-            opacity: 0.4;
-        }
-
-        /* Android NavBar */
-        [data-platform="android"] .app-nav-bar {
-            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0px);
-        }
-        [data-platform="android"] .app-nav-bar__panel {
-            border-radius: 0;
-            height: 72px;
-            margin: 0;
-            max-width: 100%;
-            padding: 0 8px;
-            width: 100%;
-            background-color: var(--android-surface-container-low);
-            box-shadow: 0 -1px 3px rgba(0,0,0,0.05);
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-            border-top: 1px solid color-mix(in srgb, var(--android-outline) 15%, transparent);
-        }
-        [data-platform="android"] .app-nav-bar__list {
-            gap: 4px;
-            justify-content: space-around;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        [data-platform="android"] .app-nav-bar__item {
-            border-radius: 100px;
-            min-width: 56px;
-            padding: 4px 12px;
-            flex: 1;
-            max-width: 120px;
-            color: var(--android-on-surface-variant);
-            transition: all 0.2s ease;
-        }
-        [data-platform="android"] .app-nav-bar__item--active {
-            color: var(--android-primary);
-        }
-        [data-platform="android"] .app-nav-bar__item-icon {
-            height: 28px;
-            width: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        [data-platform="android"] .app-nav-bar__item-icon .material-symbols-outlined {
-            font-size: 24px;
-            font-variation-settings: 'FILL' 0, 'wght' 400;
-            transition: font-variation-settings 0.2s ease;
-        }
-        [data-platform="android"] .app-nav-bar__item--active .app-nav-bar__item-icon .material-symbols-outlined {
-            font-variation-settings: 'FILL' 1, 'wght' 500;
-        }
-        [data-platform="android"] .app-nav-bar__item-icon .nav-icon-img {
-            width: 24px;
-            height: 24px;
-            display: block;
-            transition: filter 0.2s ease;
-        }
-        [data-platform="android"] .app-nav-bar__item:not(.app-nav-bar__item--active) .app-nav-bar__item-icon .nav-icon-img {
-            filter: brightness(0) saturate(100%) invert(27%) sepia(0%) saturate(1000%) hue-rotate(0deg) brightness(100%) contrast(90%);
-        }
-        [data-platform="android"] .app-nav-bar__item--active .app-nav-bar__item-icon .nav-icon-img {
-            filter: brightness(0) saturate(100%) invert(34%) sepia(89%) saturate(5000%) hue-rotate(205deg) brightness(100%) contrast(105%);
-        }
-        [data-platform="android"][data-theme="dark"] .app-nav-bar__item:not(.app-nav-bar__item--active) .app-nav-bar__item-icon .nav-icon-img {
-            filter: brightness(0) saturate(100%) invert(80%) sepia(0%) saturate(1000%) hue-rotate(0deg) brightness(100%) contrast(90%);
-        }
-        [data-platform="android"][data-theme="dark"] .app-nav-bar__item--active .app-nav-bar__item-icon .nav-icon-img {
-            filter: brightness(0) saturate(100%) invert(68%) sepia(89%) saturate(5000%) hue-rotate(195deg) brightness(100%) contrast(110%);
-        }
-        [data-platform="android"] .app-nav-bar__item-title {
-            font-family: 'Roboto', -apple-system, sans-serif;
-            font-size: 11px;
-            font-weight: 500;
-            line-height: 14px;
-            letter-spacing: 0.3px;
-            margin-top: 0px;
-        }
-        [data-platform="android"] .app-nav-bar__item--active .app-nav-bar__item-title {
-            font-weight: 600;
-        }
-        [data-platform="android"] .app-nav-bar__selector {
-            display: none;
-        }
-        [data-platform="android"] .app-nav-bar__item {
-            position: relative;
-            overflow: hidden;
-        }
-        [data-platform="android"] .app-nav-bar__item::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 100px;
-            background: var(--android-primary);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-        [data-platform="android"] .app-nav-bar__item:active::after {
-            opacity: 0.12;
-        }
-        [data-platform="android"] .app-nav-bar__item--active::after {
-            opacity: 0.08;
-        }
-        @media (max-width: 480px) {
-            [data-platform="android"] .app-nav-bar__item {
-                min-width: 44px;
-                padding: 4px 8px;
-            }
-            [data-platform="android"] .app-nav-bar__item-icon {
-                height: 24px;
-                width: 24px;
-            }
-            [data-platform="android"] .app-nav-bar__item-icon .material-symbols-outlined {
-                font-size: 20px;
-            }
-            [data-platform="android"] .app-nav-bar__item-icon .nav-icon-img {
-                width: 20px;
-                height: 20px;
-            }
-            [data-platform="android"] .app-nav-bar__item-title {
-                font-size: 10px;
-                line-height: 12px;
-            }
-            [data-platform="android"] .app-nav-bar__panel {
-                height: 64px;
-                padding: 0 4px;
-            }
-        }
-
-        @media (max-width: 380px) {
-            .app-nav-bar__item { min-width: 56px; padding: 0 6px; }
-            .app-nav-bar__item-title { font-size: 9px; line-height: 10px; }
-            .app-nav-bar__item-icon { height: 24px; width: 24px; }
-            .app-nav-bar__panel { height: 56px; }
-        }
-        @media (min-width: 600px) {
-            .app-nav-bar__item { min-width: 90px; padding: 0 16px; }
-            .app-nav-bar__item-title { font-size: 11px; line-height: 13px; }
-            .app-nav-bar__item-icon { height: 30px; width: 30px; }
-        }
-
-        @keyframes navAppear {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .app-nav-bar {
-            animation: navAppear 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        [data-platform="android"] .app-nav-bar {
-            animation: none;
-        }
-
-        /* ============================================================
-           MATERIAL ICONS НАСТРОЙКИ
-           ============================================================ */
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            font-size: 24px;
-            line-height: 1;
-        }
-        .material-symbols-outlined.filled {
-            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-
-        /* ============================================================
-           УБИРАЕМ ПУСТЫЕ ПРОСТРАНСТВА В НАЧАЛЕ ПИКЕРОВ
-           ============================================================ */
-        .category-scroll-inner,
-        .day-scroll-inner {
-            padding-left: 0 !important;
-        }
-    </style>
+    /* конфетти-контейнер */
+    .confetti-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 200;
+      overflow: hidden;
+    }
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      opacity: 0.9;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+    .success-icon {
+      font-size: 5rem;
+      animation: pop 0.5s ease;
+    }
+    @keyframes pop {
+      0% { transform: scale(0.3); opacity: 0; }
+      70% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
 </head>
-<body>
+<body data-theme="light">
 
-    <!-- ============================================================
-    СПЛЕШСКРИН
-    ============================================================ -->
-    <div id="splashScreen">
-        <div class="splash-ascii" id="splashAscii"></div>
+  <!-- Основной контент (только Обзор) -->
+  <div class="max-w-3xl mx-auto px-4 pt-5 pb-4" id="mainContent">
+    <div class="flex flex-col gap-4">
+      <div class="card">
+        <div class="text-sm text-[var(--color-on-surface-variant)]">Следующая проверка</div>
+        <div id="countdownDisplay" class="text-4xl font-light tracking-wider text-[var(--color-primary)]" style="font-variant-numeric:tabular-nums;">--:--:--</div>
+        <div class="text-xs text-[var(--color-on-surface-variant)] mt-1">ежедневно в 12:00</div>
+      </div>
+
+      <div class="card-soft text-sm text-[var(--color-on-surface-variant)] leading-relaxed">
+        <p>Ваш телефон очищается самостоятельно. Умная система очистки удаляет мусор и проверяет каждое приложение на вирусы.</p>
+      </div>
+
+      <!-- статистика -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="card-soft"><div class="text-xs text-[var(--color-on-surface-variant)]">Приложений проверено</div><div class="text-3xl font-light">13</div></div>
+        <div class="card-soft"><div class="text-xs text-[var(--color-on-surface-variant)]">Последняя очистка</div><div id="lastClean" class="text-xl font-normal">сегодня, 11:58</div></div>
+      </div>
+
+      <!-- список приложений -->
+      <div>
+        <div class="flex justify-between mb-2"><span class="text-sm font-medium text-[var(--color-on-surface-variant)]">Проверенные приложения</span><span class="text-xs text-[var(--color-on-surface-variant)]">✓ защищены</span></div>
+        <div id="appList" class="flex flex-wrap gap-1"></div>
+      </div>
+
+      <!-- кнопки -->
+      <div class="flex flex-wrap gap-3 mt-2">
+        <button id="cleanBtn" class="btn-m3"><span class="material-symbols-outlined text-base">refresh</span> Очистить ещё раз</button>
+        <button id="virusBtn" class="btn-m3-outline"><span class="material-symbols-outlined text-base">bug_report</span> Проверить на вирусы</button>
+      </div>
+      <p id="actionFeedback" class="text-xs text-[var(--color-on-surface-variant)] italic h-5"></p>
     </div>
+  </div>
 
-    <!-- ============================================================
-    ПРИЛОЖЕНИЕ
-    ============================================================ -->
-    <div id="app">
-        <div class="demo-content" id="appContent">
+  <!-- Вкладка О защите (скрыта, переключается через навигацию) -->
+  <div id="securityContent" class="tab-content max-w-3xl mx-auto px-4 pt-5 pb-4">
+    <div class="flex flex-col gap-5">
+      <div class="card-soft flex items-center gap-3">
+        <span class="material-symbols-outlined text-3xl text-[var(--color-primary)]">account_circle</span>
+        <div><div class="font-medium">Пользователь</div><div class="text-lg">Владимир</div></div>
+      </div>
 
-            <!-- Страница ЛИнТех -->
-            <div class="page-container active" id="page-linteh">
-                <div class="page-content" id="lintehContent"></div>
-            </div>
+      <div class="text-sm font-medium text-[var(--color-on-surface-variant)]">Устройства под защитой</div>
+      <!-- Телефон -->
+      <div class="device-card">
+        <div class="device-icon"><span class="material-symbols-outlined text-3xl">smartphone</span></div>
+        <div class="flex-1"><div class="font-medium">Этот телефон</div><div class="text-xs text-[var(--color-on-surface-variant)]">Защита активна · онлайн</div></div>
+        <span class="text-xs bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] px-3 py-1 rounded-full">активен</span>
+      </div>
+      <!-- Samsung TV -->
+      <div class="device-card">
+        <div class="device-icon"><span class="material-symbols-outlined text-3xl">tv</span></div>
+        <div class="flex-1"><div class="font-medium">Samsung TV</div><div class="text-xs text-[var(--color-on-surface-variant)]">Защита активна · онлайн</div></div>
+        <span class="text-xs bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] px-3 py-1 rounded-full">активен</span>
+      </div>
 
-            <!-- Страница Календарь (Расписание) -->
-            <div class="page-container" id="page-schedule">
-                <div id="scheduleView" style="flex:1;"></div>
-            </div>
-
-            <!-- Страница Обзор (Больше) -->
-            <div class="page-container" id="page-more">
-                <div class="page-content" id="moreContent"></div>
-            </div>
-
-        </div>
+      <div class="card-soft text-sm text-[var(--color-on-surface-variant)]">
+        <span class="material-symbols-outlined text-base align-middle">verified</span> Все устройства защищены. Вирусы не обнаружены.
+      </div>
     </div>
-
-    <!-- ============================================================
-    NAV BAR iOS
-    ============================================================ -->
-    <nav class="app-nav-bar ios-navbar" role="navigation" aria-label="Навигация">
-        <div class="app-nav-bar__panel app-nav-bar__panel--ios">
-            <ul class="app-nav-bar__list" id="navList">
-                <li class="app-nav-bar__item app-nav-bar__item--active" data-index="0" role="tab" aria-selected="true">
-                    <div class="app-nav-bar__item-icon">
-                        <img src="liceum.svg" alt="ЛИнТех" class="nav-icon-img">
-                    </div>
-                    <span class="app-nav-bar__item-title">ЛИнТех</span>
-                </li>
-                <li class="app-nav-bar__item" data-index="1" role="tab" aria-selected="false">
-                    <div class="app-nav-bar__item-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="255 -1759 2260 1959" width="28" height="28" fill="currentColor">
-                            <path d="M2169 -1066C2358 -1066 2515 -1222 2515 -1413C2515 -1603 2358 -1759 2169 -1759C1978 -1759 1822 -1603 1822 -1413C1822 -1222 1978 -1066 2169 -1066ZM569 200H1935C2144 200 2248 96 2248 -110V-937C2221 -931 2195 -929 2168 -929C2140 -929 2113 -931 2087 -937V-101C2087 -8 2037 39 1948 39H554C465 39 416 -8 416 -101V-1044C416 -1136 465 -1184 554 -1184H1743C1706 -1252 1685 -1330 1685 -1413C1685 -1495 1706 -1573 1743 -1641H569C360 -1641 255 -1538 255 -1331V-110C255 97 360 200 569 200ZM1056 -825H1115C1150 -825 1162 -835 1162 -870V-929C1162 -964 1150 -975 1115 -975H1056C1021 -975 1009 -964 1009 -929V-870C1009 -835 1021 -825 1056 -825ZM1389 -825H1447C1482 -825 1494 -835 1494 -870V-929C1494 -964 1482 -975 1447 -975H1389C1353 -975 1342 -964 1342 -929V-870C1342 -835 1353 -825 1389 -825ZM1721 -825H1780C1815 -825 1826 -835 1826 -870V-929C1826 -964 1815 -975 1780 -975H1721C1686 -975 1674 -964 1674 -929V-870C1674 -835 1686 -825 1721 -825ZM724 -498H783C818 -498 829 -508 829 -543V-602C829 -637 818 -647 783 -647H724C689 -647 677 -637 677 -602V-543C677 -508 689 -498 724 -498ZM1056 -498H1115C1150 -498 1162 -508 1162 -543V-602C1162 -637 1150 -647 1115 -647H1056C1021 -647 1009 -637 1009 -602V-543C1009 -508 1021 -498 1056 -498ZM1389 -498H1447C1482 -498 1494 -508 1494 -543V-602C1494 -637 1482 -647 1447 -647H1389C1353 -647 1342 -637 1342 -602V-543C1342 -508 1353 -498 1389 -498ZM1721 -498H1780C1815 -498 1826 -508 1826 -543V-602C1826 -637 1815 -647 1780 -647H1721C1686 -647 1674 -637 1674 -602V-543C1674 -508 1686 -498 1721 -498ZM724 -170H783C818 -170 829 -181 829 -216V-275C829 -310 818 -320 783 -320H724C689 -320 677 -310 677 -275V-216C677 -181 689 -170 724 -170ZM1056 -170H1115C1150 -170 1162 -181 1162 -216V-275C1162 -310 1150 -320 1115 -320H1056C1021 -320 1009 -310 1009 -275V-216C1009 -181 1021 -170 1056 -170ZM1389 -170H1447C1482 -170 1494 -181 1494 -216V-275C1494 -310 1482 -320 1447 -320H1389C1353 -320 1342 -310 1342 -275V-216C1342 -181 1353 -170 1389 -170Z"/>
-                        </svg>
-                    </div>
-                    <span class="app-nav-bar__item-title">Календарь</span>
-                </li>
-                <li class="app-nav-bar__item" data-index="2" role="tab" aria-selected="false">
-                    <div class="app-nav-bar__item-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="255 -1742 2111 2040" width="28" height="28" fill="currentColor">
-                            <path d="M912 -1193C929 -1193 943 -1204 946 -1222C980 -1404 975 -1398 1157 -1434C1175 -1437 1187 -1451 1187 -1468C1187 -1485 1175 -1498 1157 -1501C975 -1537 980 -1531 946 -1713C943 -1731 929 -1742 912 -1742C895 -1742 881 -1731 878 -1713C844 -1537 849 -1537 667 -1501C649 -1498 637 -1485 637 -1468C637 -1451 649 -1437 667 -1434C849 -1398 844 -1404 878 -1222C881 -1204 895 -1193 912 -1193ZM2326 -1158C2326 -1419 2114 -1631 1852 -1631C1623 -1631 1432 -1467 1390 -1250C1410 -1253 1430 -1254 1451 -1254C1719 -1254 1936 -1037 1936 -769C1936 -742 1934 -717 1930 -693C2154 -729 2326 -923 2326 -1158ZM520 -639C664 -639 784 -758 784 -904C784 -1048 664 -1167 520 -1167C374 -1167 255 -1048 255 -904C255 -758 374 -639 520 -639ZM1451 -400C1655 -400 1820 -564 1820 -769C1820 -973 1655 -1138 1451 -1138C1247 -1138 1082 -973 1082 -769C1082 -564 1247 -400 1451 -400ZM1998 298C2019 298 2037 282 2040 260C2072 20 2073 22 2328 -27C2350 -31 2366 -48 2366 -69C2366 -91 2350 -107 2327 -111C2076 -147 2071 -151 2040 -397C2038 -420 2020 -436 1998 -436C1975 -436 1958 -419 1956 -396C1926 -156 1921 -159 1667 -111C1645 -106 1630 -89 1630 -69C1630 -47 1646 -31 1671 -27C1921 14 1926 18 1956 258C1958 281 1975 298 1998 298ZM910 266C1065 266 1193 138 1193 -19C1193 -174 1065 -302 910 -302C753 -302 625 -174 625 -19C625 138 753 266 910 266Z"/>
-                        </svg>
-                    </div>
-                    <span class="app-nav-bar__item-title">Обзор</span>
-                </li>
-            </ul>
-            <div class="app-nav-bar__selector" id="navSelector">
-                <div class="app-nav-bar__selector-inner" id="selectorInner"></div>
-                <div class="app-nav-bar__selector-border" id="selectorBorder"></div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- ============================================================
-    NAV BAR Android
-    ============================================================ -->
-    <nav class="app-nav-bar android-navbar" role="navigation" aria-label="Навигация" style="display:none;">
-        <div class="app-nav-bar__panel">
-            <ul class="app-nav-bar__list" id="androidNavList">
-                <li class="app-nav-bar__item app-nav-bar__item--active" data-index="0" role="tab" aria-selected="true">
-                    <div class="app-nav-bar__item-icon">
-                        <img src="liceum.svg" alt="ЛИнТех" class="nav-icon-img">
-                    </div>
-                    <span class="app-nav-bar__item-title">ЛИнТех</span>
-                </li>
-                <li class="app-nav-bar__item" data-index="1" role="tab" aria-selected="false">
-                    <div class="app-nav-bar__item-icon">
-                        <span class="material-symbols-outlined">calendar_month</span>
-                    </div>
-                    <span class="app-nav-bar__item-title">Календарь</span>
-                </li>
-                <li class="app-nav-bar__item" data-index="2" role="tab" aria-selected="false">
-                    <div class="app-nav-bar__item-icon">
-                        <span class="material-symbols-outlined">dashboard</span>
-                    </div>
-                    <span class="app-nav-bar__item-title">Обзор</span>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- ============================================================
-    JAVASCRIPT
-    ============================================================ -->
-    <script>
-        (function() {
-            'use strict';
-
-            // Определение платформы
-            const isAndroid = /android/i.test(navigator.userAgent);
-            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (!isAndroid && /mac/i.test(navigator.userAgent));
-
-            const html = document.documentElement;
-            if (isAndroid) html.setAttribute('data-platform', 'android');
-            else if (isIOS) html.setAttribute('data-platform', 'ios');
-
-            // Показываем нужный навбар
-            const iosNavbar = document.querySelector('.ios-navbar');
-            const androidNavbar = document.querySelector('.android-navbar');
-            if (isAndroid) {
-                if (iosNavbar) iosNavbar.style.display = 'none';
-                if (androidNavbar) androidNavbar.style.display = 'flex';
-            } else {
-                if (iosNavbar) iosNavbar.style.display = 'flex';
-                if (androidNavbar) androidNavbar.style.display = 'none';
-            }
-
-            // ============================================================
-            // 1. СПЛЕШСКРИН
-            // ============================================================
-            const splashArt = [
-                "                        000                 ",
-                "                     000000                 ",
-                "                 0000000000                 ",
-                "              0000000000000                 ",
-                "           0000000000000000                 ",
-                "         000000000000000000                 ",
-                "         000000000000000000                 ",
-                "      0000 0000000000000000       0000      ",
-                "   0000000    0000000000000       0000000   ",
-                "0000000000        000000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "0000000000         00000000       0000000000",
-                "                                            "
-            ];
-
-            function renderSplash() {
-                const container = document.getElementById('splashAscii');
-                container.innerHTML = '';
-                const zeroCells = [];
-                for (const line of splashArt) {
-                    const row = document.createElement('div');
-                    row.className = 'splash-row';
-                    for (const ch of line) {
-                        const cell = document.createElement('span');
-                        cell.className = 'splash-char';
-                        if (ch === '0') {
-                            cell.textContent = '0';
-                            zeroCells.push(cell);
-                        } else {
-                            cell.textContent = ' ';
-                            cell.classList.add('space');
-                        }
-                        row.appendChild(cell);
-                    }
-                    container.appendChild(row);
-                }
-                return zeroCells;
-            }
-
-            function runSplashAnimation(cells) {
-                const shuffled = [...cells];
-                for (let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                }
-                let idx = 0;
-                const total = shuffled.length;
-                const startTime = performance.now();
-                const duration = 3300;
-
-                function next() {
-                    const elapsed = performance.now() - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const eased = progress * progress;
-                    const batch = Math.round(1 + (25 - 1) * eased);
-                    const actual = Math.min(batch, shuffled.length - idx);
-                    for (let i = 0; i < actual; i++) {
-                        shuffled[idx + i].classList.add('revealed');
-                    }
-                    idx += actual;
-                    if (idx < shuffled.length) {
-                        const remaining = 1 - progress;
-                        const interval = Math.max(5, 20 * (0.5 + remaining * 0.5));
-                        setTimeout(next, interval);
-                    } else {
-                        setTimeout(() => {
-                            document.getElementById('splashScreen').classList.add('hidden');
-                            document.getElementById('app').classList.add('active');
-                        }, 400);
-                    }
-                }
-                setTimeout(next, 100);
-            }
-
-            // ============================================================
-            // 2. ДАННЫЕ
-            // ============================================================
-            const postsData = [
-                { title: "День знаний в лицее", desc: "В лицее прошла торжественная линейка, посвященная Дню знаний. Ученики и учителя встретили новый учебный год.", time: "2 часа назад" },
-                { title: "Новая библиотека открыта", desc: "В лицее открылась новая библиотека с современными учебниками и электронными ресурсами.", time: "4 часа назад" },
-                { title: "Выпускной вечер", desc: "Выпускники лицея простились со школой. Впереди - поступление в университеты и новая жизнь.", time: "6 часов назад" },
-                { title: "Олимпиада по математике", desc: "Ученики лицея заняли призовые места на городской олимпиаде по математике.", time: "8 часов назад" },
-                { title: "Осенний бал", desc: "В лицее прошел традиционный осенний бал. Ученики готовили номера и танцы.", time: "10 часов назад" },
-                { title: "День учителя", desc: "Ученики поздравили учителей с профессиональным праздником, подготовили концерт.", time: "12 часов назад" },
-                { title: "Спортивные соревнования", desc: "Команда лицея заняла первое место в городских спортивных соревнованиях.", time: "14 часов назад" },
-                { title: "Экскурсия в музей", desc: "Ученики лицея посетили исторический музей в рамках учебной программы.", time: "16 часов назад" }
-            ];
-
-            const categories = ["ЛЕНТА", "МЕРЧ", "ДАЖ", "ЭНДАУМЕНТ-ФОНД"];
-            const days = ["ПНД", "ВТР", "СРД", "ЧТВ", "ПТН"];
-            const lessonsData = [
-                { name: "Русский язык", room: "Кабинет 101", time: "09:00" },
-                { name: "Математика", room: "Кабинет 205", time: "09:50" },
-                { name: "Английский язык", room: "Кабинет 310", time: "10:50" },
-                { name: "Физика", room: "Кабинет 412", time: "11:40" },
-                { name: "История", room: "Кабинет 108", time: "12:40" }
-            ];
-
-            const moreItems = {
-                "Настройки": [
-                    { icon: "person", label: "Профиль" },
-                    { icon: "settings", label: "Настройки" },
-                    { icon: "info", label: "О приложении" }
-                ],
-                "Другое": [
-                    { icon: "help", label: "Помощь" },
-                    { icon: "logout", label: "Выйти", danger: true }
-                ]
-            };
-
-            // ============================================================
-            // 3. РЕНДЕР ЛЕНТЫ
-            // ============================================================
-            function getTodayDate() {
-                const d = new Date();
-                const day = d.getDate();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                return day + '.' + month;
-            }
-
-            function getDateParts() {
-                return getTodayDate().split('').map(ch => ({
-                    char: ch,
-                    isDigit: /\d/.test(ch)
-                }));
-            }
-
-            function renderLinteh(selectedCategory) {
-                const container = document.getElementById('lintehContent');
-                if (!container) return;
-                const dateParts = getDateParts();
-                let html = '';
-
-                html += `<div class="date-display">`;
-                for (const p of dateParts) {
-                    if (p.isDigit) {
-                        html += `<span class="date-digit">${p.char}</span>`;
-                    } else {
-                        html += `<span class="date-dot">${p.char}</span>`;
-                    }
-                }
-                html += `</div>`;
-
-                html += `<div class="subtitle">Удачи в доме с двумя пятерками!</div>`;
-
-                html += `<div class="category-scroll"><div class="category-scroll-inner">`;
-                for (const cat of categories) {
-                    const active = cat === selectedCategory ? 'active' : '';
-                    html += `<button class="category-btn ${active}" data-cat="${cat}">${cat}</button>`;
-                }
-                html += `</div></div>`;
-
-                if (selectedCategory === 'ЛЕНТА') {
-                    for (const post of postsData) {
-                        html += `
-                            <div class="post-card">
-                                <div class="post-image"><span class="material-symbols-outlined">image</span></div>
-                                <div class="post-title">${post.title}</div>
-                                <div class="post-desc">${post.desc}</div>
-                                <div class="post-actions">
-                                    <div class="glass-pill">
-                                        <button class="like-btn" data-liked="false"><span class="material-symbols-outlined">thumb_up</span></button>
-                                        <button class="dislike-btn" data-disliked="false"><span class="material-symbols-outlined">thumb_down</span></button>
-                                    </div>
-                                    <button class="glass-btn"><span class="material-symbols-outlined">chat_bubble</span></button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                } else {
-                    html += `
-                        <div style="text-align:center;padding:60px 0;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;font-size:16px;letter-spacing:-0.6px;font-weight:300;">
-                            <div style="font-size:50px;margin-bottom:16px;"><span class="material-symbols-outlined" style="font-size:50px;">schedule</span></div>
-                            ${selectedCategory} — скоро здесь появится контент
-                        </div>
-                    `;
-                }
-
-                container.innerHTML = html;
-
-                container.querySelectorAll('.category-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const cat = this.dataset.cat;
-                        renderLinteh(cat);
-                    });
-                });
-
-                container.querySelectorAll('.like-btn').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const liked = this.dataset.liked === 'true';
-                        this.dataset.liked = liked ? 'false' : 'true';
-                        this.classList.toggle('liked');
-                    });
-                });
-                container.querySelectorAll('.dislike-btn').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const disliked = this.dataset.disliked === 'true';
-                        this.dataset.disliked = disliked ? 'false' : 'true';
-                        this.classList.toggle('disliked');
-                    });
-                });
-
-                container.querySelectorAll('.post-card').forEach((card, idx) => {
-                    card.addEventListener('click', function(e) {
-                        if (e.target.closest('.post-actions')) return;
-                        const post = postsData[idx % postsData.length];
-                        alert(`${post.title}\n\n${post.desc}\n\n${post.time}`);
-                    });
-                });
-            }
-
-            // ============================================================
-            // 4. РАСПИСАНИЕ — Wheel picker
-            // ============================================================
-            let scheduleState = {
-                classSelected: false,
-                grade: 9,
-                letter: 'Е',
-                selectedDay: 'ПНД'
-            };
-
-            function wheelItems(picker) {
-                return picker.querySelectorAll('.wheel-item');
-            }
-
-            function closestWheelItem(picker) {
-                const items = wheelItems(picker);
-                const center = picker.scrollTop + picker.clientHeight / 2;
-                let closest = null;
-                let closestDist = Infinity;
-                items.forEach(item => {
-                    const itemCenter = item.offsetTop + item.clientHeight / 2;
-                    const dist = Math.abs(center - itemCenter);
-                    if (dist < closestDist) {
-                        closestDist = dist;
-                        closest = item;
-                    }
-                });
-                return closest;
-            }
-
-            function markActiveWheelItem(picker) {
-                const closest = closestWheelItem(picker);
-                wheelItems(picker).forEach(item => {
-                    item.classList.toggle('active', item === closest);
-                });
-            }
-
-            function scrollWheelTo(picker, value, animated) {
-                const target = [...wheelItems(picker)].find(el => el.dataset.value === String(value));
-                if (!target) return;
-                const top = target.offsetTop - picker.clientHeight / 2 + target.clientHeight / 2;
-                picker.scrollTo({ top, behavior: animated ? 'smooth' : 'auto' });
-                markActiveWheelItem(picker);
-            }
-
-            function createWheelPicker(containerId, items, selectedValue, onSelect) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                container.innerHTML = '';
-
-                const picker = document.createElement('div');
-                picker.className = 'wheel-picker';
-                container.appendChild(picker);
-
-                items.forEach(val => {
-                    const item = document.createElement('div');
-                    item.className = 'wheel-item';
-                    item.textContent = val;
-                    item.dataset.value = val;
-                    item.addEventListener('click', function() {
-                        scrollWheelTo(picker, this.dataset.value, true);
-                        onSelect(this.dataset.value);
-                    });
-                    picker.appendChild(item);
-                });
-
-                requestAnimationFrame(() => scrollWheelTo(picker, selectedValue, false));
-
-                let settleTimeout;
-                picker.addEventListener('scroll', function() {
-                    markActiveWheelItem(picker);
-                    clearTimeout(settleTimeout);
-                    settleTimeout = setTimeout(() => {
-                        const closest = closestWheelItem(picker);
-                        if (closest) onSelect(closest.dataset.value);
-                    }, 120);
-                }, { passive: true });
-            }
-
-            function renderSchedule() {
-                const container = document.getElementById('scheduleView');
-                if (!container) return;
-
-                if (!scheduleState.classSelected) {
-                    container.innerHTML = `
-                        <div class="schedule-class-select">
-                            <h2>Выбери класс</h2>
-                            <div class="wheel-picker-row">
-                                <div id="gradePicker" class="wheel-picker-col"></div>
-                                <span class="wheel-separator">·</span>
-                                <div id="letterPicker" class="wheel-picker-col"></div>
-                            </div>
-                            <div class="schedule-class-display">${scheduleState.grade} «${scheduleState.letter}»</div>
-                            <div class="schedule-hint">Приложение подскажет расписание, когда закончится или начнется урок — а еще можно удобно написать что-то для себя в Заметки урока</div>
-                            <button class="btn-primary" id="scheduleContinue">ПРОДОЛЖИТЬ</button>
-                        </div>
-                    `;
-
-                    const grades = [5, 6, 7, 8, 9, 10, 11].map(String);
-                    const letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е'];
-
-                    createWheelPicker('gradePicker', grades, String(scheduleState.grade), function(val) {
-                        scheduleState.grade = parseInt(val, 10);
-                        document.querySelector('.schedule-class-display').textContent = `${scheduleState.grade} «${scheduleState.letter}»`;
-                    });
-
-                    createWheelPicker('letterPicker', letters, scheduleState.letter, function(val) {
-                        scheduleState.letter = val;
-                        document.querySelector('.schedule-class-display').textContent = `${scheduleState.grade} «${scheduleState.letter}»`;
-                    });
-
-                    document.getElementById('scheduleContinue').addEventListener('click', function() {
-                        scheduleState.classSelected = true;
-                        renderSchedule();
-                    });
-                    return;
-                }
-
-                let html = `
-                    <div class="schedule-nav">
-                        <button class="schedule-nav-back" id="scheduleBack">
-                            <span class="material-symbols-outlined">arrow_back</span>
-                            Назад
-                        </button>
-                        <button class="schedule-nav-help" id="scheduleHelp">
-                            <span class="material-symbols-outlined">help</span>
-                        </button>
-                    </div>
-                    <div class="schedule-content">
-                        <div class="schedule-timer-label">ДО КОНЦА УРОКА</div>
-                        <div class="schedule-big-number">23</div>
-                        <div class="day-scroll"><div class="day-scroll-inner">
-                `;
-                for (const d of days) {
-                    const active = d === scheduleState.selectedDay ? 'active' : '';
-                    html += `<button class="day-btn ${active}" data-day="${d}">${d}</button>`;
-                }
-                html += `</div></div>`;
-
-                for (const lesson of lessonsData) {
-                    html += `
-                        <div class="lesson-item" data-lesson='${JSON.stringify(lesson)}'>
-                            <div>
-                                <div class="lesson-name">${lesson.name}</div>
-                                <div class="lesson-room">${lesson.room}</div>
-                            </div>
-                            <div class="lesson-time">${lesson.time}</div>
-                        </div>
-                    `;
-                }
-                html += `</div>`;
-                container.innerHTML = html;
-
-                document.getElementById('scheduleBack').addEventListener('click', function() {
-                    scheduleState.classSelected = false;
-                    renderSchedule();
-                });
-
-                document.getElementById('scheduleHelp').addEventListener('click', function() {
-                    alert('Справка\n\nЗдесь будет информация о расписании и функциях приложения.');
-                });
-
-                container.querySelectorAll('.day-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        scheduleState.selectedDay = this.dataset.day;
-                        renderSchedule();
-                    });
-                });
-
-                container.querySelectorAll('.lesson-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const data = JSON.parse(this.dataset.lesson);
-                        showLessonDetail(data);
-                    });
-                });
-            }
-
-            // ============================================================
-            // 5. ДЕТАЛЬНЫЙ ЭКРАН УРОКА
-            // ============================================================
-            function showLessonDetail(lesson) {
-                const container = document.getElementById('scheduleView');
-                if (!container) return;
-
-                container.innerHTML = `
-                    <div class="schedule-nav">
-                        <button class="schedule-nav-back" id="lessonBack">
-                            <span class="material-symbols-outlined">arrow_back</span>
-                            Назад
-                        </button>
-                        <span class="schedule-nav-title">Урок</span>
-                        <span class="schedule-nav-spacer"></span>
-                    </div>
-                    <div class="lesson-detail">
-                        <div class="lesson-detail-title">${lesson.name}</div>
-                        <div class="lesson-detail-meta">
-                            <span><span class="material-symbols-outlined">door_front</span> ${lesson.room}</span>
-                            <span><span class="material-symbols-outlined">schedule</span> ${lesson.time}</span>
-                        </div>
-                        <div class="lesson-note-label">Заметки к уроку</div>
-                        <textarea class="lesson-note-input" id="lessonNote" placeholder="Напишите что-то важное..."></textarea>
-                        <div class="lesson-note-actions">
-                            <button class="btn-save-note" id="saveNoteBtn">Сохранить заметку</button>
-                            <span class="save-success" id="saveSuccess" style="display:none;"><span class="material-symbols-outlined">check_circle</span>Сохранено</span>
-                        </div>
-                        <button class="btn-attach-photo" id="attachPhotoBtn">
-                            <span class="material-symbols-outlined">photo_camera</span>
-                            Прикрепить фото
-                        </button>
-                    </div>
-                `;
-
-                document.getElementById('lessonBack').addEventListener('click', function() {
-                    renderSchedule();
-                });
-
-                document.getElementById('saveNoteBtn').addEventListener('click', function() {
-                    const note = document.getElementById('lessonNote').value;
-                    if (note.trim()) {
-                        const success = document.getElementById('saveSuccess');
-                        success.style.display = 'flex';
-                        setTimeout(() => { success.style.display = 'none'; }, 2000);
-                        localStorage.setItem('lessonNote_' + lesson.name, note);
-                    }
-                });
-
-                const saved = localStorage.getItem('lessonNote_' + lesson.name);
-                if (saved) {
-                    document.getElementById('lessonNote').value = saved;
-                }
-
-                document.getElementById('attachPhotoBtn').addEventListener('click', function() {
-                    alert('Функция прикрепления фото будет доступна в следующей версии.');
-                });
-            }
-
-            // ============================================================
-            // 6. ОБЗОР — профиль + сервисы
-            // ============================================================
-            function renderMore() {
-                const container = document.getElementById('moreContent');
-                if (!container) return;
-
-                // Загружаем данные профиля из localStorage
-                let profile = JSON.parse(localStorage.getItem('lintech_profile') || '{}');
-                const defaultName = 'Ученик';
-                const defaultClass = scheduleState.grade + ' «' + scheduleState.letter + '»';
-                const userName = profile.name || defaultName;
-                const userClass = profile.class || defaultClass;
-                const avatarData = profile.avatar || null;
-
-                let html = '';
-
-                // Карточка профиля
-                html += `
-                    <div class="profile-card">
-                        <div class="profile-avatar" id="avatarPicker">
-                            ${avatarData ? `<img src="${avatarData}" alt="Avatar">` : `<span class="material-symbols-outlined" style="font-size:40px;">person</span>`}
-                        </div>
-                        <div class="profile-info">
-                            <div class="profile-name" id="profileName">${userName}</div>
-                            <div class="profile-class" id="profileClass">${userClass}</div>
-                        </div>
-                        <div class="profile-edit" id="editProfileBtn">
-                            <span class="material-symbols-outlined">edit</span>
-                        </div>
-                    </div>
-                `;
-
-                // Сервисы
-                html += `
-                    <div class="services-grid">
-                        <div class="service-item" id="serviceCanteen">
-                            <span class="material-symbols-outlined">restaurant</span>
-                            <div class="service-label">Столовая</div>
-                        </div>
-                        <div class="service-item" id="serviceProjectHall">
-                            <span class="material-symbols-outlined">event_available</span>
-                            <div class="service-label">Проект холл</div>
-                        </div>
-                    </div>
-                `;
-
-                // Старые пункты "Больше"
-                for (const [section, items] of Object.entries(moreItems)) {
-                    html += `<div class="more-section"><div class="more-section-title">${section}</div>`;
-                    for (const item of items) {
-                        const color = item.danger ? '#ff3b30' : 'var(--link-color)';
-                        html += `
-                            <div class="more-item" data-label="${item.label}">
-                                <div class="icon-bg" style="background:${color}">
-                                    <span class="material-symbols-outlined" style="color:white;font-size:20px;">${item.icon}</span>
-                                </div>
-                                ${item.label}
-                            </div>
-                        `;
-                    }
-                    html += `</div>`;
-                }
-
-                container.innerHTML = html;
-
-                // Обработчики
-                container.querySelectorAll('.more-item').forEach(el => {
-                    el.addEventListener('click', function() {
-                        const label = this.dataset.label;
-                        if (label === 'Выйти') {
-                            if (confirm('Вы уверены, что хотите выйти?')) {
-                                alert('До свидания!');
-                            }
-                        } else {
-                            alert(`${label}\n\nЭтот раздел будет доступен в следующей версии.`);
-                        }
-                    });
-                });
-
-                // Редактирование профиля
-                document.getElementById('editProfileBtn').addEventListener('click', function() {
-                    const name = prompt('Введите ваше имя:', document.getElementById('profileName').textContent);
-                    if (name !== null && name.trim()) {
-                        profile.name = name.trim();
-                        document.getElementById('profileName').textContent = profile.name;
-                        localStorage.setItem('lintech_profile', JSON.stringify(profile));
-                    }
-                });
-
-                // Выбор аватарки
-                document.getElementById('avatarPicker').addEventListener('click', function() {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-                    input.onchange = function(e) {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = function(ev) {
-                                profile.avatar = ev.target.result;
-                                localStorage.setItem('lintech_profile', JSON.stringify(profile));
-                                renderMore(); // обновляем
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    };
-                    input.click();
-                });
-
-                // Сервисы
-                document.getElementById('serviceCanteen').addEventListener('click', function() {
-                    alert('🍽 Столовая\n\nМеню на сегодня:\n• Суп куриный\n• Гречка с котлетой\n• Компот');
-                });
-
-                document.getElementById('serviceProjectHall').addEventListener('click', function() {
-                    alert('📅 Проект холл\n\nБлижайшие мероприятия:\n• 15.10 — Хакатон\n• 20.10 — Лекция по дизайну');
-                });
-            }
-
-            // ============================================================
-            // 7. УПРАВЛЕНИЕ СТРАНИЦАМИ (с плавными переходами)
-            // ============================================================
-            function showPage(index) {
-                const pages = document.querySelectorAll('.page-container');
-                pages.forEach((p, i) => {
-                    p.classList.toggle('active', i === index);
-                });
-                // Рендерим контент при первом открытии
-                if (index === 1) renderSchedule();
-                if (index === 2) renderMore();
-            }
-
-            // ============================================================
-            // 8. НАВБАРЫ (оставлены без изменений)
-            // ============================================================
-            class LintechNavBar {
-                constructor(container) {
-                    this.container = container;
-                    this.panel = container.querySelector('.app-nav-bar__panel--ios');
-                    this.items = container.querySelectorAll('.app-nav-bar__item');
-                    this.selector = container.querySelector('.app-nav-bar__selector');
-                    this.selectorInner = container.querySelector('.app-nav-bar__selector-inner');
-                    this.selectorBorder = container.querySelector('.app-nav-bar__selector-border');
-
-                    this.activeIndex = 0;
-                    this.isAnimating = false;
-                    this.isInitialized = false;
-
-                    this.items.forEach((item, index) => {
-                        if (item.classList.contains('app-nav-bar__item--active')) {
-                            this.activeIndex = index;
-                        }
-                    });
-
-                    this.init();
-                }
-
-                init() {
-                    requestAnimationFrame(() => {
-                        this.updateSelectorPosition(this.activeIndex, false);
-                    });
-
-                    this.items.forEach((item, index) => {
-                        item.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            this.setActive(index);
-                        });
-                    });
-
-                    if (this.panel) {
-                        const startPress = () => {
-                            this.panel.style.transition = 'transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.1s ease-out';
-                            this.panel.style.transform = 'scale(1.03)';
-                            this.panel.style.backgroundColor = 'var(--secondary-bg-color)';
-                        };
-                        const endPress = () => {
-                            this.panel.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease-out';
-                            this.panel.style.transform = '';
-                            this.panel.style.backgroundColor = '';
-                        };
-                        this.panel.addEventListener('mousedown', startPress);
-                        this.panel.addEventListener('mouseup', endPress);
-                        this.panel.addEventListener('mouseleave', endPress);
-                        this.panel.addEventListener('touchstart', startPress, { passive: true });
-                        this.panel.addEventListener('touchend', endPress, { passive: true });
-                        this.panel.addEventListener('touchcancel', endPress, { passive: true });
-                    }
-
-                    this.isInitialized = true;
-
-                    let resizeTimeout;
-                    window.addEventListener('resize', () => {
-                        clearTimeout(resizeTimeout);
-                        resizeTimeout = setTimeout(() => {
-                            if (this.isInitialized) {
-                                this.updateSelectorPosition(this.activeIndex, false);
-                            }
-                        }, 100);
-                    });
-
-                    window.addEventListener('orientationchange', () => {
-                        setTimeout(() => {
-                            if (this.isInitialized) {
-                                this.updateSelectorPosition(this.activeIndex, false);
-                            }
-                        }, 300);
-                    });
-                }
-
-                setActive(index) {
-                    if (this.isAnimating || this.activeIndex === index) return;
-                    if (index < 0 || index >= this.items.length) return;
-
-                    this.isAnimating = true;
-
-                    this.items.forEach((item, i) => {
-                        const isActive = i === index;
-                        item.classList.toggle('app-nav-bar__item--active', isActive);
-                        item.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                    });
-
-                    this.updateSelectorPosition(index, true);
-                    this.activeIndex = index;
-                    showPage(index);
-
-                    setTimeout(() => {
-                        this.isAnimating = false;
-                    }, 300);
-                }
-
-                updateSelectorPosition(index, animated) {
-                    const targetItem = this.items[index];
-                    if (!targetItem) return;
-
-                    const panelRect = this.panel.getBoundingClientRect();
-                    const itemRect = targetItem.getBoundingClientRect();
-
-                    let left = itemRect.left - panelRect.left;
-                    let width = itemRect.width;
-
-                    left = left - 3;
-                    width = width - 6;
-
-                    if (index === 0) {
-                        width += 4.3;
-                        left -= 8;
-                    }
-
-                    const maxLeft = panelRect.width - width - 3;
-                    left = Math.max(3, Math.min(left, maxLeft));
-                    width = Math.max(40, Math.min(width, panelRect.width - 6));
-
-                    if (animated) {
-                        this.selectorInner.classList.add('app-nav-bar__selector-inner--ios-moving');
-                        this.selectorBorder.classList.add('app-nav-bar__selector-border--ios-moving');
-                        setTimeout(() => {
-                            this.selectorInner.classList.remove('app-nav-bar__selector-inner--ios-moving');
-                            this.selectorBorder.classList.remove('app-nav-bar__selector-border--ios-moving');
-                        }, 250);
-                    }
-
-                    this.selector.style.transform = 'translateX(' + left + 'px)';
-                    this.selector.style.width = width + 'px';
-                }
-
-                goTo(index) {
-                    if (index >= 0 && index < this.items.length) {
-                        this.setActive(index);
-                    }
-                }
-
-                getActiveIndex() {
-                    return this.activeIndex;
-                }
-
-                refresh() {
-                    if (this.isInitialized) {
-                        this.updateSelectorPosition(this.activeIndex, false);
-                    }
-                }
-            }
-
-            class AndroidNavBar {
-                constructor(container) {
-                    this.container = container;
-                    this.items = container.querySelectorAll('.app-nav-bar__item');
-                    this.activeIndex = 0;
-
-                    this.items.forEach((item, index) => {
-                        if (item.classList.contains('app-nav-bar__item--active')) {
-                            this.activeIndex = index;
-                        }
-                        item.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            this.setActive(index);
-                        });
-                    });
-                }
-
-                setActive(index) {
-                    if (this.activeIndex === index) return;
-                    if (index < 0 || index >= this.items.length) return;
-
-                    this.items.forEach((item, i) => {
-                        const isActive = i === index;
-                        item.classList.toggle('app-nav-bar__item--active', isActive);
-                        item.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                    });
-
-                    this.activeIndex = index;
-                    showPage(index);
-                }
-
-                getActiveIndex() {
-                    return this.activeIndex;
-                }
-            }
-
-            // ============================================================
-            // 9. ТЕМНАЯ/СВЕТЛАЯ ТЕМА
-            // ============================================================
-            function applyTheme(theme) {
-                document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('lintech-theme', theme);
-                setTimeout(() => {
-                    if (window.lintechNav) window.lintechNav.refresh();
-                }, 50);
-            }
-
-            function detectSystemTheme() {
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const saved = localStorage.getItem('lintech-theme');
-                if (saved) {
-                    applyTheme(saved);
-                } else {
-                    applyTheme(prefersDark ? 'dark' : 'light');
-                }
-            }
-
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                if (!localStorage.getItem('lintech-theme')) {
-                    applyTheme(e.matches ? 'dark' : 'light');
-                }
-            });
-
-            // ============================================================
-            // 10. ИНИЦИАЛИЗАЦИЯ
-            // ============================================================
-            document.addEventListener('DOMContentLoaded', function() {
-                const cells = renderSplash();
-                runSplashAnimation(cells);
-
-                renderLinteh('ЛЕНТА');
-                renderMore();
-
-                const iosContainer = document.querySelector('.ios-navbar');
-                if (iosContainer && !isAndroid) {
-                    window.lintechNav = new LintechNavBar(iosContainer);
-                }
-
-                const androidContainer = document.querySelector('.android-navbar');
-                if (androidContainer && isAndroid) {
-                    window.androidNav = new AndroidNavBar(androidContainer);
-                }
-
-                detectSystemTheme();
-
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                        if (window.lintechNav && !isAndroid) {
-                            const items = window.lintechNav.items;
-                            const current = window.lintechNav.getActiveIndex();
-                            let next = current;
-                            if (e.key === 'ArrowLeft') next = Math.max(0, current - 1);
-                            else next = Math.min(items.length - 1, current + 1);
-                            if (next !== current) {
-                                e.preventDefault();
-                                window.lintechNav.goTo(next);
-                            }
-                        }
-                    }
-                });
-
-                console.log('🚀 ЛИнТех PWA (продакшен) загружен!');
-            });
-
-        })();
-    </script>
-
+  </div>
+
+  <!-- Нижняя навигация (только домик и щит) -->
+  <div class="navbar">
+    <div class="navbar-container">
+      <button id="navHome" class="navbar-item navbar-item-active"><div class="navbar-item-icon"><span class="material-symbols-outlined">home</span></div><span>Обзор</span></button>
+      <button id="navShield" class="navbar-item"><div class="navbar-item-icon"><span class="material-symbols-outlined">shield</span></div><span>Защита</span></button>
+    </div>
+  </div>
+
+  <!-- Полноэкранный оверлей (для очистки / вирусов) -->
+  <div id="fullscreenOverlay" class="fullscreen-overlay" style="display:none;">
+    <div class="spinner"></div>
+    <div id="overlayTitle" class="text-2xl font-light mb-2">Очистка системы</div>
+    <div id="overlayDesc" class="text-sm text-[var(--color-on-surface-variant)] max-w-sm">Подождите и не выходите на другие приложения</div>
+    <div id="overlayProgress" class="mt-6 w-48 h-1.5 bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
+      <div id="progressBar" class="h-full bg-[var(--color-primary)] rounded-full" style="width:0%;"></div>
+    </div>
+    <div id="overlayLog" class="mt-5 text-xs text-[var(--color-on-surface-variant)] max-w-xs text-center"></div>
+  </div>
+
+  <!-- Конфетти-контейнер -->
+  <div id="confettiContainer" class="confetti-container" style="display:none;"></div>
+
+  <script>
+    (function() {
+      // --- список приложений ---
+      const apps = ['Мой МТС','Камера','Сообщения','Контакты','Госуслуги','Штрафы ГИБДД','Фото','Телефон','СберБанк','РИАНовости','MAX','Сервисы погоды','VK','Калькулятор'];
+      const appList = document.getElementById('appList');
+      apps.forEach(name => {
+        const span = document.createElement('span');
+        span.textContent = name;
+        span.style.cssText = 'background:var(--color-primary-container);color:var(--color-on-primary-container);border-radius:40px;padding:4px 14px;font-size:0.8rem;font-weight:500;margin:2px 4px 2px 0;display:inline-block;';
+        appList.appendChild(span);
+      });
+
+      // --- таймер до 12:00 ---
+      function updateCountdown() {
+        const now = new Date();
+        let target = new Date(now);
+        target.setHours(12,0,0,0);
+        if (now >= target) target.setDate(target.getDate()+1);
+        const diff = Math.floor((target - now)/1000);
+        const h = String(Math.floor(diff/3600)).padStart(2,'0');
+        const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
+        const s = String(diff%60).padStart(2,'0');
+        document.getElementById('countdownDisplay').textContent = `${h}:${m}:${s}`;
+      }
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+      document.getElementById('lastClean').textContent = `сегодня, ${new Date().getHours().toString().padStart(2,'0')}:${new Date().getMinutes().toString().padStart(2,'0')}`;
+
+      // --- переключение вкладок (навигация) ---
+      const navHome = document.getElementById('navHome');
+      const navShield = document.getElementById('navShield');
+      const mainContent = document.getElementById('mainContent');
+      const securityContent = document.getElementById('securityContent');
+
+      function setActiveTab(tab) {
+        if (tab === 'home') {
+          navHome.classList.add('navbar-item-active');
+          navShield.classList.remove('navbar-item-active');
+          mainContent.style.display = 'block';
+          securityContent.classList.remove('active');
+          securityContent.style.display = 'none';
+        } else {
+          navShield.classList.add('navbar-item-active');
+          navHome.classList.remove('navbar-item-active');
+          mainContent.style.display = 'none';
+          securityContent.style.display = 'block';
+          securityContent.classList.add('active');
+        }
+      }
+      navHome.addEventListener('click', () => setActiveTab('home'));
+      navShield.addEventListener('click', () => setActiveTab('shield'));
+      // по умолчанию
+      setActiveTab('home');
+
+      // --- полноэкранный оверлей ---
+      const overlay = document.getElementById('fullscreenOverlay');
+      const overlayTitle = document.getElementById('overlayTitle');
+      const overlayDesc = document.getElementById('overlayDesc');
+      const progressBar = document.getElementById('progressBar');
+      const overlayLog = document.getElementById('overlayLog');
+      const confettiContainer = document.getElementById('confettiContainer');
+      let activeInterval = null;
+
+      function showOverlay(title, desc) {
+        overlay.style.display = 'flex';
+        overlayTitle.textContent = title;
+        overlayDesc.textContent = desc || 'Подождите и не выходите на другие приложения';
+        progressBar.style.width = '0%';
+        overlayLog.textContent = '';
+      }
+
+      function hideOverlay() {
+        overlay.style.display = 'none';
+        if (activeInterval) { clearInterval(activeInterval); activeInterval = null; }
+      }
+
+      // --- конфетти ---
+      function fireConfetti() {
+        confettiContainer.style.display = 'block';
+        const colors = ['#2E7D5E','#88D0AA','#C8F0D9','#D3F0E0','#A0D8CA','#F5FCF7','#4A7A6A'];
+        for (let i = 0; i < 80; i++) {
+          const el = document.createElement('div');
+          el.className = 'confetti';
+          el.style.left = Math.random() * 100 + '%';
+          el.style.top = '-10px';
+          el.style.width = (6 + Math.random() * 8) + 'px';
+          el.style.height = (6 + Math.random() * 8) + 'px';
+          el.style.background = colors[Math.floor(Math.random() * colors.length)];
+          el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+          el.style.animationDuration = (2 + Math.random() * 2) + 's';
+          el.style.animationDelay = (Math.random() * 0.8) + 's';
+          el.style.transform = `rotate(${Math.random()*360}deg)`;
+          confettiContainer.appendChild(el);
+        }
+        setTimeout(() => {
+          confettiContainer.style.display = 'none';
+          confettiContainer.innerHTML = '';
+        }, 4000);
+      }
+
+      // --- показать успех ---
+      function showSuccess(message, icon) {
+        hideOverlay();
+        // показываем оверлей с успехом
+        overlay.style.display = 'flex';
+        overlayTitle.innerHTML = `<span class="success-icon">${icon}</span><br><span class="text-2xl font-light">${message}</span>`;
+        overlayDesc.textContent = '';
+        overlay.querySelector('.spinner')?.remove();
+        overlayLog.textContent = '';
+        progressBar.style.display = 'none';
+        // конфетти
+        fireConfetti();
+        setTimeout(() => {
+          hideOverlay();
+          // восстановить spinner
+          const spinner = document.createElement('div');
+          spinner.className = 'spinner';
+          overlay.prepend(spinner);
+          progressBar.style.display = 'block';
+          overlayTitle.innerHTML = 'Очистка системы';
+        }, 4000);
+      }
+
+      function runTask(type) {
+        if (activeInterval) return;
+        const btn = type === 'clean' ? document.getElementById('cleanBtn') : document.getElementById('virusBtn');
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        document.getElementById('actionFeedback').textContent = type === 'clean' ? '🧼 Очистка...' : '🛡️ Проверка...';
+        showOverlay(type === 'clean' ? 'Очистка системы' : 'Проверка на вирусы', 'Подождите и не выходите на другие приложения');
+        let progress = 0;
+        const steps = type === 'clean' 
+          ? ['Сканирование кэша...', 'Удаление временных файлов...', 'Оптимизация...', 'Завершение...']
+          : ['Анализ приложений...', 'Проверка сигнатур...', 'Сканирование прав...', 'Завершение...'];
+        let stepIdx = 0;
+        overlayLog.textContent = steps[0] || '';
+
+        activeInterval = setInterval(() => {
+          progress += 2;
+          if (progress > 100) progress = 100;
+          progressBar.style.width = progress + '%';
+          if (progress % 20 < 4 && stepIdx < steps.length-1) {
+            stepIdx++;
+            overlayLog.textContent = steps[stepIdx] || '';
+          }
+          if (progress >= 100) {
+            clearInterval(activeInterval);
+            activeInterval = null;
+            const msg = type === 'clean' ? 'Телефон успешно очищен' : 'Вирусы не найдены';
+            const icon = type === 'clean' ? '👍' : '🛡️';
+            showSuccess(msg, icon);
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            document.getElementById('actionFeedback').textContent = type === 'clean' ? '✅ Очистка завершена' : '✅ Проверка завершена';
+            const now = new Date();
+            document.getElementById('lastClean').textContent = `сегодня, ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+          }
+        }, 500);
+      }
+
+      document.getElementById('cleanBtn').addEventListener('click', () => runTask('clean'));
+      document.getElementById('virusBtn').addEventListener('click', () => runTask('virus'));
+
+      setTimeout(() => {
+        document.getElementById('actionFeedback').textContent = '✅ Система защищена';
+      }, 600);
+    })();
+  </script>
 </body>
 </html>
