@@ -1,13 +1,13 @@
 {
-  "name": "Siri",
-  "short_name": "Siri",
+  "name": "Очистка",
+  "short_name": "Очистка",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "start_url": "/",
   "icons": [
     {
-      "src": "/yri.png",
+      "src": "/tty.png",
       "sizes": "512x512",
       "type": "image/png"
     }
