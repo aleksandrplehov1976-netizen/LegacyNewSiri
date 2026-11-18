@@ -13,22 +13,31 @@ body{background:radial-gradient(120% 80% at 50% 0%,var(--bg1),var(--bg2));font-f
 #sa{position:fixed;visibility:hidden;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 #stage{position:fixed;inset:0;perspective-origin:50% 35%;transform-style:preserve-3d}
 .f{position:absolute;left:50%;top:0;transform-origin:50% 0;transform-style:preserve-3d;will-change:transform}
+
 .tab,.bb,.front,.inner,.up,.lo{position:absolute}
+
+/* задняя стенка и язычок — z = 0 */
 .tab{left:calc(var(--u)*9);top:0;width:calc(var(--u)*362);height:calc(var(--u)*74);border-radius:calc(var(--u)*40) calc(var(--u)*37) 0 0}
 .bb{left:calc(var(--u)*9);right:calc(var(--u)*9);top:calc(var(--u)*37);border-radius:0 calc(var(--u)*32) 0 0}
-.front{left:0;right:0;top:calc(var(--u)*60);transform-origin:50% 100%;transform-style:preserve-3d;transform:translateZ(.8px)}
+
+/* бумага — между задником и обложкой, но с нормальным зазором */
+.inner{left:calc(var(--u)*22);right:calc(var(--u)*22);top:calc(var(--u)*74);transform:translateZ(8px);border-radius:12px 12px 0 0;overflow:auto;box-sizing:border-box;padding:24px 22px 40px;color:#3a3a3c;background:#fffefd;box-shadow:inset 0 10px 14px -10px rgba(0,0,0,.16);-webkit-overflow-scrolling:touch}
+.inner h2{margin:0 0 4px;font-size:32px;font-weight:600;letter-spacing:-.6px}
+.inner small{display:block;margin-bottom:16px;opacity:.5;font-size:13px}
+.inner p{margin:0 0 14px;font-size:16px;line-height:1.5}
+
+/* обложка: петля — НИЖНЯЯ кромка, но она на экране, а не под ним */
+.front{left:0;right:0;top:calc(var(--u)*60);transform-origin:50% 100%;transform-style:preserve-3d;will-change:transform;backface-visibility:hidden}
+
 .up,.lo{left:0;right:0;transform-style:preserve-3d}
 .up{top:0;transform-origin:50% 100%;border-radius:calc(var(--u)*32) calc(var(--u)*32) 0 0;box-shadow:0 -3px 18px rgba(0,0,0,.13)}
 .lo{bottom:0;box-shadow:0 0 18px rgba(0,0,0,.09)}
+
 .face,.rev,.sh{position:absolute;inset:0;border-radius:inherit}
 .face,.rev{backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .rev{transform:rotateX(180deg);box-shadow:inset 0 0 0 999px rgba(0,0,0,.1)}
 .sh{background:#000;opacity:var(--sh,0);pointer-events:none}
 .label{position:absolute;left:calc(var(--u)*40);top:calc(var(--u)*30);line-height:1;font-weight:400;letter-spacing:-.02em;white-space:nowrap}
-.inner{left:calc(var(--u)*22);right:calc(var(--u)*22);top:calc(var(--u)*74);transform:translateZ(.4px);border-radius:12px 12px 0 0;overflow:auto;box-sizing:border-box;padding:24px 22px 40px;color:#3a3a3c;background:#fffefd;box-shadow:inset 0 10px 14px -10px rgba(0,0,0,.16);-webkit-overflow-scrolling:touch}
-.inner h2{margin:0 0 4px;font-size:32px;font-weight:600;letter-spacing:-.6px}
-.inner small{display:block;margin-bottom:16px;opacity:.5;font-size:13px}
-.inner p{margin:0 0 14px;font-size:16px;line-height:1.5}
 #strip{position:fixed;left:0;right:0;bottom:0;height:160px;z-index:9;display:none;touch-action:none}
 </style>
 </head>
@@ -43,77 +52,144 @@ const DATA=[
  {t:"Носитель (C)",b:"#FFF0F5",f:"#FFF5F8",c:"#555"}
 ];
 const LOREM="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
-const stage=document.getElementById("stage"),strip=document.getElementById("strip"),sa=document.getElementById("sa");
-const n=DATA.length,els=[],clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
-let H,W,u,step,ys=[],top0,sab,Uh,o=-1;const s={p:0,v:0,t:0};
+
+const stage=document.getElementById("stage"),
+      strip=document.getElementById("strip"),
+      sa=document.getElementById("sa");
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const n=DATA.length, els=[];
+let H=0,W=0,u=0,step=0,ys=[],top0=0,sab=0,Uh=0,Hf=0,o=-1;
+
+const s={p:0,v:0,t:0};            // p — прогресс 0..1
+
+/* ---------- построение ---------- */
 DATA.forEach((d,i)=>{
-  const f=document.createElement("div");f.className="f";
-  f.innerHTML=`<div class="tab" style="background:${d.b}"></div><div class="bb" style="background:${d.b}"></div>
-  <div class="inner"><h2>${d.t}</h2><small>Заметки · обновлено сегодня</small><p>${LOREM}</p><p>${LOREM}</p><p>${LOREM}</p></div>
-  <div class="front">
-   <div class="lo"><div class="face" style="background:${d.f}"><div class="sh"></div></div><div class="rev" style="background:${d.f}"></div></div>
-   <div class="up"><div class="face" style="background:${d.f}"><div class="label" style="color:${d.c}">${d.t}</div><div class="sh"></div></div><div class="rev" style="background:${d.f}"></div></div>
-  </div>`;
+  const f=document.createElement("div");
+  f.className="f";
+  f.innerHTML=
+   `<div class="tab" style="background:${d.b}"></div>`+
+   `<div class="bb" style="background:${d.b}"></div>`+
+   `<div class="inner"><h2>${d.t}</h2><small>Заметки · обновлено сегодня</small><p>${LOREM}</p><p>${LOREM}</p><p>${LOREM}</p></div>`+
+   `<div class="front">`+
+     `<div class="lo"><div class="face" style="background:${d.f}"></div><div class="rev" style="background:${d.f}"></div></div>`+
+     `<div class="up"><div class="face" style="background:${d.f}"><div class="label" style="color:${d.c}">${d.t}</div><div class="sh"></div></div><div class="rev" style="background:${d.f}"></div></div>`+
+   `</div>`;
   stage.appendChild(f);
-  const e={f,bb:f.querySelector(".bb"),inner:f.querySelector(".inner"),front:f.querySelector(".front"),up:f.querySelector(".up"),lo:f.querySelector(".lo"),label:f.querySelector(".label")};
+
+  const e={
+    f,
+    tab:  f.querySelector(".tab"),
+    bb:   f.querySelector(".bb"),
+    inner:f.querySelector(".inner"),
+    front:f.querySelector(".front"),
+    up:   f.querySelector(".up"),
+    lo:   f.querySelector(".lo"),
+    label:f.querySelector(".label")
+  };
   els.push(e);
-  e.front.addEventListener("click",()=>{if(o<0&&s.p<.02)open(i)});
-  f.querySelector(".tab").addEventListener("click",()=>{if(o===i&&s.p>.9)close()});
+
+  /* клик по обложке открывает; клик по язычку закрывает */
+  e.front.addEventListener("click", ()=>{ if(o<0) open(i); });
+  e.tab  .addEventListener("click", ()=>{ if(o===i && s.p>0.9) close(); });
 });
+
+/* ---------- размеры ---------- */
 function layout(){
-  H=innerHeight;const cs=getComputedStyle(sa);
-  top0=(parseFloat(cs.paddingTop)||0)+22;sab=parseFloat(cs.paddingBottom)||0;
-  W=Math.min(innerWidth-32,460);u=W/725;
-  stage.style.setProperty("--u",u+"px");stage.style.perspective=Math.max(1400,H*2)+"px";
+  H=innerHeight;
+  const cs=getComputedStyle(sa);
+  top0=(parseFloat(cs.paddingTop)||0)+22;
+  sab =parseFloat(cs.paddingBottom)||0;
+
+  W=Math.min(innerWidth-32,460);
+  u=W/725;
+  stage.style.setProperty("--u",u+"px");
+  /* мягче перспектива — обложка не «бьёт в лицо» при перевороте */
+  stage.style.perspective=Math.max(1600,H*2.6)+"px";
+
   step=Math.min(204*u,(H-sab-top0-60*u-210)/4);
   ys=DATA.map((_,i)=>top0+i*step);
-  Uh=Math.min(H*.5,320);
+  Uh=Math.min(H*0.5,320);
+  Hf=H-60*u;                      // обложка ровно до низа экрана → петля на экране
+
   els.forEach(e=>{
-    e.f.style.width=W+"px";e.f.style.marginLeft=(-W/2)+"px";
-    e.bb.style.height=H+"px";e.front.style.height=H+"px";
-    e.up.style.height=Uh+"px";e.lo.style.height=(H-Uh+1)+"px";
+    e.f.style.width=W+"px";
+    e.f.style.marginLeft=(-W/2)+"px";
+    e.f.style.height=H+"px";
+
+    e.tab  .style.height=(74*u)+"px";
+    e.bb   .style.height=(H-37*u)+"px";
+    e.front.style.height=Hf+"px";
+    e.up   .style.height=Uh+"px";
+    e.lo   .style.height=(Hf-Uh)+"px";
     e.inner.style.height=Math.max(120,H-sab-top0-74*u-120)+"px";
-    e.label.style.fontSize=Math.min(96*u,step*.48)+"px";
+    e.label.style.fontSize=Math.min(96*u,step*0.48)+"px";
   });
   render();
 }
+
+/* ---------- отрисовка ---------- */
 function render(){
   const p=s.p;
   const base=H-sab-128;
+
   els.forEach((e,i)=>{
-    let ty=0,sc=1,z=i*3,th=0,flex=0;
-    if(o>=0){
-      if(i===o){
-        ty=(top0-ys[i])*p;
-        th=180*Math.pow(clamp(p,0,1.04),1.7);
-        flex=clamp(s.v*8,-30,30);
-      }else{
-        const r=i<o?i:i-1,d=.05*(n-1-i),q=clamp((p-d)/(1-d),0,1.03);
-        ty=(base+r*20-ys[i])*q;sc=1-.035*clamp(q,0,1);z=i*3+30*clamp(q,0,1);
-      }
+    let ty=0, sc=1, z=i*2, th=0, flex=0;
+
+    if(o>=0 && i===o){
+      /* открываемая папка: поднимается вверх, уезжает вперёд по z */
+      ty = (top0-ys[i])*p;
+      z  = i*2 + (60-i*2)*p;
+      th = 180*clamp(p,0,1);
+      flex = clamp(s.v*9,-14,14);           // лёгкий «трепет» клапана
+    }else if(o>=0){
+      /* остальные сползают вниз и чуть уменьшаются */
+      const r = i<o ? i : i-1;
+      const d = 0.06*(n-1-i);
+      const q = clamp((p-d)/(1-d),0,1);
+      ty = (base+r*22-ys[i])*q;
+      sc = 1-0.06*q;
     }
-    e.f.style.transform=`translate3d(0,${ys[i]+ty}px,${z}px) scale(${sc})`;
-    e.front.style.transform=`translateZ(.8px) rotateX(${-th}deg)`;
-    e.up.style.transform=`rotateX(${i===o?flex:0}deg)`;
-    e.front.style.setProperty("--sh",(.3*Math.sin(th*Math.PI/180)).toFixed(3));
+
+    e.f.style.transform=`translate3d(0,${(ys[i]+ty).toFixed(2)}px,${z.toFixed(2)}px) scale(${sc.toFixed(4)})`;
+    /* ключевое: обложка ВСЕГДА впереди своей бумаги (16px против 8px) */
+    e.front.style.transform=`translateZ(16px) rotateX(${(-th).toFixed(2)}deg)`;
+    e.front.style.setProperty("--sh",(0.3*Math.sin(th*Math.PI/180)).toFixed(3));
+    e.up.style.transform=`rotateX(${flex.toFixed(2)}deg)`;
   });
-  strip.style.display=(o>=0&&p>.6)?"block":"none";
+
+  strip.style.display=(o>=0 && p>0.55)?"block":"none";
 }
-let last=0,raf=0;
+
+/* ---------- пружина ---------- */
+let last=0, raf=0;
 function loop(t){
-  const dt=Math.min(.032,(t-last)/1000||.016);last=t;
-  const k=150,c=19;
-  s.v+=(k*(s.t-s.p)-c*s.v)*dt;s.p+=s.v*dt;
-  if(Math.abs(s.v)<.002&&Math.abs(s.t-s.p)<.001){s.p=s.t;s.v=0;if(s.t===0)o=-1;render();raf=0;return}
-  render();raf=requestAnimationFrame(loop);
+  const dt=Math.min(0.032,((t-last)/1000)||0.016);
+  last=t;
+
+  const k=200, c=27;                   // ζ≈0.95 — быстро и без «отскока»
+  s.v += (k*(s.t-s.p)-c*s.v)*dt;
+  s.p += s.v*dt;
+
+  if(Math.abs(s.v)<0.0015 && Math.abs(s.t-s.p)<0.0008){
+    s.p=s.t; s.v=0;
+    if(s.t===0) o=-1;
+    render();
+    raf=0;
+    return;
+  }
+  render();
+  raf=requestAnimationFrame(loop);
 }
-function go(){if(!raf){last=performance.now();raf=requestAnimationFrame(loop)}}
-function open(i){o=i;s.t=1;go()}
-function close(){s.t=0;go()}
-let sy=0,done=false;
-strip.addEventListener("pointerdown",e=>{strip.setPointerCapture(e.pointerId);sy=e.clientY;done=false});
-strip.addEventListener("pointermove",e=>{if(!done&&sy-e.clientY>14){done=true;close()}});
-strip.addEventListener("pointerup",()=>{if(!done){done=true;close()}});
+function go(){ if(!raf){ last=performance.now(); raf=requestAnimationFrame(loop); } }
+function open(i){ if(o>=0) return; o=i; s.t=1; go(); }
+function close(){ if(o<0) return; s.t=0; go(); }
+
+/* ---------- жест закрытия ---------- */
+let sy=0, done=false;
+strip.addEventListener("pointerdown",e=>{ strip.setPointerCapture(e.pointerId); sy=e.clientY; done=false; });
+strip.addEventListener("pointermove",e=>{ if(!done && sy-e.clientY>14){ done=true; close(); } });
+strip.addEventListener("pointerup",()=>{ if(!done){ done=true; close(); } });
+
 addEventListener("resize",layout);
 layout();
 </script>
