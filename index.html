@@ -1,519 +1,121 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>Очистка телефона · Материал 3</title>
-  <!-- PWA manifest -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#F5FCF7">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="apple-touch-icon" href="tty.png">
-  <!-- Roboto & Material Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* ----- M3 theme · пастельные зелёные ----- */
-    [data-theme="light"] {
-      --color-primary: #2E7D5E;
-      --color-surface-tint: #2E7D5E;
-      --color-on-primary: #FFFFFF;
-      --color-primary-container: #C8F0D9;
-      --color-on-primary-container: #1A4A35;
-      --color-secondary: #5A7A6A;
-      --color-on-secondary: #FFFFFF;
-      --color-secondary-container: #D3F0E0;
-      --color-on-secondary-container: #2A4A3A;
-      --color-tertiary: #4A7A6A;
-      --color-on-tertiary: #FFFFFF;
-      --color-tertiary-container: #D3F0E8;
-      --color-on-tertiary-container: #1A4A40;
-      --color-error: #B33A3A;
-      --color-on-error: #FFFFFF;
-      --color-error-container: #FFDAD6;
-      --color-on-error-container: #8A1A1A;
-      --color-background: #F5FCF7;
-      --color-on-background: #1A2E24;
-      --color-surface: #F5FCF7;
-      --color-on-surface: #1A2E24;
-      --color-surface-variant: #DCEAE2;
-      --color-on-surface-variant: #3A5A4A;
-      --color-outline: #7A9A8A;
-      --color-outline-variant: #C0D8CC;
-      --color-shadow: #00000020;
-      --color-scrim: #00000030;
-      --color-inverse-surface: #2A3E34;
-      --color-inverse-on-surface: #E0F5EA;
-      --color-inverse-primary: #A0E0C0;
-      --color-primary-fixed: #C8F0D9;
-      --color-on-primary-fixed: #0A2E1E;
-      --color-primary-fixed-dim: #88D0AA;
-      --color-on-primary-fixed-variant: #1A4A35;
-      --color-secondary-fixed: #D3F0E0;
-      --color-on-secondary-fixed: #1A3A2A;
-      --color-secondary-fixed-dim: #A8D8BA;
-      --color-on-secondary-fixed-variant: #2A4A3A;
-      --color-tertiary-fixed: #D3F0E8;
-      --color-on-tertiary-fixed: #0A3A30;
-      --color-tertiary-fixed-dim: #A0D8CA;
-      --color-on-tertiary-fixed-variant: #1A4A40;
-      --color-surface-dim: #D0E4DA;
-      --color-surface-bright: #F5FCF7;
-      --color-surface-container-lowest: #FFFFFF;
-      --color-surface-container-low: #EEF8F0;
-      --color-surface-container: #E2F0E6;
-      --color-surface-container-high: #D6EADE;
-      --color-surface-container-highest: #CAE0D4;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: var(--color-surface);
-      font-family: 'Roboto', system-ui, sans-serif;
-      color: var(--color-on-surface);
-      min-height: 100vh;
-      padding-bottom: 88px;
-      transition: background 0.2s;
-    }
-    .card {
-      background-color: var(--color-surface-container-low);
-      border-radius: 28px;
-      padding: 20px 24px;
-    }
-    .card-soft {
-      background-color: var(--color-surface-container);
-      border-radius: 24px;
-      padding: 18px 20px;
-    }
-    .chip {
-      background: var(--color-surface-container-highest);
-      border-radius: 40px;
-      padding: 6px 16px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--color-on-surface-variant);
-    }
-    .btn-m3 {
-      background: var(--color-primary-container);
-      color: var(--color-on-primary-container);
-      border: none;
-      border-radius: 40px;
-      padding: 12px 28px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: 0.15s;
-    }
-    .btn-m3:active { transform: scale(0.96); background: var(--color-primary-fixed-dim); }
-    .btn-m3-outline {
-      background: transparent;
-      border: 1px solid var(--color-outline);
-      color: var(--color-on-surface-variant);
-      border-radius: 40px;
-      padding: 10px 24px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .btn-m3-outline:active { background: var(--color-surface-container-highest); }
-    /* навигация (только домик и щит) */
-    .navbar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 72px;
-      background: var(--color-surface-container-low);
-      backdrop-filter: blur(4px);
-      border-top: 1px solid var(--color-outline-variant);
-    }
-    .navbar-container {
-      height: 100%;
-      width: 100%;
-      max-width: 40rem;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-around;
-      padding: 0 8px;
-    }
-    .navbar-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      font-weight: 500;
-      color: var(--color-on-surface-variant);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      gap: 2px;
-      padding: 6px 12px;
-      border-radius: 40px;
-      transition: 0.15s;
-    }
-    .navbar-item .material-symbols-outlined {
-      font-size: 26px;
-      font-variation-settings: 'FILL' 0;
-    }
-    .navbar-item-active .material-symbols-outlined {
-      font-variation-settings: 'FILL' 1;
-      color: var(--color-primary);
-    }
-    .navbar-item-active { color: var(--color-primary); }
-    .navbar-item .navbar-item-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 48px;
-      height: 32px;
-      border-radius: 40px;
-    }
-    .navbar-item-active .navbar-item-icon {
-      background: color-mix(in srgb, var(--color-primary) 18%, transparent);
-    }
-
-    /* полноэкранный оверлей */
-    .fullscreen-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      background: var(--color-surface);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      text-align: center;
-      animation: fadeIn 0.25s ease;
-    }
-    .fullscreen-overlay .spinner {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      border: 6px solid var(--color-surface-container-highest);
-      border-top-color: var(--color-primary);
-      animation: spin 1s linear infinite;
-      margin-bottom: 2rem;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    /* устройства */
-    .device-card {
-      background: var(--color-surface-container-low);
-      border-radius: 20px;
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .device-icon {
-      width: 48px;
-      height: 48px;
-      background: var(--color-surface-container-highest);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-    }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* конфетти-контейнер */
-    .confetti-container {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 200;
-      overflow: hidden;
-    }
-    .confetti {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
-      opacity: 0.9;
-      animation: confettiFall linear forwards;
-    }
-    @keyframes confettiFall {
-      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-    }
-    .success-icon {
-      font-size: 5rem;
-      animation: pop 0.5s ease;
-    }
-    @keyframes pop {
-      0% { transform: scale(0.3); opacity: 0; }
-      70% { transform: scale(1.2); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Папки</title>
+<style>
+:root{--bg1:#fbfbfd;--bg2:#e8e8ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#2b2b30;--bg2:#111113}}
+:root[data-theme="dark"]{--bg1:#2b2b30;--bg2:#111113}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg2);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(120% 80% at 50% 0%,var(--bg1),var(--bg2));font-family:-apple-system,"SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif}
+#sa{position:fixed;visibility:hidden;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+#stage{position:fixed;inset:0;perspective-origin:50% 35%;transform-style:preserve-3d}
+.f{position:absolute;left:50%;top:0;transform-origin:50% 0;transform-style:preserve-3d;will-change:transform}
+.tab,.bb,.front,.inner,.up,.lo{position:absolute}
+.tab{left:calc(var(--u)*9);top:0;width:calc(var(--u)*362);height:calc(var(--u)*74);border-radius:calc(var(--u)*40) calc(var(--u)*37) 0 0}
+.bb{left:calc(var(--u)*9);right:calc(var(--u)*9);top:calc(var(--u)*37);border-radius:0 calc(var(--u)*32) 0 0}
+.front{left:0;right:0;top:calc(var(--u)*60);transform-origin:50% 100%;transform-style:preserve-3d;transform:translateZ(.8px)}
+.up,.lo{left:0;right:0;transform-style:preserve-3d}
+.up{top:0;transform-origin:50% 100%;border-radius:calc(var(--u)*32) calc(var(--u)*32) 0 0;box-shadow:0 -3px 18px rgba(0,0,0,.13)}
+.lo{bottom:0;box-shadow:0 0 18px rgba(0,0,0,.09)}
+.face,.rev,.sh{position:absolute;inset:0;border-radius:inherit}
+.face,.rev{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.rev{transform:rotateX(180deg);box-shadow:inset 0 0 0 999px rgba(0,0,0,.1)}
+.sh{background:#000;opacity:var(--sh,0);pointer-events:none}
+.label{position:absolute;left:calc(var(--u)*40);top:calc(var(--u)*30);line-height:1;font-weight:400;letter-spacing:-.02em;white-space:nowrap}
+.inner{left:calc(var(--u)*22);right:calc(var(--u)*22);top:calc(var(--u)*74);transform:translateZ(.4px);border-radius:12px 12px 0 0;overflow:auto;box-sizing:border-box;padding:24px 22px 40px;color:#3a3a3c;background:#fffefd;box-shadow:inset 0 10px 14px -10px rgba(0,0,0,.16);-webkit-overflow-scrolling:touch}
+.inner h2{margin:0 0 4px;font-size:32px;font-weight:600;letter-spacing:-.6px}
+.inner small{display:block;margin-bottom:16px;opacity:.5;font-size:13px}
+.inner p{margin:0 0 14px;font-size:16px;line-height:1.5}
+#strip{position:fixed;left:0;right:0;bottom:0;height:160px;z-index:9;display:none;touch-action:none}
+</style>
 </head>
-<body data-theme="light">
-
-  <!-- Основной контент (только Обзор) -->
-  <div class="max-w-3xl mx-auto px-4 pt-5 pb-4" id="mainContent">
-    <div class="flex flex-col gap-4">
-      <div class="card">
-        <div class="text-sm text-[var(--color-on-surface-variant)]">Следующая проверка</div>
-        <div id="countdownDisplay" class="text-4xl font-light tracking-wider text-[var(--color-primary)]" style="font-variant-numeric:tabular-nums;">--:--:--</div>
-        <div class="text-xs text-[var(--color-on-surface-variant)] mt-1">ежедневно в 12:00</div>
-      </div>
-
-      <div class="card-soft text-sm text-[var(--color-on-surface-variant)] leading-relaxed">
-        <p>Ваш телефон очищается самостоятельно. Умная система очистки удаляет мусор и проверяет каждое приложение на вирусы.</p>
-      </div>
-
-      <!-- статистика -->
-      <div class="grid grid-cols-2 gap-3">
-        <div class="card-soft"><div class="text-xs text-[var(--color-on-surface-variant)]">Приложений проверено</div><div class="text-3xl font-light">13</div></div>
-        <div class="card-soft"><div class="text-xs text-[var(--color-on-surface-variant)]">Последняя очистка</div><div id="lastClean" class="text-xl font-normal">сегодня, 11:58</div></div>
-      </div>
-
-      <!-- список приложений -->
-      <div>
-        <div class="flex justify-between mb-2"><span class="text-sm font-medium text-[var(--color-on-surface-variant)]">Проверенные приложения</span><span class="text-xs text-[var(--color-on-surface-variant)]">✓ защищены</span></div>
-        <div id="appList" class="flex flex-wrap gap-1"></div>
-      </div>
-
-      <!-- кнопки -->
-      <div class="flex flex-wrap gap-3 mt-2">
-        <button id="cleanBtn" class="btn-m3"><span class="material-symbols-outlined text-base">refresh</span> Очистить ещё раз</button>
-        <button id="virusBtn" class="btn-m3-outline"><span class="material-symbols-outlined text-base">bug_report</span> Проверить на вирусы</button>
-      </div>
-      <p id="actionFeedback" class="text-xs text-[var(--color-on-surface-variant)] italic h-5"></p>
-    </div>
-  </div>
-
-  <!-- Вкладка О защите (скрыта, переключается через навигацию) -->
-  <div id="securityContent" class="tab-content max-w-3xl mx-auto px-4 pt-5 pb-4">
-    <div class="flex flex-col gap-5">
-      <div class="card-soft flex items-center gap-3">
-        <span class="material-symbols-outlined text-3xl text-[var(--color-primary)]">account_circle</span>
-        <div><div class="font-medium">Пользователь</div><div class="text-lg">Владимир</div></div>
-      </div>
-
-      <div class="text-sm font-medium text-[var(--color-on-surface-variant)]">Устройства под защитой</div>
-      <!-- Телефон -->
-      <div class="device-card">
-        <div class="device-icon"><span class="material-symbols-outlined text-3xl">smartphone</span></div>
-        <div class="flex-1"><div class="font-medium">Этот телефон</div><div class="text-xs text-[var(--color-on-surface-variant)]">Защита активна · онлайн</div></div>
-        <span class="text-xs bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] px-3 py-1 rounded-full">активен</span>
-      </div>
-      <!-- Samsung TV -->
-      <div class="device-card">
-        <div class="device-icon"><span class="material-symbols-outlined text-3xl">tv</span></div>
-        <div class="flex-1"><div class="font-medium">Samsung TV</div><div class="text-xs text-[var(--color-on-surface-variant)]">Защита активна · онлайн</div></div>
-        <span class="text-xs bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] px-3 py-1 rounded-full">активен</span>
-      </div>
-
-      <div class="card-soft text-sm text-[var(--color-on-surface-variant)]">
-        <span class="material-symbols-outlined text-base align-middle">verified</span> Все устройства защищены. Вирусы не обнаружены.
-      </div>
-    </div>
-  </div>
-
-  <!-- Нижняя навигация (только домик и щит) -->
-  <div class="navbar">
-    <div class="navbar-container">
-      <button id="navHome" class="navbar-item navbar-item-active"><div class="navbar-item-icon"><span class="material-symbols-outlined">home</span></div><span>Обзор</span></button>
-      <button id="navShield" class="navbar-item"><div class="navbar-item-icon"><span class="material-symbols-outlined">shield</span></div><span>Защита</span></button>
-    </div>
-  </div>
-
-  <!-- Полноэкранный оверлей (для очистки / вирусов) -->
-  <div id="fullscreenOverlay" class="fullscreen-overlay" style="display:none;">
-    <div class="spinner"></div>
-    <div id="overlayTitle" class="text-2xl font-light mb-2">Очистка системы</div>
-    <div id="overlayDesc" class="text-sm text-[var(--color-on-surface-variant)] max-w-sm">Подождите и не выходите на другие приложения</div>
-    <div id="overlayProgress" class="mt-6 w-48 h-1.5 bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
-      <div id="progressBar" class="h-full bg-[var(--color-primary)] rounded-full" style="width:0%;"></div>
-    </div>
-    <div id="overlayLog" class="mt-5 text-xs text-[var(--color-on-surface-variant)] max-w-xs text-center"></div>
-  </div>
-
-  <!-- Конфетти-контейнер -->
-  <div id="confettiContainer" class="confetti-container" style="display:none;"></div>
-
-  <script>
-    (function() {
-      // --- список приложений ---
-      const apps = ['Мой МТС','Камера','Сообщения','Контакты','Госуслуги','Штрафы ГИБДД','Фото','Телефон','СберБанк','РИАНовости','MAX','Сервисы погоды','VK','Калькулятор'];
-      const appList = document.getElementById('appList');
-      apps.forEach(name => {
-        const span = document.createElement('span');
-        span.textContent = name;
-        span.style.cssText = 'background:var(--color-primary-container);color:var(--color-on-primary-container);border-radius:40px;padding:4px 14px;font-size:0.8rem;font-weight:500;margin:2px 4px 2px 0;display:inline-block;';
-        appList.appendChild(span);
-      });
-
-      // --- таймер до 12:00 ---
-      function updateCountdown() {
-        const now = new Date();
-        let target = new Date(now);
-        target.setHours(12,0,0,0);
-        if (now >= target) target.setDate(target.getDate()+1);
-        const diff = Math.floor((target - now)/1000);
-        const h = String(Math.floor(diff/3600)).padStart(2,'0');
-        const m = String(Math.floor((diff%3600)/60)).padStart(2,'0');
-        const s = String(diff%60).padStart(2,'0');
-        document.getElementById('countdownDisplay').textContent = `${h}:${m}:${s}`;
+<body>
+<div id="sa"></div><div id="stage"></div><div id="strip"></div>
+<script>
+const DATA=[
+ {t:"A1",b:"#7FB5B5",f:"#8CC2C2",c:"#fff"},
+ {t:"A2",b:"#A18594",f:"#AD94A1",c:"#fff"},
+ {t:"B1",b:"#FF9BAA",f:"#FFA9B6",c:"#fff"},
+ {t:"B2",b:"#EAE0C8",f:"#F0E8D4",c:"#555"},
+ {t:"Носитель (C)",b:"#FFF0F5",f:"#FFF5F8",c:"#555"}
+];
+const LOREM="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+const stage=document.getElementById("stage"),strip=document.getElementById("strip"),sa=document.getElementById("sa");
+const n=DATA.length,els=[],clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+let H,W,u,step,ys=[],top0,sab,Uh,o=-1;const s={p:0,v:0,t:0};
+DATA.forEach((d,i)=>{
+  const f=document.createElement("div");f.className="f";
+  f.innerHTML=`<div class="tab" style="background:${d.b}"></div><div class="bb" style="background:${d.b}"></div>
+  <div class="inner"><h2>${d.t}</h2><small>Заметки · обновлено сегодня</small><p>${LOREM}</p><p>${LOREM}</p><p>${LOREM}</p></div>
+  <div class="front">
+   <div class="lo"><div class="face" style="background:${d.f}"><div class="sh"></div></div><div class="rev" style="background:${d.f}"></div></div>
+   <div class="up"><div class="face" style="background:${d.f}"><div class="label" style="color:${d.c}">${d.t}</div><div class="sh"></div></div><div class="rev" style="background:${d.f}"></div></div>
+  </div>`;
+  stage.appendChild(f);
+  const e={f,bb:f.querySelector(".bb"),inner:f.querySelector(".inner"),front:f.querySelector(".front"),up:f.querySelector(".up"),lo:f.querySelector(".lo"),label:f.querySelector(".label")};
+  els.push(e);
+  e.front.addEventListener("click",()=>{if(o<0&&s.p<.02)open(i)});
+  f.querySelector(".tab").addEventListener("click",()=>{if(o===i&&s.p>.9)close()});
+});
+function layout(){
+  H=innerHeight;const cs=getComputedStyle(sa);
+  top0=(parseFloat(cs.paddingTop)||0)+22;sab=parseFloat(cs.paddingBottom)||0;
+  W=Math.min(innerWidth-32,460);u=W/725;
+  stage.style.setProperty("--u",u+"px");stage.style.perspective=Math.max(1400,H*2)+"px";
+  step=Math.min(204*u,(H-sab-top0-60*u-210)/4);
+  ys=DATA.map((_,i)=>top0+i*step);
+  Uh=Math.min(H*.5,320);
+  els.forEach(e=>{
+    e.f.style.width=W+"px";e.f.style.marginLeft=(-W/2)+"px";
+    e.bb.style.height=H+"px";e.front.style.height=H+"px";
+    e.up.style.height=Uh+"px";e.lo.style.height=(H-Uh+1)+"px";
+    e.inner.style.height=Math.max(120,H-sab-top0-74*u-120)+"px";
+    e.label.style.fontSize=Math.min(96*u,step*.48)+"px";
+  });
+  render();
+}
+function render(){
+  const p=s.p;
+  const base=H-sab-128;
+  els.forEach((e,i)=>{
+    let ty=0,sc=1,z=i*3,th=0,flex=0;
+    if(o>=0){
+      if(i===o){
+        ty=(top0-ys[i])*p;
+        th=180*Math.pow(clamp(p,0,1.04),1.7);
+        flex=clamp(s.v*8,-30,30);
+      }else{
+        const r=i<o?i:i-1,d=.05*(n-1-i),q=clamp((p-d)/(1-d),0,1.03);
+        ty=(base+r*20-ys[i])*q;sc=1-.035*clamp(q,0,1);z=i*3+30*clamp(q,0,1);
       }
-      updateCountdown();
-      setInterval(updateCountdown, 1000);
-      document.getElementById('lastClean').textContent = `сегодня, ${new Date().getHours().toString().padStart(2,'0')}:${new Date().getMinutes().toString().padStart(2,'0')}`;
-
-      // --- переключение вкладок (навигация) ---
-      const navHome = document.getElementById('navHome');
-      const navShield = document.getElementById('navShield');
-      const mainContent = document.getElementById('mainContent');
-      const securityContent = document.getElementById('securityContent');
-
-      function setActiveTab(tab) {
-        if (tab === 'home') {
-          navHome.classList.add('navbar-item-active');
-          navShield.classList.remove('navbar-item-active');
-          mainContent.style.display = 'block';
-          securityContent.classList.remove('active');
-          securityContent.style.display = 'none';
-        } else {
-          navShield.classList.add('navbar-item-active');
-          navHome.classList.remove('navbar-item-active');
-          mainContent.style.display = 'none';
-          securityContent.style.display = 'block';
-          securityContent.classList.add('active');
-        }
-      }
-      navHome.addEventListener('click', () => setActiveTab('home'));
-      navShield.addEventListener('click', () => setActiveTab('shield'));
-      // по умолчанию
-      setActiveTab('home');
-
-      // --- полноэкранный оверлей ---
-      const overlay = document.getElementById('fullscreenOverlay');
-      const overlayTitle = document.getElementById('overlayTitle');
-      const overlayDesc = document.getElementById('overlayDesc');
-      const progressBar = document.getElementById('progressBar');
-      const overlayLog = document.getElementById('overlayLog');
-      const confettiContainer = document.getElementById('confettiContainer');
-      let activeInterval = null;
-
-      function showOverlay(title, desc) {
-        overlay.style.display = 'flex';
-        overlayTitle.textContent = title;
-        overlayDesc.textContent = desc || 'Подождите и не выходите на другие приложения';
-        progressBar.style.width = '0%';
-        overlayLog.textContent = '';
-      }
-
-      function hideOverlay() {
-        overlay.style.display = 'none';
-        if (activeInterval) { clearInterval(activeInterval); activeInterval = null; }
-      }
-
-      // --- конфетти ---
-      function fireConfetti() {
-        confettiContainer.style.display = 'block';
-        const colors = ['#2E7D5E','#88D0AA','#C8F0D9','#D3F0E0','#A0D8CA','#F5FCF7','#4A7A6A'];
-        for (let i = 0; i < 80; i++) {
-          const el = document.createElement('div');
-          el.className = 'confetti';
-          el.style.left = Math.random() * 100 + '%';
-          el.style.top = '-10px';
-          el.style.width = (6 + Math.random() * 8) + 'px';
-          el.style.height = (6 + Math.random() * 8) + 'px';
-          el.style.background = colors[Math.floor(Math.random() * colors.length)];
-          el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-          el.style.animationDuration = (2 + Math.random() * 2) + 's';
-          el.style.animationDelay = (Math.random() * 0.8) + 's';
-          el.style.transform = `rotate(${Math.random()*360}deg)`;
-          confettiContainer.appendChild(el);
-        }
-        setTimeout(() => {
-          confettiContainer.style.display = 'none';
-          confettiContainer.innerHTML = '';
-        }, 4000);
-      }
-
-      // --- показать успех ---
-      function showSuccess(message, icon) {
-        hideOverlay();
-        // показываем оверлей с успехом
-        overlay.style.display = 'flex';
-        overlayTitle.innerHTML = `<span class="success-icon">${icon}</span><br><span class="text-2xl font-light">${message}</span>`;
-        overlayDesc.textContent = '';
-        overlay.querySelector('.spinner')?.remove();
-        overlayLog.textContent = '';
-        progressBar.style.display = 'none';
-        // конфетти
-        fireConfetti();
-        setTimeout(() => {
-          hideOverlay();
-          // восстановить spinner
-          const spinner = document.createElement('div');
-          spinner.className = 'spinner';
-          overlay.prepend(spinner);
-          progressBar.style.display = 'block';
-          overlayTitle.innerHTML = 'Очистка системы';
-        }, 4000);
-      }
-
-      function runTask(type) {
-        if (activeInterval) return;
-        const btn = type === 'clean' ? document.getElementById('cleanBtn') : document.getElementById('virusBtn');
-        btn.disabled = true;
-        btn.style.opacity = '0.6';
-        document.getElementById('actionFeedback').textContent = type === 'clean' ? '🧼 Очистка...' : '🛡️ Проверка...';
-        showOverlay(type === 'clean' ? 'Очистка системы' : 'Проверка на вирусы', 'Подождите и не выходите на другие приложения');
-        let progress = 0;
-        const steps = type === 'clean' 
-          ? ['Сканирование кэша...', 'Удаление временных файлов...', 'Оптимизация...', 'Завершение...']
-          : ['Анализ приложений...', 'Проверка сигнатур...', 'Сканирование прав...', 'Завершение...'];
-        let stepIdx = 0;
-        overlayLog.textContent = steps[0] || '';
-
-        activeInterval = setInterval(() => {
-          progress += 2;
-          if (progress > 100) progress = 100;
-          progressBar.style.width = progress + '%';
-          if (progress % 20 < 4 && stepIdx < steps.length-1) {
-            stepIdx++;
-            overlayLog.textContent = steps[stepIdx] || '';
-          }
-          if (progress >= 100) {
-            clearInterval(activeInterval);
-            activeInterval = null;
-            const msg = type === 'clean' ? 'Телефон успешно очищен' : 'Вирусы не найдены';
-            const icon = type === 'clean' ? '👍' : '🛡️';
-            showSuccess(msg, icon);
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            document.getElementById('actionFeedback').textContent = type === 'clean' ? '✅ Очистка завершена' : '✅ Проверка завершена';
-            const now = new Date();
-            document.getElementById('lastClean').textContent = `сегодня, ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-          }
-        }, 500);
-      }
-
-      document.getElementById('cleanBtn').addEventListener('click', () => runTask('clean'));
-      document.getElementById('virusBtn').addEventListener('click', () => runTask('virus'));
-
-      setTimeout(() => {
-        document.getElementById('actionFeedback').textContent = '✅ Система защищена';
-      }, 600);
-    })();
-  </script>
+    }
+    e.f.style.transform=`translate3d(0,${ys[i]+ty}px,${z}px) scale(${sc})`;
+    e.front.style.transform=`translateZ(.8px) rotateX(${-th}deg)`;
+    e.up.style.transform=`rotateX(${i===o?flex:0}deg)`;
+    e.front.style.setProperty("--sh",(.3*Math.sin(th*Math.PI/180)).toFixed(3));
+  });
+  strip.style.display=(o>=0&&p>.6)?"block":"none";
+}
+let last=0,raf=0;
+function loop(t){
+  const dt=Math.min(.032,(t-last)/1000||.016);last=t;
+  const k=150,c=19;
+  s.v+=(k*(s.t-s.p)-c*s.v)*dt;s.p+=s.v*dt;
+  if(Math.abs(s.v)<.002&&Math.abs(s.t-s.p)<.001){s.p=s.t;s.v=0;if(s.t===0)o=-1;render();raf=0;return}
+  render();raf=requestAnimationFrame(loop);
+}
+function go(){if(!raf){last=performance.now();raf=requestAnimationFrame(loop)}}
+function open(i){o=i;s.t=1;go()}
+function close(){s.t=0;go()}
+let sy=0,done=false;
+strip.addEventListener("pointerdown",e=>{strip.setPointerCapture(e.pointerId);sy=e.clientY;done=false});
+strip.addEventListener("pointermove",e=>{if(!done&&sy-e.clientY>14){done=true;close()}});
+strip.addEventListener("pointerup",()=>{if(!done){done=true;close()}});
+addEventListener("resize",layout);
+layout();
+</script>
 </body>
 </html>
